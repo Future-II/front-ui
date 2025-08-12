@@ -1,0 +1,103 @@
+{
+  "navbar": {
+    "openMenu": "Open Menu",
+    "realEstateSystem": "Real Estate System",
+    "userSettings": "User Settings",
+    "logout": "Logout"
+  },
+  "home": {
+    "title": "Home",
+    "hero": {
+      "title": "Real Estate Reports Management System",
+      "subtitle": "An integrated platform for managing, withdrawing and sending real estate reports between different systems with high efficiency",
+      "startUsing": "Start Using the System",
+      "learnMore": "Learn More"
+    },
+    "features": {
+      "title": "System Features",
+      "reportsManagement": {
+        "title": "Reports Management",
+        "description": "Withdraw and send reports between different systems easily and efficiently with operation status tracking"
+      },
+      "adminDashboard": {
+        "title": "Admin Dashboard",
+        "description": "Complete control in managing companies, users and subscriptions with comprehensive system overview"
+      },
+      "userSettings": {
+        "title": "User Settings",
+        "description": "Manage profile and settings with subscription details and available packages"
+      }
+    },
+    "support": {
+      "title": "Need Help?",
+      "subtitle": "Technical support team is available 24/7",
+      "contactSupport": "Contact Technical Support"
+    }
+  },
+  "dashboard": {
+    "title": "Management Dashboard",
+    "overview": "Overview",
+    "companies": "Companies",
+    "users": "Users",
+    "packages": "Packages",
+    "tickets": "Support Tickets",
+    "recentActivity": "Recent Activity",
+    "stats": {
+      "totalCompanies": "Total Companies",
+      "activeUsers": "Active Users",
+      "totalRevenue": "Total Revenue",
+      "pendingTickets": "Pending Tickets"
+    }
+  },
+  "reports": {
+    "title": "Equipment Reports",
+    "mekyas": "Mekyas Reports",
+    "noqra": "Noqra Reports",
+    "view": "View Reports",
+    "automatic": "Automatic",
+    "single": "Single",
+    "manual": "Manual",
+    "withdraw": "Withdraw",
+    "verify": "Verify",
+    "send": "Send",
+    "processing": "Processing...",
+    "success": "Success",
+    "error": "Error"
+  },
+  "settings": {
+    "title": "User Settings",
+    "profile": "Profile",
+    "subscription": "Subscription",
+    "notifications": "Notifications",
+    "security": "Security"
+  },
+  "support": {
+    "title": "Help & Support",
+    "contactUs": "Contact Us",
+    "faq": "FAQ",
+    "tickets": "Support Tickets"
+  },
+  "common": {
+    "search": "Search",
+    "filter": "Filter",
+    "actions": "Actions",
+    "status": "Status",
+    "date": "Date",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "company": "Company",
+    "role": "Role",
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "completed": "Completed",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "loading": "Loading...",
+    "noData": "No data available"
+  }
+} 
