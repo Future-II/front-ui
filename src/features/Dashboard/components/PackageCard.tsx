@@ -1,20 +1,5 @@
 import { Check } from 'lucide-react';
 
-// Define the type for a single package object
-interface PackageType {
-  id: number;
-  name: string;
-  price: number;
-  period: string;
-  features: string[];
-  usersLimit: number;
-  reportsLimit: number;
-  storageLimit: string;
-  status: string;
-  popularChoice?: boolean;
-}
-
-// Define the props for the component
 interface PackageCardProps {
   pkg: PackageType;
 }
