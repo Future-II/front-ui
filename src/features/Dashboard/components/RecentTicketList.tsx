@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 interface RecentTicketsListProps {
   supportTickets: SupportTicket[];
   formatDateTime: (dateString: string) => string;
@@ -9,11 +11,13 @@ export default function RecentTicketsList({
   formatDateTime,
   onViewAllTickets,
 }: RecentTicketsListProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       {/* Section Title */}
       <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
-        أحدث التذاكر
+        {t("dashboard.recentTickets.title")}
       </h3>
 
       {/* Tickets List */}
@@ -28,9 +32,9 @@ export default function RecentTicketsList({
               <h4 className="text-sm font-medium text-gray-900">{ticket.subject}</h4>
               <span
                 className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                  ticket.status === "مفتوح"
+                  ticket.status === t("dashboard.tickets.status.open")
                     ? "bg-blue-100 text-blue-800"
-                    : ticket.status === "قيد المعالجة"
+                    : ticket.status === t("dashboard.tickets.status.inProgress")
                     ? "bg-amber-100 text-amber-800"
                     : "bg-green-100 text-green-800"
                 }`}
@@ -48,7 +52,7 @@ export default function RecentTicketsList({
                 {formatDateTime(ticket.createdAt)}
               </span>
               <button className="text-blue-600 hover:text-blue-800 text-xs font-medium">
-                عرض التفاصيل
+                {t("dashboard.recentTickets.viewDetails")}
               </button>
             </div>
           </div>
@@ -61,7 +65,7 @@ export default function RecentTicketsList({
           className="text-blue-600 hover:text-blue-800 text-sm font-medium"
           onClick={onViewAllTickets}
         >
-          عرض جميع التذاكر
+          {t("dashboard.recentTickets.viewAll")}
         </button>
       </div>
     </div>

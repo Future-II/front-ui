@@ -36,10 +36,47 @@
   },
   "dashboard": {
     "title": "لوحة الإدارة",
-    "overview": "نظرة عامة",
+    "overview": {
+      "title": "نظرة عامة",
+      "totalCompanies": "إجمالي الشركات",
+      "totalUsers": "المستخدمين النشطين",
+      "totalSubscriptions": "إجمالي الاشتراكات",
+      "pendingTickets": "تذاكر معلقة",
+      "fromLastMonth": "من الشهر الماضي"
+    },
+    "companiesUser": {
+      "title": "إدارة الشركات"
+    },
+    "packages": {
+      "title": "إدارة الباقات"
+    },
+    "support": {
+      "title": "الدعم الفني"
+    },
+    "recentTickets": {
+      "title": "أحدث التذاكر",
+      "viewDetails": "عرض التفاصيل",
+      "viewAll": "عرض جميع التذاكر"
+    },
+    "ticketStatus": {
+      "open": "مفتوح",
+      "inProgress": "قيد المعالجة",
+      "closed": "مغلق"
+    },
+    "recentCompanies": {
+      "title": "الشركات والمستخدمين",
+      "company": "شركة",
+      "users": "المستخدمين",
+      "package": "الباقة",
+      "status": "الحالة",
+      "viewAll": "عرض جميع الشركات"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
     "companies": "الشركات",
     "users": "المستخدمين",
-    "packages": "الباقات",
     "tickets": "تذاكر الدعم",
     "recentActivity": "النشاط الأخير",
     "stats": {
@@ -69,13 +106,92 @@
     "profile": "الملف الشخصي",
     "subscription": "الاشتراك",
     "notifications": "الإشعارات",
-    "security": "الأمان"
+    "security": "الأمان",
+    "users": "إدارة المستخدمين",
+    "notificationsTab": {
+      "title": "الإشعارات",
+      "email": {
+        "title": "إشعارات البريد الإلكتروني",
+        "description": "استلام الإشعارات عبر البريد الإلكتروني"
+      },
+      "system": {
+        "title": "إشعارات النظام",
+        "description": "استلام الإشعارات داخل النظام"
+      },
+      "reports": {
+        "title": "تنبيهات التقارير",
+        "description": "الإشعار عند اكتمال عملية سحب أو إرسال التقارير"
+      }
+    }
   },
   "support": {
-    "title": "المساعدة والدعم",
-    "contactUs": "اتصل بنا",
-    "faq": "الأسئلة الشائعة",
-    "tickets": "تذاكر الدعم"
+    "title": "الدعم",
+    "liveChat": {
+      "title": "المحادثة المباشرة",
+      "description": "تواصل مع فريق الدعم الفني مباشرة عبر المحادثة خلال ساعات العمل من 8 صباحاً حتى 5 مساءً",
+      "button": "بدء محادثة"
+    },
+    "ticketsTab": {
+      "title": "تذاكر الدعم الفني",
+      "subtitle": "عرض وإدارة تذاكر الدعم الخاصة بك",
+      "searchPlaceholder": "البحث في التذاكر...",
+      "newTicket": "تذكرة جديدة",
+      "ticketNumber": "رقم التذكرة",
+      "lastUpdate": "آخر تحديث",
+      "viewDetails": "عرض التفاصيل",
+      "viewMore": "عرض المزيد"
+    },
+    "phone": {
+      "title": "الاتصال الهاتفي",
+      "description": "اتصل بفريق الدعم الفني على الرقم المخصص خلال ساعات العمل من 8 صباحاً حتى 5 مساءً",
+      "number": "920001234"
+    },
+    "email": {
+      "title": "البريد الإلكتروني",
+      "description": "راسلنا عبر البريد الإلكتروني وسنرد عليك في خلال 24 ساعة عمل",
+      "button": "إرسال بريد إلكتروني"
+    },
+    "newTicket": {
+      "title": "إنشاء تذكرة دعم فني جديدة",
+      "subjectLabel": "عنوان التذكرة",
+      "subjectPlaceholder": "أدخل عنوان موجز للمشكلة",
+      "priorityLabel": "الأولوية",
+      "priorityLow": "منخفضة",
+      "priorityMedium": "متوسطة",
+      "priorityHigh": "عالية",
+      "descriptionLabel": "وصف المشكلة",
+      "descriptionPlaceholder": "اشرح المشكلة بالتفصيل وأضف أي معلومات قد تساعد فريق الدعم الفني",
+      "attachmentsLabel": "المرفقات (اختياري)",
+      "attachmentsText": "اسحب الملفات هنا أو اضغط لاختيارها",
+      "attachmentsInfo": "يمكنك إرفاق ملفات بصيغة JPG أو PNG أو PDF بحجم أقصى 10MB",
+      "attachmentsButton": "اختيار ملفات",
+      "submitButton": "إرسال التذكرة"
+    },
+    "faqPrompt": {
+      "title": "هل تحتاج إلى مساعدة فورية؟",
+      "description": "تصفح قسم الأسئلة الشائعة للحصول على إجابات سريعة للأسئلة المتكررة، أو استخدم المحادثة المباشرة للتواصل الفوري مع فريق الدعم الفني.",
+      "button": "الانتقال إلى الأسئلة الشائعة"
+    },
+    "ticketsData": {
+      "ticket1": {
+        "title": "مشكلة في سحب التقارير التلقائي",
+        "status": "مفتوح",
+        "priority": "عالي",
+        "lastUpdate": "منذ ساعتين"
+      },
+      "ticket2": {
+        "title": "استفسار عن ترقية الباقة",
+        "status": "قيد المعالجة",
+        "priority": "متوسط",
+        "lastUpdate": "منذ يوم واحد"
+      },
+      "ticket3": {
+        "title": "طلب إضافة مستخدمين جدد",
+        "status": "مغلق",
+        "priority": "منخفض",
+        "lastUpdate": "منذ يومين"
+      }
+    }
   },
   "common": {
     "search": "بحث",
@@ -98,6 +214,148 @@
     "cancel": "إلغاء",
     "close": "إغلاق",
     "loading": "جاري التحميل...",
-    "noData": "لا توجد بيانات متاحة"
+    "noData": "لا توجد بيانات متاحة",
+    "paid": "مدفوعة",
+    "download": "تحميل"
+  },
+  "profile": {
+    "title": "الملف الشخصي",
+    "changePicture": "تغيير الصورة",
+    "firstName": "الاسم الأول",
+    "lastName": "الاسم الأخير",
+    "role": "المنصب",
+    "address": "العنوان",
+    "website": "الموقع الإلكتروني",
+    "bio": "نبذة شخصية"
+  },
+  "security": {
+    "password": {
+      "title": "كلمة المرور",
+      "description": "تغيير كلمة مرور حسابك",
+      "button": "تغيير كلمة المرور",
+      "current": "كلمة المرور الحالية",
+      "new": "كلمة المرور الجديدة",
+      "confirm": "تأكيد كلمة المرور الجديدة"
+    },
+    "twoFactor": {
+      "title": "المصادقة الثنائية",
+      "description": "إضافة طبقة أمان إضافية لحسابك",
+      "button": "تفعيل المصادقة الثنائية"
+    }
+  },
+  "subscription": {
+    "currentPlan": "الباقة الحالية",
+    "active": "نشط",
+    "advancedPackage": "الباقة المتقدمة",
+    "renewalDate": "تاريخ التجديد:",
+    "features": "ميزات الباقة",
+    "feature1": "سحب وإرسال التقارير بشكل تلقائي",
+    "feature2": "إدارة حتى 10 مستخدمين",
+    "feature3": "تخزين التقارير لمدة سنة كاملة",
+    "feature4": "دعم فني على مدار الساعة",
+    "upgrade": "ترقية الباقة",
+    "billingHistory": "سجل الفواتير",
+    "invoiceNumber": "رقم الفاتورة",
+    "date": "التاريخ",
+    "amount": "المبلغ",
+    "status": "الحالة",
+    "actions": "الإجراءات"
+  },
+  "faq": {
+    "title": "الأسئلة الشائعة",
+    "subtitle": "إجابات على أكثر الأسئلة شيوعًا حول استخدام النظام",
+    "searchPlaceholder": "ابحث في الأسئلة الشائعة...",
+    "all": "الكل",
+    "noResults": {
+      "title": "لم يتم العثور على نتائج",
+      "subtitle": "حاول كلمات مفتاحية مختلفة أو تواصل مع الدعم الفني"
+    },
+    "needHelp": {
+      "title": "لم تجد إجابتك؟",
+      "subtitle": "يمكنك التواصل مع فريق الدعم مباشرة عبر الدردشة الحية أو إنشاء تذكرة دعم جديدة.",
+      "newTicket": "إنشاء تذكرة جديدة",
+      "liveChat": "بدء الدردشة الحية"
+    },
+    "item": {
+      "category": "القسم",
+      "useful": "مفيد",
+      "notUseful": "غير مفيد"
+    },
+    "tabs": {
+      "contact": "التواصل",
+      "tickets": "تذاكر الدعم الفني",
+      "faq": "الأسئلة الشائعة"
+    },
+    "categories": {
+      "registration": "التسجيل",
+      "subscription": "الاشتراك",
+      "technical": "المشاكل التقنية"
+    },
+    "questions": {
+      "registration1": {
+        "question": "كيف أسجل حساب جديد؟",
+        "answer": "يمكنك التسجيل عبر صفحة التسجيل بإدخال بريدك الإلكتروني وكلمة المرور."
+      },
+      "subscription1": {
+        "question": "كيف يمكنني تحديث بيانات الاشتراك؟",
+        "answer": "اذهب إلى صفحة حسابي ثم اختر الاشتراكات لتحديث بياناتك."
+      },
+      "technical1": {
+        "question": "النظام لا يرسل تقاريري، ماذا أفعل؟",
+        "answer": "يرجى التحقق من اتصال الإنترنت وإعدادات التقرير، ثم حاول مرة أخرى."
+      }
+    }
+  },
+  "users": {
+    "searchPlaceholder": "البحث في المستخدمين...",
+    "addUser": "إضافة مستخدم",
+    "user": "المستخدم",
+    "role": "الدور",
+    "company": "الشركة",
+    "status": "الحالة",
+    "lastActive": "آخر نشاط",
+    "actions": "الإجراءات",
+    "active": "نشط",
+    "edit": "تعديل",
+    "delete": "حذف"
+  },
+  "permissions": {
+    "manageUsers": "إدارة المستخدمين",
+    "manageReports": "إدارة التقارير",
+    "manageSubscription": "إدارة الاشتراك",
+    "viewReports": "عرض التقارير",
+    "ofUser": "صلاحيات {{name}}:"
+  },
+  "packages": {
+    "popularChoice": "الأكثر شيوعاً",
+    "currency": "ر.س",
+    "users": "المستخدمين",
+    "reportsMonthly": "التقارير شهرياً",
+    "storage": "مساحة التخزين",
+    "unlimited": "غير محدود",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "availablePackages": "الباقات المتاحة",
+    "addPackage": "إضافة باقة",
+    "basic": "الباقة الأساسية",
+    "advanced": "الباقة المتقدمة",
+    "professional": "الباقة الاحترافية",
+    "monthly": "شهري",
+    "features": {
+      "autoReports": "سحب التقارير التلقائي",
+      "manageUsers5": "إدارة حتى 5 مستخدمين",
+      "manageUsers10": "إدارة حتى 10 مستخدمين",
+      "manageUsersUnlimited": "إدارة عدد غير محدود من المستخدمين",
+      "storage3Months": "تخزين التقارير لمدة 3 أشهر",
+      "storage1Year": "تخزين التقارير لمدة سنة كاملة",
+      "storage3Years": "تخزين التقارير لمدة 3 سنوات",
+      "emailSupport": "دعم فني بالبريد الإلكتروني",
+      "support24": "دعم فني على مدار الساعة",
+      "advancedReports": "تقارير تحليلية متقدمة",
+      "api": "واجهة برمجة التطبيقات (API)",
+      "fullCustomization": "تخصيص كامل للنظام"
+    }
   }
-} 
+}

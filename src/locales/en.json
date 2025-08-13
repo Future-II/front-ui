@@ -36,10 +36,47 @@
   },
   "dashboard": {
     "title": "Management Dashboard",
-    "overview": "Overview",
+    "overview": {
+      "title": "Overview",
+      "totalCompanies": "Total Companies",
+      "totalUsers": "Active Users",
+      "totalSubscriptions": "Total Subscriptions",
+      "pendingTickets": "Pending Tickets",
+      "fromLastMonth": "from last month"
+    },
+    "companiesUser": {
+      "title": "Manage Companies"
+    },
+    "packages": {
+      "title": "Manage Packages"
+    },
+    "support": {
+      "title": "Technical Support"
+    },
+    "recentTickets": {
+      "title": "Recent Tickets",
+      "viewDetails": "View Details",
+      "viewAll": "View All Tickets"
+    },
+    "ticketStatus": {
+      "open": "Open",
+      "inProgress": "In Progress",
+      "closed": "Closed"
+    },
+    "recentCompanies": {
+      "title": "Company and Users",
+      "company": "Company",
+      "users": "Users",
+      "package": "Package",
+      "status": "Status",
+      "viewAll": "View All Companies"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
     "companies": "Companies",
     "users": "Users",
-    "packages": "Packages",
     "tickets": "Support Tickets",
     "recentActivity": "Recent Activity",
     "stats": {
@@ -69,13 +106,92 @@
     "profile": "Profile",
     "subscription": "Subscription",
     "notifications": "Notifications",
-    "security": "Security"
+    "security": "Security",
+    "users": "User Management",
+    "notificationsTab": {
+      "title": "Notifications",
+      "email": {
+        "title": "Email Notifications",
+        "description": "Receive notifications via email"
+      },
+      "system": {
+        "title": "System Notifications",
+        "description": "Receive notifications inside the system"
+      },
+      "reports": {
+        "title": "Report Alerts",
+        "description": "Get notified when report withdrawal or sending is completed"
+      }
+    }
   },
   "support": {
-    "title": "Help & Support",
-    "contactUs": "Contact Us",
-    "faq": "FAQ",
-    "tickets": "Support Tickets"
+    "title": "Support",
+    "liveChat": {
+      "title": "Live Chat",
+      "description": "Chat directly with the support team during working hours from 8 AM to 5 PM",
+      "button": "Start Chat"
+    },
+    "ticketsTab": {
+      "title": "Support Tickets",
+      "subtitle": "View and manage your support tickets",
+      "searchPlaceholder": "Search tickets...",
+      "newTicket": "New Ticket",
+      "ticketNumber": "Ticket Number",
+      "lastUpdate": "Last Update",
+      "viewDetails": "View Details",
+      "viewMore": "View More"
+    },
+    "phone": {
+      "title": "Phone",
+      "description": "Call the support team on the dedicated number during working hours from 8 AM to 5 PM",
+      "number": "920001234"
+    },
+    "email": {
+      "title": "Email",
+      "description": "Send us an email and we will respond within 24 working hours",
+      "button": "Send Email"
+    },
+    "newTicket": {
+      "title": "Create a New Support Ticket",
+      "subjectLabel": "Ticket Subject",
+      "subjectPlaceholder": "Enter a brief title for the issue",
+      "priorityLabel": "Priority",
+      "priorityLow": "Low",
+      "priorityMedium": "Medium",
+      "priorityHigh": "High",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Explain the issue in detail and add any info that may help support",
+      "attachmentsLabel": "Attachments (Optional)",
+      "attachmentsText": "Drag files here or click to select",
+      "attachmentsInfo": "You can attach JPG, PNG or PDF files up to 10MB",
+      "attachmentsButton": "Choose Files",
+      "submitButton": "Submit Ticket"
+    },
+    "faqPrompt": {
+      "title": "Need Immediate Help?",
+      "description": "Browse the FAQ section for quick answers or use live chat for immediate support.",
+      "button": "Go to FAQ"
+    },
+    "ticketsData": {
+      "ticket1": {
+        "title": "Issue with Automatic Report Withdrawal",
+        "status": "Open",
+        "priority": "High",
+        "lastUpdate": "2 hours ago"
+      },
+      "ticket2": {
+        "title": "Inquiry About Plan Upgrade",
+        "status": "In Progress",
+        "priority": "Medium",
+        "lastUpdate": "1 day ago"
+      },
+      "ticket3": {
+        "title": "Request to Add New Users",
+        "status": "Closed",
+        "priority": "Low",
+        "lastUpdate": "2 days ago"
+      }
+    }
   },
   "common": {
     "search": "Search",
@@ -98,6 +214,148 @@
     "cancel": "Cancel",
     "close": "Close",
     "loading": "Loading...",
-    "noData": "No data available"
+    "noData": "No data available",
+    "paid": "Paid",
+    "download": "Download"
+  },
+  "profile": {
+    "title": "Profile",
+    "changePicture": "Change Picture",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "role": "Role",
+    "address": "Address",
+    "website": "Website",
+    "bio": "Bio"
+  },
+  "security": {
+    "password": {
+      "title": "Password",
+      "description": "Change your account password",
+      "button": "Change Password",
+      "current": "Current Password",
+      "new": "New Password",
+      "confirm": "Confirm New Password"
+    },
+    "twoFactor": {
+      "title": "Two-Factor Authentication",
+      "description": "Add an extra security layer to your account",
+      "button": "Enable 2FA"
+    }
+  },
+  "subscription": {
+    "currentPlan": "Current Plan",
+    "active": "Active",
+    "advancedPackage": "Advanced Package",
+    "renewalDate": "Renewal Date:",
+    "features": "Plan Features",
+    "feature1": "Automatic report withdrawal and sending",
+    "feature2": "Manage up to 10 users",
+    "feature3": "Store reports for a full year",
+    "feature4": "24/7 technical support",
+    "upgrade": "Upgrade Plan",
+    "billingHistory": "Billing History",
+    "invoiceNumber": "Invoice Number",
+    "date": "Date",
+    "amount": "Amount",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "faq": {
+    "title": "FAQ",
+    "subtitle": "Answers to the most common questions about using the system",
+    "searchPlaceholder": "Search in FAQs...",
+    "all": "All",
+    "noResults": {
+      "title": "No results found",
+      "subtitle": "Try different keywords or contact technical support"
+    },
+    "questions": {
+      "registration1": {
+        "question": "How do I register a new account?",
+        "answer": "You can register by filling in your email and password on the registration page."
+      },
+      "subscription1": {
+        "question": "How can I update my subscription?",
+        "answer": "Go to the My Account page and select Subscriptions to update your info."
+      },
+      "technical1": {
+        "question": "The system is not sending my reports, what should I do?",
+        "answer": "Please check your internet connection and report settings, then try again."
+      }
+    },
+    "needHelp": {
+      "title": "Didn't find your answer?",
+      "subtitle": "You can contact the support team directly via live chat or create a new support ticket.",
+      "newTicket": "Create New Ticket",
+      "liveChat": "Start Live Chat"
+    },
+    "item": {
+      "category": "Category",
+      "useful": "Useful",
+      "notUseful": "Not useful"
+    },
+    "tabs": {
+      "contact": "Contact",
+      "tickets": "Support Tickets",
+      "faq": "FAQ"
+    },
+    "categories": {
+      "registration": "Registration",
+      "subscription": "Subscription",
+      "technical": "Technical"
+    }
+  },
+  "users": {
+    "searchPlaceholder": "Search users...",
+    "addUser": "Add User",
+    "user": "User",
+    "role": "Role",
+    "company": "Company",
+    "status": "Status",
+    "lastActive": "Last Active",
+    "actions": "Actions",
+    "active": "Active",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "permissions": {
+    "manageUsers": "Manage Users",
+    "manageReports": "Manage Reports",
+    "manageSubscription": "Manage Subscription",
+    "viewReports": "View Reports",
+    "ofUser": "Permissions of {{name}}:"
+  },
+  "packages": {
+    "popularChoice": "Most Popular",
+    "currency": "SAR",
+    "users": "Users",
+    "reportsMonthly": "Reports Monthly",
+    "storage": "Storage",
+    "unlimited": "Unlimited",
+    "edit": "Edit",
+    "delete": "Delete",
+    "active": "Active",
+    "inactive": "Inactive",
+    "availablePackages": "Available Packages",
+    "addPackage": "Add Package",
+    "basic": "Basic Package",
+    "advanced": "Advanced Package",
+    "professional": "Professional Package",
+    "monthly": "Monthly",
+    "features": {
+      "autoReports": "Automatic report fetching",
+      "manageUsers5": "Manage up to 5 users",
+      "manageUsers10": "Manage up to 10 users",
+      "manageUsersUnlimited": "Manage unlimited users",
+      "storage3Months": "Store reports for 3 months",
+      "storage1Year": "Store reports for 1 year",
+      "storage3Years": "Store reports for 3 years",
+      "emailSupport": "Email support",
+      "support24": "24/7 support",
+      "advancedReports": "Advanced analytical reports",
+      "api": "API access",
+      "fullCustomization": "Full system customization"
+    }
   }
-} 
+}

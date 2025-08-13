@@ -1,35 +1,40 @@
 import React from 'react';
 import NotificationItem from './NotificationItem';
+import { useTranslation } from 'react-i18next';
 
 const NotificationsTab: React.FC = () => {
+  const { t } = useTranslation();
+
   const items = [
     {
       id: 'email-notifications',
-      title: 'إشعارات البريد الإلكتروني',
-      description: 'استلام الإشعارات عبر البريد الإلكتروني',
+      titleKey: 'settings.notificationsTab.email.title',
+      descriptionKey: 'settings.notificationsTab.email.description',
     },
     {
       id: 'system-notifications',
-      title: 'إشعارات النظام',
-      description: 'استلام الإشعارات داخل النظام',
+      titleKey: 'settings.notificationsTab.system.title',
+      descriptionKey: 'settings.notificationsTab.system.description',
     },
     {
       id: 'report-alerts',
-      title: 'تنبيهات التقارير',
-      description: 'الإشعار عند اكتمال عملية سحب أو إرسال التقارير',
+      titleKey: 'settings.notificationsTab.reports.title',
+      descriptionKey: 'settings.notificationsTab.reports.description',
     },
   ];
 
   return (
     <div>
-      <h2 className="text-lg font-medium text-gray-900 mb-6">الإشعارات</h2>
+      <h2 className="text-lg font-medium text-gray-900 mb-6">
+        {t('settings.notificationsTab.title')}
+      </h2>
       <div className="space-y-6">
         {items.map((item) => (
           <NotificationItem
             key={item.id}
             id={item.id}
-            title={item.title}
-            description={item.description}
+            titleKey={item.titleKey}
+            descriptionKey={item.descriptionKey}
           />
         ))}
       </div>

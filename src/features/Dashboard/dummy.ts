@@ -102,38 +102,62 @@ export const users: User[] = [{
   avatar: 'https://via.placeholder.com/40/6366F1/FFFFFF?text=K'
 }];
 // Sample data for packages
-export const packages: PackageType[] = [{
-  id: 1,
-  name: 'الباقة الأساسية',
-  price: 1999,
-  period: 'شهري',
-  features: ['سحب التقارير التلقائي', 'إدارة حتى 5 مستخدمين', 'تخزين التقارير لمدة 3 أشهر', 'دعم فني بالبريد الإلكتروني'],
-  usersLimit: 5,
-  reportsLimit: 100,
-  storageLimit: '5GB',
-  status: 'نشط'
-}, {
-  id: 2,
-  name: 'الباقة المتقدمة',
-  price: 4999,
-  period: 'شهري',
-  features: ['سحب التقارير التلقائي', 'إدارة حتى 10 مستخدمين', 'تخزين التقارير لمدة سنة كاملة', 'دعم فني على مدار الساعة', 'تقارير تحليلية متقدمة'],
-  usersLimit: 10,
-  reportsLimit: 500,
-  storageLimit: '20GB',
-  status: 'نشط',
-  popularChoice: true
-}, {
-  id: 3,
-  name: 'الباقة الاحترافية',
-  price: 9999,
-  period: 'شهري',
-  features: ['سحب التقارير التلقائي', 'إدارة عدد غير محدود من المستخدمين', 'تخزين التقارير لمدة 3 سنوات', 'دعم فني على مدار الساعة', 'تقارير تحليلية متقدمة', 'واجهة برمجة التطبيقات (API)', 'تخصيص كامل للنظام'],
-  usersLimit: 999,
-  reportsLimit: 999,
-  storageLimit: '100GB',
-  status: 'نشط'
-}];
+export const packages: PackageType[] = [
+  {
+    id: 1,
+    name: "packages.basic",
+    price: 1999,
+    period: "packages.monthly",
+    features: [
+      "packages.features.autoReports",
+      "packages.features.manageUsers5",
+      "packages.features.storage3Months",
+      "packages.features.emailSupport"
+    ],
+    usersLimit: 5,
+    reportsLimit: 100,
+    storageLimit: "5GB",
+    status: "packages.active"
+  },
+  {
+    id: 2,
+    name: "packages.advanced",
+    price: 4999,
+    period: "packages.monthly",
+    features: [
+      "packages.features.autoReports",
+      "packages.features.manageUsers10",
+      "packages.features.storage1Year",
+      "packages.features.support24",
+      "packages.features.advancedReports"
+    ],
+    usersLimit: 10,
+    reportsLimit: 500,
+    storageLimit: "20GB",
+    status: "packages.active",
+    popularChoice: true
+  },
+  {
+    id: 3,
+    name: "packages.professional",
+    price: 9999,
+    period: "packages.monthly",
+    features: [
+      "packages.features.autoReports",
+      "packages.features.manageUsersUnlimited",
+      "packages.features.storage3Years",
+      "packages.features.support24",
+      "packages.features.advancedReports",
+      "packages.features.api",
+      "packages.features.fullCustomization"
+    ],
+    usersLimit: 999,
+    reportsLimit: 999,
+    storageLimit: "100GB",
+    status: "packages.active"
+  }
+];
+
 // Sample data for support tickets
 export const supportTickets: SupportTicket[] = [{
   id: 1,
