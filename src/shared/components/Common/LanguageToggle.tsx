@@ -57,9 +57,9 @@ const LanguageToggle: React.FC = () => {
       </div>
       
       {/* Current language indicator */}
-      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-md opacity-75">
+      {/* <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-md opacity-75">
         {currentIsRTL ? 'العربية' : 'English'}
-      </div>
+      </div> */}
     </div>
   );
 };

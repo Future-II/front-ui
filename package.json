@@ -1,6 +1,7 @@
 {
-  "name": "magic-patterns-vite-template",
+  "name": "vite-template",
   "version": "0.0.1",
+  "author": "Future Intelligent Team (FIT) ",
   "private": true,
   "type": "module",
   "scripts": {
