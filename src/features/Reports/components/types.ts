@@ -6,11 +6,11 @@ export interface Report {
   reportName: string;
   reportType: 'XLSX' | 'PDF' | 'CSV' | string;
   source: string;
-  size: string;
-  date: string;
-  status: string;
-  equipmentType: string;
-  location: string;
-  referenceNo: string;
-  quantity: string;
+  size: string;           
+  date: string;           
+  status: string;         
+  equipmentType: string;  
+  location: string;       
+  referenceNo: string;    
+  quantity: string | number; 
 }
