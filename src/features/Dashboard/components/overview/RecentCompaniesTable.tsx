@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { useLanguage } from "../../../hooks/useLanguage";
+import { useLanguage } from "../../../../hooks/useLanguage";
 
 interface RecentCompaniesTableProps {
   companies: Company[];

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus, Search } from 'lucide-react';
 import UsersTable from './UsersTable';
-import { useLanguage } from '../../../hooks/useLanguage';
+import { useLanguage } from '../../../../hooks/useLanguage';
 import { useTranslation } from 'react-i18next';
 import UserPermissions from './UserPermissions';
 

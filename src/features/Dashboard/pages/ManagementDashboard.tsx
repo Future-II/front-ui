@@ -1,29 +1,37 @@
 import React, { useState } from 'react';
-import { Plus, Search, Mail, Users, Package, Building } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Mail,
+  Users,
+  Package,
+  Building,
+  UserX,
+  MessageSquare,
+  Check
+} from 'lucide-react';
 import { useTranslation } from "react-i18next";
 
-import ManagementCard from '../components/ManagementCard';
-import PackageCard from '../components/PackageCard';
+import ManagementCard from '../components/overview/ManagementCard';
+import PackageCard from '../components/packages/PackageCard';
+import RecentCompaniesTable from '../components/overview/RecentCompaniesTable';
+import RecentTicketsList from '../components/overview/RecentTicketList';
+import CompaniesTable from '../components/companies/CompaniesTable';
+import TicketNotFound from '../components/support/TicketNotFound';
+import TicketTable from '../components/support/TicketTable';
+import TicketListHeader from '../components/support/TicketListHeader';
+import ContactOptions from '../components/support/ContactOptions';
+import SupportTicketsHeader from '../components/support/SupportTicketsHeader';
+import SupportTeamPerformance from '../components/support/SupportTeamPerformance';
+import TicketsTable from '../components/support/TicketsTable';
+import TicketsPagination from '../components/support/TicketsPagination';
 
-import RecentCompaniesTable from '../components/RecentCompaniesTable';
-import RecentTicketsList from '../components/RecentTicketList';
-
-import CompaniesTable from '../components/CompaniesTable';
-import TicketNotFound from '../components/TicketNotFound';
-
-import TicketTable from '../components/TicketTable';
-import TicketListHeader from '../components/TicketListHeader';
-import ContactOptions from '../components/ContactOptions';
-import SupportTicketsHeader from '../components/SupportTicketsHeader';
-import SupportContactMethods from '../components/SupportContactMethod';
-import TicketsTable from '../components/TicketsTable';
-import TicketsPagination from '../components/TicketsPagination';
+import SupportOverviewList from '../components/support/SupportOverviewList';
 
 import { useLanguage } from '../../../hooks/useLanguage';
-
 import TabsNav from '../components/TabsNav';
-
 import { companies, packages, supportTickets } from '../dummy';
+import SupportStatsCard from '../components/support/SupportStatsCard';
 
 const ManagementDashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -51,7 +59,6 @@ const ManagementDashboard: React.FC = () => {
     if (isRTL) return date.toLocaleString("ar-SA", options);
     return date.toLocaleString("en-US", options);
   };
-
 
   const filteredTickets = supportTickets.filter(ticket => ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) || ticket.company.toLowerCase().includes(searchTerm.toLowerCase()));
   const filteredCompanies = companies.filter(company => company.name.toLowerCase().includes(searchTerm.toLowerCase()) || company.package.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -86,16 +93,22 @@ const ManagementDashboard: React.FC = () => {
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
               type="text"
-              placeholder="البحث في الشركات..."
+              placeholder={t("common.search", "البحث في الشركات...")}
               className="w-full md:w-64 pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center">
-            <Plus className="h-4 w-4 ml-2" />
-            إضافة شركة
-          </button>
+          <div className="flex gap-2">
+            <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center">
+              {t("users.addUser")}
+              <Plus className="h-4 w-4 mx-2" />
+            </button>
+            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+              {t("dashboard.recentCompanies.addCompany")}
+              <Plus className="h-4 w-4 mx-2" />
+            </button>
+          </div>
         </div>
         <CompaniesTable companies={filteredCompanies} formatDateTime={formatDateTime} />
       </div>
@@ -122,7 +135,6 @@ const ManagementDashboard: React.FC = () => {
       </div>
     );
   };
-
 
   const renderSupportTab = () => {
     if (viewingTicket !== null) {
@@ -161,14 +173,58 @@ const ManagementDashboard: React.FC = () => {
 
           <ContactOptions />
         </div>
-
-
       );
     }
-    return (
-      <div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
 
+
+
+const supportOverviewData = [
+  {
+    title: t("dashboard.stats.pendingTickets"),
+    count: supportTickets.length,
+    type: "total",
+    icon: <MessageSquare size={20} />
+  },
+  {
+    title: t("support.ticketStatus.highPriority"),
+    count: supportTickets.filter(t => t.priority === "high").length,
+    type: "high",
+    icon: <div className="w-3 h-3 rounded-full bg-red-500" />
+  },
+  {
+    title: t("support.ticketStatus.pending"),
+    count: supportTickets.filter(t => t.status === "pending").length,
+    type: "pending",
+    icon: <Check size={18} />
+  },
+  {
+    title: t("support.ticketStatus.inProgress"),
+    count: supportTickets.filter(t => t.status === "in-progress").length,
+    type: "inProgress",
+    icon: <div className="w-3 h-3 rounded-full bg-amber-500" />
+  },
+  {
+    title: t("support.ticketStatus.open"),
+    count: supportTickets.filter(t => t.status === "open").length,
+    type: "open",
+    icon: <div className="w-3 h-3 rounded-full bg-blue-500" />
+  },
+  {
+    title: t("support.ticketStatus.unassigned"),
+    count: supportTickets.filter(t => t.assignedTo === null).length,
+    type: "unassigned",
+    icon: <UserX size={20} />
+  },
+];
+
+
+    return (
+      <div className="w-full">
+        <div className="mb-6">
+          <SupportOverviewList cards={supportOverviewData} />
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
           <SupportTicketsHeader
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
@@ -177,7 +233,7 @@ const ManagementDashboard: React.FC = () => {
             setShowModal={setShowModal}
           />
 
-          <div className="overflow-x-auto">
+          <div className="w-full overflow-x-auto">
             <TicketsTable
               filteredTickets={filteredTickets}
               setViewingTicket={setViewingTicket}
@@ -192,7 +248,36 @@ const ManagementDashboard: React.FC = () => {
           />
         </div>
 
-        <SupportContactMethods />
+
+        <div className="w-full flex gap-4">
+          <SupportTeamPerformance
+            title="أداء فريق الدعم"
+            members={[
+              {
+                name: "أحمد",
+                role: "فني دعم",
+                avatarLetter: "أ",
+                tickets: 25,
+                avgResponseHours: 1.5,
+                avatarColor: "bg-blue-500",
+              },
+              {
+                name: "ليلى",
+                role: "مسؤولة دعم",
+                avatarLetter: "ل",
+                tickets: 30,
+                avgResponseHours: 2.0,
+                avatarColor: "bg-pink-500",
+              },
+            ]}
+            className="flex-1 w-full"
+          />
+
+          <SupportStatsCard />
+        </div>
+
+
+
       </div>
     );
   };
@@ -215,10 +300,9 @@ const ManagementDashboard: React.FC = () => {
           {activeTab === 'packages' && renderPackagesTab()}
           {activeTab === 'support' && renderSupportTab()}
         </div>
-
       </div>
     </div>
-  )
+  );
 };
 
 export default ManagementDashboard;

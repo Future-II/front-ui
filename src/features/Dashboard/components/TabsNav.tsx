@@ -17,20 +17,22 @@ const TabsNav: React.FC<TabsNavProps> = ({ activeTab, setActiveTab }) => {
   ];
 
   return (
-    <nav className="flex -mb-px overflow-x-auto">
-      {tabs.map(({ id, label }) => (
-        <button
-          key={id}
-          className={`py-4 px-6 text-center border-b-2 text-sm font-medium whitespace-nowrap ${activeTab === id
-              ? "border-blue-500 text-blue-600"
-              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            }`}
-          onClick={() => setActiveTab(id)}
-        >
-          {label}
-        </button>
-      ))}
-    </nav>
+    <div className="overflow-x-auto">
+      <nav className="flex -mb-px">
+        {tabs.map(({ id, label }) => (
+          <button
+            key={id}
+            className={`py-4 px-6 text-center border-b-2 text-sm font-medium whitespace-nowrap ${activeTab === id
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            onClick={() => setActiveTab(id)}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+    </div>
   );
 };
 

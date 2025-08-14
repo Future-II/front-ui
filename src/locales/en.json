@@ -8,30 +8,239 @@
   "home": {
     "title": "Home",
     "hero": {
+      "tagline": "The perfect solution for managing real estate reports",
       "title": "Real Estate Reports Management System",
-      "subtitle": "An integrated platform for managing, withdrawing and sending real estate reports between different systems with high efficiency",
-      "startUsing": "Start Using the System",
-      "learnMore": "Learn More"
+      "subtitle": "🚀 An integrated and intelligent platform to manage, retrieve, and send real estate reports between different systems with high efficiency and speed.",
+      "ctaPrimary": "Start using the system now",
+      "ctaSecondary": "Learn more",
+      "featureUsers": "Over 1000+ users",
+      "featureSupport": "24/7 technical support",
+      "featureSecurity": "High security"
+    },
+    "testimonials": {
+      "title": "What Our Clients Say",
+      "subtitle": "Real feedback from happy customers",
+      "items": [
+        {
+          "name": "Mohammed Al-Qadi",
+          "role": "Property Manager",
+          "text": "Excellent integration with our current systems. Solved many daily issues."
+        },
+        {
+          "name": "Fatima Al-Zahrani",
+          "role": "Real Estate Developer",
+          "text": "Technical support is excellent and the system runs very efficiently. Highly recommended."
+        },
+        {
+          "name": "Ahmed Al-Maliki",
+          "role": "Real Estate Officer",
+          "text": "The system saved us hours of manual work. Speed and accuracy are amazing."
+        }
+      ]
     },
     "features": {
-      "title": "System Features",
-      "reportsManagement": {
-        "title": "Reports Management",
-        "description": "Withdraw and send reports between different systems easily and efficiently with operation status tracking"
+      "whychoose": {
+        "heading": "Why Choose Our System?",
+        "subheading": "We provide the best technology solutions for managing real estate reports efficiently and professionally.",
+        "cards": [
+          {
+            "title": "Super Fast ⚡",
+            "desc": "Pull and send reports in seconds using advanced technology that saves you hours of work."
+          },
+          {
+            "title": "High Security 🔒",
+            "desc": "Advanced protection for your data with military-grade encryption and compliance with international standards."
+          },
+          {
+            "title": "Full Integration 🌐",
+            "desc": "Integrates with all major real estate systems in the Kingdom using advanced APIs."
+          },
+          {
+            "title": "Available 24/7 ⏰",
+            "desc": "Continuous service around the clock with specialized technical support to keep your work running."
+          }
+        ]
       },
-      "adminDashboard": {
-        "title": "Admin Dashboard",
-        "description": "Complete control in managing companies, users and subscriptions with comprehensive system overview"
+      "partners": {
+        "title": "Supported Systems and Partners",
+        "subtitle": "We integrate with the best real estate systems in the Kingdom",
+        "cards": {
+          "gauge": {
+            "title": "Gauge",
+            "subtitle": "Measurement system – full integration"
+          },
+          "click": {
+            "title": "Click",
+            "subtitle": "Click system – advanced support"
+          },
+          "other": {
+            "title": "Other Systems",
+            "subtitle": "Partial support"
+          },
+          "custom": {
+            "title": "Custom API",
+            "subtitle": "On demand"
+          }
+        },
+        "stats": {
+          "users": "Users",
+          "reports": "Reports",
+          "uptime": "Uptime",
+          "support": "Support"
+        }
       },
-      "userSettings": {
-        "title": "User Settings",
-        "description": "Manage profile and settings with subscription details and available packages"
+      "benefits": {
+        "title": "Benefits of Using the System",
+        "subtitle": "Discover how our system can transform the way you work.",
+        "points": [
+          {
+            "title": "Increase productivity by 300%",
+            "desc": "Save hours of manual work and benefit from smart automation."
+          },
+          {
+            "title": "Enhanced team collaboration",
+            "desc": "Share reports and data with your team easily and securely."
+          },
+          {
+            "title": "Advanced report management",
+            "desc": "Organize and archive your reports with advanced search and filtering capabilities."
+          }
+        ],
+        "cta": {
+          "title": "Try the system for free",
+          "desc": "Start your journey with us today and discover the difference.",
+          "button": "Start now for free →"
+        }
       }
     },
+    "pricing": {
+      "badge": "Choose the right plan for you",
+      "title": "Subscription Plans",
+      "paymentMethods": {
+        "available": {
+          "title": "Available Payment Methods",
+          "subtitle": "Choose from the following payment options for your convenience.",
+          "methods": {
+            "cards": {
+              "title": "Credit / Debit Cards",
+              "note": "Pay securely with your Visa, MasterCard, or Mada card."
+            },
+            "bank": {
+              "title": "Bank Transfer",
+              "note": "Send your payment directly from your bank account."
+            },
+            "stcpay": {
+              "title": "STC Pay",
+              "note": "Use STC Pay for quick and easy transactions."
+            },
+            "billing": {
+              "title": "Billing",
+              "note": "Receive an invoice and pay at a later date."
+            }
+          }
+        },
+        "help": {
+          "title": "Need Help Choosing?",
+          "subtitle": "Contact us through any of the following support channels.",
+          "options": {
+            "phone": {
+              "title": "Call Us",
+              "note": "Speak directly with our support team."
+            },
+            "email": {
+              "title": "Email Us",
+              "note": "Send your questions to our support email."
+            },
+            "booking": {
+              "title": "Book a Meeting",
+              "note": "Schedule a call with our payment advisor."
+            }
+          },
+          "button": "Contact Support"
+        }
+      },
+      "description": "Flexible plans to suit your needs — from individuals to large enterprises",
+      "plans": [
+        {
+          "name": "Basic Plan",
+          "desc": "Ideal for individuals and small businesses",
+          "price": "299",
+          "priceUnit": "SAR/month",
+          "features": [
+            "Up to 100 reports per month",
+            "Integration with Gauge system",
+            "Email support",
+            "5GB storage",
+            "Single user"
+          ],
+          "button": "Choose this plan"
+        },
+        {
+          "name": "Professional Plan",
+          "desc": "Best for medium-sized businesses",
+          "price": "599",
+          "priceUnit": "SAR/month",
+          "discount": "Save 20% annually",
+          "features": [
+            "Up to 500 reports per month",
+            "Integration with Gauge and Click",
+            "Direct phone support",
+            "25GB storage",
+            "Up to 5 users",
+            "Advanced analytical reports"
+          ],
+          "button": "Choose this plan",
+          "tag": "Most popular"
+        },
+        {
+          "name": "Enterprise Plan",
+          "desc": "For large companies and organizations",
+          "price": "1299",
+          "priceUnit": "SAR/month",
+          "discount": "Save 30% annually",
+          "features": [
+            "Unlimited reports",
+            "Integration with all systems",
+            "Dedicated account manager",
+            "Unlimited storage",
+            "Unlimited users",
+            "Custom APIs"
+          ],
+          "button": "Contact us"
+        }
+      ],
+      "offer": {
+        "badge": "Limited offer",
+        "title": "Get an extra month for free!",
+        "desc": "When you subscribe annually to any plan · Offer valid until the end of the month"
+      }
+    },
+    "steps": {
+      "heading": "Easy Subscription Steps",
+      "subheading": "Start your journey with us in 4 simple steps",
+      "1": {
+        "title": "Choose Your Plan",
+        "desc": "Select the package that best fits your needs and business size."
+      },
+      "2": {
+        "title": "Create Your Account",
+        "desc": "Register your basic information and business details easily."
+      },
+      "3": {
+        "title": "Pay Securely",
+        "desc": "Choose your preferred payment method and complete a safe transaction."
+      },
+      "4": {
+        "title": "Start Using",
+        "desc": "Enjoy all the features instantly and receive free training."
+      },
+      "cta": "Start Subscription Now"
+    },
     "support": {
-      "title": "Need Help?",
-      "subtitle": "Technical support team is available 24/7",
-      "contactSupport": "Contact Technical Support"
+      "title": "Do you need help?",
+      "subtitle": "Our dedicated technical support team is available to assist you around the clock. We’re here to ensure your success and achieve your goals.",
+      "helpCenter": "Help Center",
+      "contactSupport": "Contact technical support"
     }
   },
   "dashboard": {
@@ -69,7 +278,8 @@
       "users": "Users",
       "package": "Package",
       "status": "Status",
-      "viewAll": "View All Companies"
+      "viewAll": "View All Companies",
+      "addCompany": "Add Company"
     },
     "status": {
       "active": "Active",
@@ -131,6 +341,34 @@
       "description": "Chat directly with the support team during working hours from 8 AM to 5 PM",
       "button": "Start Chat"
     },
+    "teamPerformance": {
+      "ticketLabel": "Ticket",
+      "avgResponse": "Average Response",
+      "hoursLabel": "Hours",
+      "title": "Team Performance"
+    },
+    "ticketTypes": {
+      "technicalIssues": "Technical Issues",
+      "upgradeRequests": "Upgrade Requests",
+      "generalInquiries": "General Inquiries"
+    },
+    "stats": {
+      "avgResponseTime": "Average Response Time",
+      "avgResolutionTime": "Average Resolution Time",
+      "ticketsResolvedToday": "Tickets Resolved Today",
+      "ticketsResolvedThisWeek": "Tickets Resolved This Week",
+      "ticketsResolvedThisMonth": "Tickets Resolved This Month",
+      "ticketDistributionByType": "Ticket Distribution by Type",
+      "satisfactionRate": "Satisfaction Rate",
+      "hours": "Hours",
+      "days": "Days",
+      "performanceStats": "Performance Stats"
+    },
+    "recentTickets": {
+      "title": "Recent Tickets",
+      "viewDetails": "View Details",
+      "viewAll": "View All Tickets"
+    },
     "ticketsTab": {
       "title": "Support Tickets",
       "subtitle": "View and manage your support tickets",
@@ -139,7 +377,8 @@
       "ticketNumber": "Ticket Number",
       "lastUpdate": "Last Update",
       "viewDetails": "View Details",
-      "viewMore": "View More"
+      "viewMore": "View More",
+      "subjectDescription": "Subject and Description"
     },
     "phone": {
       "title": "Phone",
@@ -166,6 +405,14 @@
       "attachmentsInfo": "You can attach JPG, PNG or PDF files up to 10MB",
       "attachmentsButton": "Choose Files",
       "submitButton": "Submit Ticket"
+    },
+    "ticketStatus": {
+      "open": "Open",
+      "inProgress": "In Progress",
+      "closed": "Closed",
+      "highPriority": "High Priority",
+      "pending": "Pending",
+      "unassigned": "Unassigned"
     },
     "faqPrompt": {
       "title": "Need Immediate Help?",
@@ -216,7 +463,14 @@
     "loading": "Loading...",
     "noData": "No data available",
     "paid": "Paid",
-    "download": "Download"
+    "download": "Download",
+    "noDescription": "No description",
+    "notAssigned": "Not assigned",
+    "replies": "Replies",
+    "assignedTo": "Assigned To",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "priority": "Priority"
   },
   "profile": {
     "title": "Profile",

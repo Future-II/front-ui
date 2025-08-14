@@ -2,7 +2,7 @@ import { MessageSquare, Phone, Mail } from "lucide-react";
 
 export default function SupportContactMethods() {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden ml-8">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 ml-8">
       <div className="p-6 border-b border-gray-200">
         <h2 className="text-lg font-medium text-gray-900">التواصل مع الدعم الفني</h2>
       </div>

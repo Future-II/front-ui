@@ -7,6 +7,7 @@ import {
   Mail,
   CalendarDays,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const Chip = ({
   className,
@@ -63,85 +64,90 @@ const InfoRow = ({
 );
 
 export default function PaymentMethods() {
+  const { t } = useTranslation();
+
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* بطاقتان متساويتان ومتمركزَتان */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 justify-items-center items-stretch">
-        {/* اليسار: طرق الدفع المتاحة */}
+        {/* Left: Payment Methods */}
         <div className="w-full max-w-[520px] bg-white rounded-2xl shadow-lg ring-1 ring-black/5 p-6 sm:p-8 h-full flex flex-col">
           <div className="flex flex-col items-center text-center">
             <Chip className="bg-gradient-to-br from-emerald-500 to-green-500">
               <CreditCard className="h-5 w-5" />
             </Chip>
             <h4 className="mt-3 text-lg sm:text-xl font-extrabold text-gray-900">
-              طرق الدفع المتاحة
+              {t("home.pricing.paymentMethods.available.title")}
             </h4>
-            <p className="text-gray-600 text-sm">ادفع بالطريقة التي تُفضّلها</p>
+            <p className="text-gray-600 text-sm">
+              {t("home.pricing.paymentMethods.available.subtitle")}
+            </p>
           </div>
 
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Tile
               icon={<CreditCard className="h-4 w-4" />}
-              title="البطاقات البنكية"
-              note="Visa · Mastercard"
+              title={t("home.pricing.paymentMethods.available.methods.cards.title")}
+              note={t("home.pricing.paymentMethods.available.methods.cards.note")}
               grad="from-blue-500 to-indigo-500"
             />
             <Tile
               icon={<Landmark className="h-4 w-4" />}
-              title="تحويل بنكي"
-              note="جميع البنوك السعودية"
+              title={t("home.pricing.paymentMethods.available.methods.bank.title")}
+              note={t("home.pricing.paymentMethods.available.methods.bank.note")}
               grad="from-green-500 to-emerald-500"
             />
             <Tile
               icon={<Smartphone className="h-4 w-4" />}
-              title="STC Pay"
-              note="دفع سريع وآمن"
+              title={t("home.pricing.paymentMethods.available.methods.stcpay.title")}
+              note={t("home.pricing.paymentMethods.available.methods.stcpay.note")}
               grad="from-purple-500 to-violet-500"
             />
             <Tile
               icon={<Receipt className="h-4 w-4" />}
-              title="سداد الفواتير"
-              note="للشركات والمؤسسات"
+              title={t("home.pricing.paymentMethods.available.methods.billing.title")}
+              note={t("home.pricing.paymentMethods.available.methods.billing.note")}
               grad="from-orange-500 to-amber-500"
             />
           </div>
         </div>
 
-        {/* اليمين: هل تحتاج للمساعدة في الاختيار؟ */}
+        {/* Right: Help Choosing */}
         <div className="w-full max-w-[520px] bg-white rounded-2xl shadow-lg ring-1 ring-black/5 p-6 sm:p-8 h-full flex flex-col">
           <div className="flex flex-col items-center text-center">
             <Chip className="bg-gradient-to-br from-blue-500 to-indigo-500">
               <Phone className="h-5 w-5" />
             </Chip>
             <h4 className="mt-3 text-lg sm:text-xl font-extrabold text-gray-900">
-              هل تحتاج للمساعدة في الاختيار؟
+              {t("home.pricing.paymentMethods.help.title")}
             </h4>
-            <p className="text-gray-600 text-sm">تواصل مع فريق المبيعات المتخصص لدينا</p>
+            <p className="text-gray-600 text-sm">
+              {t("home.pricing.paymentMethods.help.subtitle")}
+            </p>
           </div>
 
           <div className="mt-6 space-y-3">
             <InfoRow
               icon={<Phone className="h-4 w-4" />}
-              title="تواصل معنا"
-              note="920001234 · الأحد إلى الخميس 9ص – 6م"
+              title={t("home.pricing.paymentMethods.help.options.phone.title")}
+              note={t("home.pricing.paymentMethods.help.options.phone.note")}
               bg="bg-blue-50"
             />
             <InfoRow
               icon={<Mail className="h-4 w-4" />}
-              title="تواصل عبر البريد"
-              note="sales@reports-system.com · الرد خلال ساعتين"
+              title={t("home.pricing.paymentMethods.help.options.email.title")}
+              note={t("home.pricing.paymentMethods.help.options.email.note")}
               bg="bg-green-50"
             />
             <InfoRow
               icon={<CalendarDays className="h-4 w-4" />}
-              title="احجز موعدًا"
-              note="استشارة مجانية لمدة 30 دقيقة · لتحديد الباقة المناسبة"
+              title={t("home.pricing.paymentMethods.help.options.booking.title")}
+              note={t("home.pricing.paymentMethods.help.options.booking.note")}
               bg="bg-purple-50"
             />
           </div>
 
           <button className="mt-6 w-full px-4 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700">
-            تواصل مع فريق المبيعات
+            {t("home.pricing.paymentMethods.help.button")}
           </button>
         </div>
       </div>

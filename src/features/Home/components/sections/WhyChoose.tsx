@@ -1,4 +1,5 @@
 import { Zap, Shield, Globe, Clock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const Card = ({
   icon,
@@ -7,7 +8,7 @@ const Card = ({
   desc,
 }: {
   icon: React.ReactNode;
-  bg: string; // e.g. "bg-blue-100 text-blue-600"
+  bg: string;
   title: string;
   desc: string;
 }) => (
@@ -30,15 +31,17 @@ const Card = ({
 );
 
 export default function WhyChoose() {
+  const { t } = useTranslation();
+
   return (
     <section className="bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         {/* Heading */}
         <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900">
-          لماذا تختار نظامنا؟
+          {t("home.features.whychoose.heading")}
         </h2>
         <p className="text-center text-gray-600 mt-2 max-w-3xl mx-auto">
-          نوفر لك أفضل الحلول التقنية لإدارة تقارير العقارات بكفاءة واحترافية.
+          {t("home.features.whychoose.subheading")}
         </p>
 
         {/* Cards */}
@@ -46,29 +49,29 @@ export default function WhyChoose() {
           <Card
             icon={<Zap className="h-6 w-6" />}
             bg="bg-blue-100 text-blue-600"
-            title="سرعة فائقة ⚡"
-            desc="سحب وإرسال التقارير في ثوانٍ باستخدام تقنيات متقدمة توفر لك ساعات من العمل."
+            title={t("home.features.whychoose.cards.0.title")}
+            desc={t("home.features.whychoose.cards.0.desc")}
           />
 
           <Card
             icon={<Shield className="h-6 w-6" />}
             bg="bg-green-100 text-green-600"
-            title="أمان عالي 🔒"
-            desc="حماية متقدمة لبياناتك مع تشفير بمستوى عسكري والالتزام بالمعايير الدولية."
+            title={t("home.features.whychoose.cards.1.title")}
+            desc={t("home.features.whychoose.cards.1.desc")}
           />
 
           <Card
             icon={<Globe className="h-6 w-6" />}
             bg="bg-purple-100 text-purple-600"
-            title="تكامل شامل 🌐"
-            desc="التكامل مع جميع أنظمة العقارات الرئيسية في المملكة باستخدام واجهات برمجة متقدمة."
+            title={t("home.features.whychoose.cards.2.title")}
+            desc={t("home.features.whychoose.cards.2.desc")}
           />
 
           <Card
             icon={<Clock className="h-6 w-6" />}
             bg="bg-orange-100 text-orange-600"
-            title="متاح 24/7 ⏰"
-            desc="خدمة مستمرة على مدار الساعة مع دعم فني متخصص لضمان استمرار عملك."
+            title={t("home.features.whychoose.cards.3.title")}
+            desc={t("home.features.whychoose.cards.3.desc")}
           />
         </div>
       </div>

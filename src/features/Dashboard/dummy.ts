@@ -340,3 +340,4 @@ export const supportTickets: SupportTicket[] = [{
     timestamp: '2023-11-22T10:15:00'
   }]
 }];
+

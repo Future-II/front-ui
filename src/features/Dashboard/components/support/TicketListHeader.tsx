@@ -49,14 +49,6 @@ const TicketListHeader: React.FC<TicketListHeaderProps> = ({
         </div>
       )}
     </div>
-    {/* Add Ticket Button */}
-    <button
-      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center whitespace-nowrap"
-      onClick={() => setShowModal('add-ticket')}
-    >
-      <Plus className="h-4 w-4 ml-2" />
-      إضافة تذكرة
-    </button>
   </div>
 </div>
 

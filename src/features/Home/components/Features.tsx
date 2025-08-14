@@ -4,7 +4,6 @@ import {
   Benefits,
   Pricing,
   Steps,
-  HelpChoosing,
   PaymentMethods,
   Testimonials,
 } from "./sections";
@@ -17,8 +16,8 @@ export default function Features() {
       <Benefits />
       <Pricing />
       <Steps />
-          <PaymentMethods />
-      
+      <PaymentMethods />
+
       <Testimonials />
     </div>
   );

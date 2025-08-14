@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import Sidebar from "../components/SideBar";
-import ProfileTab from "../components/ProfileTab";
-import NotificationsTab from "../components/NotificationsTab";
-import SecurityTab from "../components/SecurityTab";
-import SubscriptionTab from "../components/SubscriptionTab";
-import UsersTab from "../components/UsersTab";
+import ProfileTab from "../components/Profile/ProfileTab";
+import NotificationsTab from "../components/Notification/NotificationsTab";
+import SecurityTab from "../components/Security/SecurityTab";
+import SubscriptionTab from "../components/Subscription/SubscriptionTab";
+import UsersTab from "../components/Users/UsersTab";
 
 import { useLanguage } from "../../../hooks/useLanguage";
 import { users } from "../dummy";

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import ToggleSwitch from './ToggleSwitch'; // import your reusable toggle
-import { useLanguage } from '../../../hooks/useLanguage';
+import ToggleSwitch from '../ToggleSwitch'; 
 
 interface NotificationItemProps {
   id: string;
@@ -17,7 +16,6 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
   defaultChecked = true,
 }) => {
   const { t } = useTranslation();
-  const { isRTL } = useLanguage();
 
   return (
     <div className="bg-white p-4 rounded-lg border border-gray-200">
