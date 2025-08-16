@@ -32,6 +32,7 @@ import { useLanguage } from '../../../hooks/useLanguage';
 import TabsNav from '../components/TabsNav';
 import { companies, packages, supportTickets } from '../dummy';
 import SupportStatsCard from '../components/support/SupportStatsCard';
+import AddUserModal from '../components/companies/AddUserModal';
 
 const ManagementDashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -39,6 +40,7 @@ const ManagementDashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showTicketFilter, setShowTicketFilter] = useState(false);
   const [showModal, setShowModal] = useState<string | null>(null);
+  const [showUserModal, setShowUserModal] = useState<boolean>(false);
   const [viewingTicket, setViewingTicket] = useState<number | null>(null);
 
   console.log("showModal", showModal);
@@ -100,7 +102,7 @@ const ManagementDashboard: React.FC = () => {
             />
           </div>
           <div className="flex gap-2">
-            <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center">
+            <button onClick={() => setShowUserModal(true)} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center">
               {t("users.addUser")}
               <Plus className="h-4 w-4 mx-2" />
             </button>
@@ -110,6 +112,7 @@ const ManagementDashboard: React.FC = () => {
             </button>
           </div>
         </div>
+        <AddUserModal open={showUserModal} onClose={() => setShowUserModal(false)} />
         <CompaniesTable companies={filteredCompanies} formatDateTime={formatDateTime} />
       </div>
     );
