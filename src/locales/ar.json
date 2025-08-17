@@ -245,6 +245,7 @@
   },
   "dashboard": {
     "title": "لوحة إدارة النظام",
+    "description": "إدارة النظام والمستخدمين والتقارير",
     "overview": {
       "title": "نظرة عامة",
       "totalCompanies": "إجمالي الشركات",
@@ -279,7 +280,8 @@
       "package": "الحزمة",
       "status": "الحالة",
       "viewAll": "عرض جميع الشركات",
-      "addCompany": "إضافة شركة"
+      "addCompany": "إضافة شركة",
+      "editCompany": "تعديل الشركة"
     },
     "status": {
       "active": "نشط",
@@ -313,6 +315,7 @@
   },
   "settings": {
     "title": "إعدادات المستخدم",
+    "description": "إدارة المستخدمين والتقارير",
     "profile": "الملف الشخصي",
     "subscription": "الاشتراك",
     "notifications": "الإشعارات",
@@ -437,6 +440,7 @@
   },
   "common": {
     "search": "بحث",
+    "price": "السعر",
     "filter": "فلتر",
     "actions": "إجراءات",
     "status": "الحالة",
@@ -452,6 +456,7 @@
     "completed": "مكتمل",
     "edit": "تعديل",
     "delete": "حذف",
+    "send": "إرسال",
     "save": "حفظ",
     "cancel": "إلغاء",
     "close": "إغلاق",
@@ -465,7 +470,22 @@
     "assignedTo": "مخصص لـ",
     "createdAt": "تاريخ الإنشاء",
     "updatedAt": "تاريخ التحديث",
-    "priority": "الأولوية"
+    "priority": "الأولوية",
+    "fullName": "الاسم الكامل",
+    "enter": "أدخل",
+    "password": "كلمة المرور",
+    "select": "اختر",
+    "contact": "التواصل",
+    "phoneNumber": "رقم الهاتف",
+    "features": "الميزات"
+  },
+  "modals": {
+    "addNewUser": "إضافة مستخدم جديد",
+    "selectCompany": "اختر الشركة",
+    "addNewCompany": "إضافة شركة جديدة",
+    "editCompany": "تعديل الشركة",
+    "editPackage": "تعديل الحزمة",
+    "addPackage": "إضافة حزمة"
   },
   "profile": {
     "title": "الملف الشخصي",
@@ -569,6 +589,7 @@
     "delete": "حذف"
   },
   "permissions": {
+    "title": "الأذونات",
     "manageUsers": "إدارة المستخدمين",
     "manageReports": "إدارة التقارير",
     "manageSubscription": "إدارة الاشتراك",
@@ -577,7 +598,9 @@
   },
   "packages": {
     "popularChoice": "الأكثر شعبية",
+    "package": "الحزمة",
     "currency": "ريال",
+    "selectPackage": "اختر الحزمة",
     "users": "المستخدمون",
     "reportsMonthly": "التقارير الشهرية",
     "storage": "التخزين",
@@ -586,12 +609,24 @@
     "delete": "حذف",
     "active": "نشط",
     "inactive": "غير نشط",
+    "mostPopular": "الأكثر شعبية",
     "availablePackages": "الحزم المتاحة",
     "addPackage": "إضافة حزمة",
     "basic": "الحزمة الأساسية",
     "advanced": "الحزمة المتقدمة",
     "professional": "الحزمة الاحترافية",
     "monthly": "شهريًا",
+    "name": "اسم الباقة",
+    "price": "السعر (ريال سعودي)",
+    "period": "فترة الاشتراك",
+    "yearly": "سنوي",
+    "reports": "عدد التقارير",
+    "status": "الحالة",
+    "feature1": "سحب التقارير التلقائي",
+    "feature2": "إدارة حتى 10 مستخدمين",
+    "feature3": "تخزين التقارير لمدة سنة كاملة",
+    "feature4": "دعم فني على مدار الساعة",
+    "feature5": "تقارير تحليلية متقدمة",
     "features": {
       "autoReports": "سحب التقارير تلقائيًا",
       "manageUsers5": "إدارة حتى 5 مستخدمين",
@@ -606,5 +641,30 @@
       "api": "الوصول إلى API",
       "fullCustomization": "تخصيص كامل للنظام"
     }
+  },
+  "chat": {
+    "title": "الدردشة المباشرة",
+    "addReply": "إضافة رد",
+    "ticketCreated": "تم إنشاء التذكرة",
+    "assignedTo": "المسؤول"
+  },
+  "ticket": {
+    "idPrefix": "تذكرة",
+    "priority": {
+      "high": "عالية",
+      "medium": "متوسطة",
+      "low": "منخفضة"
+    },
+    "status": {
+      "open": "مفتوح",
+      "inProgress": "قيد المعالجة",
+      "resolved": "مغلق",
+      "unknown": "غير معروف"
+    },
+    "actions": {
+      "edit": "تعديل",
+      "close": "إغلاق"
+    },
+    "companyUnknown": "غير معروف"
   }
 }

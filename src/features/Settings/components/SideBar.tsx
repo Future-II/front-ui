@@ -32,7 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
 
             onClick={() => setActiveTab(tab.id as "profile" | "notifications" | "security" | "subscription" | "users")}
           >
-            <Icon className="h-5 w-5 ml-2" /> 
+            <Icon className="h-5 w-5 mx-2" /> 
             {tab.label}
           </button>
         );

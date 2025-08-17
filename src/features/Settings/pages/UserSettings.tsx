@@ -7,15 +7,16 @@ import SubscriptionTab from "../components/Subscription/SubscriptionTab";
 import UsersTab from "../components/Users/UsersTab";
 
 import { useLanguage } from "../../../hooks/useLanguage";
+import { useTranslation } from "react-i18next";
 import { users } from "../dummy";
 
-// Update the type to include 'users'
 type ActiveTab = "profile" | "notifications" | "security" | "subscription" | "users";
 
 const UserSettings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>("profile");
   const [searchTerm, setSearchTerm] = useState('');
 
+  const {t} = useTranslation();
   const { isRTL } = useLanguage();
 
   const formatDateTime = (dateString: string) => {
@@ -33,7 +34,6 @@ const UserSettings: React.FC = () => {
     return date.toLocaleString("en-US", options);
   };
   
-  // Create a filtered list of users based on the search term
   const filteredUsers = users.filter(user => 
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -62,13 +62,12 @@ const UserSettings: React.FC = () => {
   return (
     <div className="w-full">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">إعدادات المستخدم</h1>
-        <p className="text-gray-600">إدارة ملفك الشخصي وإعدادات الحساب</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t("settings.title")}</h1>
+        <p className="text-gray-600">{t("settings.description")}</p>
       </div>
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="md:flex">
           <div className={`md:w-64 border-b md:border-b-0 ${isRTL ? "md:border-l" : "md:border-r"} border-gray-200`}>
-            {/* The Sidebar component will also need to be updated to include 'users' */}
             <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
           </div>
           <div className="flex-1 p-6">{renderTabContent()}</div>

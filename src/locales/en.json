@@ -245,6 +245,7 @@
   },
   "dashboard": {
     "title": "Management Dashboard",
+    "description": "Manage your system, users and reports",
     "overview": {
       "title": "Overview",
       "totalCompanies": "Total Companies",
@@ -279,7 +280,8 @@
       "package": "Package",
       "status": "Status",
       "viewAll": "View All Companies",
-      "addCompany": "Add Company"
+      "addCompany": "Add Company",
+      "editCompany": "Edit Company"
     },
     "status": {
       "active": "Active",
@@ -313,6 +315,7 @@
   },
   "settings": {
     "title": "User Settings",
+    "description": "Manage your users and reports",
     "profile": "Profile",
     "subscription": "Subscription",
     "notifications": "Notifications",
@@ -443,6 +446,7 @@
   "common": {
     "search": "Search",
     "filter": "Filter",
+    "price": "Price",
     "actions": "Actions",
     "status": "Status",
     "date": "Date",
@@ -470,7 +474,15 @@
     "assignedTo": "Assigned To",
     "createdAt": "Created At",
     "updatedAt": "Updated At",
-    "priority": "Priority"
+    "priority": "Priority",
+    "fullName": "Full Name",
+    "enter": "Enter",
+    "password": "Password",
+    "select": "Select",
+    "contact": "Contact",
+    "phoneNumber": "Phone Number",
+    "features": "Features",
+    "send": "Send"
   },
   "profile": {
     "title": "Profile",
@@ -481,6 +493,14 @@
     "address": "Address",
     "website": "Website",
     "bio": "Bio"
+  },
+  "modals": {
+    "addNewUser": "Add New User",
+    "selectCompany": "Select Company",
+    "addNewCompany": "Add New Company",
+    "editCompany": "Edit Company",
+    "editPackage": "Edit Package",
+    "addPackage": "Add Package"
   },
   "security": {
     "password": {
@@ -574,6 +594,7 @@
     "delete": "Delete"
   },
   "permissions": {
+    "title": "Permissions",
     "manageUsers": "Manage Users",
     "manageReports": "Manage Reports",
     "manageSubscription": "Manage Subscription",
@@ -582,9 +603,12 @@
   },
   "packages": {
     "popularChoice": "Most Popular",
+    "package": "Package",
     "currency": "SAR",
+    "selectPackage": "Select Package",
     "users": "Users",
-    "reportsMonthly": "Reports Monthly",
+    "reportsMonthly": "Monthly Reports",
+    "mostPopular": "Most Popular",
     "storage": "Storage",
     "unlimited": "Unlimited",
     "edit": "Edit",
@@ -597,13 +621,24 @@
     "advanced": "Advanced Package",
     "professional": "Professional Package",
     "monthly": "Monthly",
+    "name": "Package Name",
+    "price": "Price (SAR)",
+    "period": "Subscription Period",
+    "yearly": "Yearly",
+    "reports": "Number of Reports",
+    "status": "Status",
+    "feature1": "Automatic report retrieval",
+    "feature2": "Manage up to 10 users",
+    "feature3": "Store reports for a full year",
+    "feature4": "24/7 technical support",
+    "feature5": "Advanced analytical reports",
     "features": {
-      "autoReports": "Automatic report fetching",
+      "autoReports": "Automatic report retrieval",
       "manageUsers5": "Manage up to 5 users",
       "manageUsers10": "Manage up to 10 users",
       "manageUsersUnlimited": "Manage unlimited users",
       "storage3Months": "Store reports for 3 months",
-      "storage1Year": "Store reports for 1 year",
+      "storage1Year": "Store reports for one year",
       "storage3Years": "Store reports for 3 years",
       "emailSupport": "Email support",
       "support24": "24/7 support",
@@ -611,5 +646,30 @@
       "api": "API access",
       "fullCustomization": "Full system customization"
     }
+  },
+  "chat": {
+    "title": "Live Chat",
+    "addReply": "Add Reply",
+    "ticketCreated": "Ticket Created",
+    "assignedTo": "Assigned To"
+  },
+  "ticket": {
+    "idPrefix": "Ticket",
+    "priority": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "status": {
+      "open": "Open",
+      "inProgress": "In Progress",
+      "resolved": "Resolved",
+      "unknown": "Unknown"
+    },
+    "actions": {
+      "edit": "Edit",
+      "close": "Close"
+    },
+    "companyUnknown": "Unknown" 
   }
 }
