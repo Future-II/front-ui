@@ -2,6 +2,9 @@ export type WorkflowStep = 'select' | 'verify' | 'send' | 'result';
 export type ProgressStage = 'withdraw' | 'verify' | 'send';
 
 export interface Report {
+  condition: string;
+  propertyType: string;
+  reference: any;
   id: number;
   reportName: string;
   reportType: 'XLSX' | 'PDF' | 'CSV' | string;

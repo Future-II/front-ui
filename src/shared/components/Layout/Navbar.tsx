@@ -44,15 +44,15 @@ const Navbar: React.FC<NavbarProps> = ({
             {/* Language Toggle */}
             <LanguageToggle />
             
-            {/* Current Language Display (for debugging) */}
+            {/* Current Language Display (for debugging)
             <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
               {currentLanguage.toUpperCase()} ({currentIsRTL ? 'RTL' : 'LTR'})
-            </div>
+            </div> */}
             
-            {/* Sidebar Position Indicator */}
+            {/* Sidebar Position Indicator
             <div className="text-xs text-gray-500 bg-blue-100 px-2 py-1 rounded">
               Sidebar: {currentIsRTL ? 'Right' : 'Left'}
-            </div>
+            </div> */}
             
             {/* Notifications */}
             <button className="text-gray-500 hover:text-gray-700 transition-colors duration-200">

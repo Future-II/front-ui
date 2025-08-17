@@ -3,10 +3,10 @@ import type { WorkflowStep } from "../components/types";
 
 const Stepper: React.FC<{ current: WorkflowStep }> = ({ current }) => {
   const steps: Array<{ key: WorkflowStep; label: string; n: number }> = [
-    { key: "select", label: "Select reports", n: 1 },
-    { key: "verify", label: "Data verification", n: 2 },
-    { key: "send", label: "Send reports", n: 3 },
-    { key: "result", label: "The result", n: 4 },
+    { key: "select", label: "اختيار التقارير", n: 1 },
+    { key: "verify", label: "التحقق من البيانات", n: 2 },
+    { key: "send", label: "إرسال التقارير", n: 3 },
+    { key: "result", label: "النتيجة", n: 4 },
   ];
   const idx = steps.findIndex((s) => s.key === current);
 
@@ -32,12 +32,22 @@ const Stepper: React.FC<{ current: WorkflowStep }> = ({ current }) => {
                   >
                     {s.n}
                   </div>
-                  <div className={["mt-2 text-sm", isActive ? "text-blue-700 font-medium" : "text-gray-600"].join(" ")}>
+                  <div
+                    className={[
+                      "mt-2 text-sm",
+                      isActive ? "text-blue-700 font-medium" : "text-gray-600",
+                    ].join(" ")}
+                  >
                     {s.label}
                   </div>
                 </div>
                 {i < steps.length - 1 && (
-                  <div className={["flex-1 h-[2px] mx-3", i < idx ? "bg-blue-200" : "bg-gray-200"].join(" ")} />
+                  <div
+                    className={[
+                      "flex-1 h-[2px] mx-3",
+                      i < idx ? "bg-blue-200" : "bg-gray-200",
+                    ].join(" ")}
+                  />
                 )}
               </React.Fragment>
             );

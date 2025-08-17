@@ -3,27 +3,58 @@ import { AlertTriangle, Calendar, Check, FileText, MapPin } from 'lucide-react';
 import type { Report } from './types';
 
 export const reportData: Report[] = [
-  { id: 1, reportName: 'بيانات معدات الرياض', reportType: 'XLSX', source: 'نظام المعدات', size: '1.6 MB', date: '15/05/2023', status: 'مكتمل', equipmentType: 'شاحنة نقالة', location: 'الرياض', referenceNo: '20230419-1', quantity: '1' },
-  { id: 2, reportName: 'قائمة معدات الرياض',  reportType: 'PDF',  source: 'نظام المعدات', size: '0.9 MB', date: '12/05/2023', status: 'مكتمل', equipmentType: 'آلية متحركة', location: 'الرياض', referenceNo: '20230429-1', quantity: '1' },
-  { id: 3, reportName: 'تقرير معدات جدة',    reportType: 'CSV',  source: 'نظام المعدات', size: '0.7 MB', date: '10/05/2023', status: 'مكتمل', equipmentType: 'حفارة',       location: 'جدة',   referenceNo: '20230413-1', quantity: '1' },
-  { id: 4, reportName: 'بيانات معدات لوجي',  reportType: 'XLSX', source: 'نظام المعدات', size: '1.2 MB', date: '08/05/2023', status: 'مكتمل', equipmentType: 'شاحنة نقالة', location: 'لوجي',  referenceNo: '20230517-1', quantity: '1' },
-  { id: 5, reportName: 'تقرير معدات الدمام', reportType: 'XLSX', source: 'نظام المعدات', size: '0.8 MB', date: '05/05/2023', status: 'مكتمل', equipmentType: 'آلية متحركة', location: 'الدمام', referenceNo: '20230428-1', quantity: '1' },
-  { id: 6, reportName: 'تقرير معدات الدمام', reportType: 'XLSX', source: 'نظام المعدات', size: '0.8 MB', date: '01/05/2023', status: 'مكتمل', equipmentType: 'آلية متحركة', location: 'الدمام', referenceNo: '20230428-1', quantity: '1' },
-  { id: 7, reportName: 'بيانات معدات الرياض', reportType: 'XLSX', source: 'نظام المعدات', size: '6.3 MB', date: '28/04/2023', status: 'مكتمل', equipmentType: 'شاحنة نقالة', location: 'الرياض', referenceNo: '20230418-1', quantity: '1' },
-  { id: 8, reportName: 'بيانات معدات الرياض', reportType: 'XLSX', source: 'نظام المعدات', size: '5.2 MB', date: '25/04/2023', status: 'مكتمل', equipmentType: 'شاحنة نقالة', location: 'الرياض', referenceNo: '20230415-1', quantity: '1' }
+  {
+    id: 1, reportName: 'بيانات معدات الرياض', reportType: 'XLSX', source: 'نظام المعدات', size: '1.6 MB', date: '15/05/2023', status: 'مكتمل', equipmentType: 'شاحنة نقالة', location: 'الرياض', referenceNo: '20230419-1', quantity: '1',
+    condition: '',
+    propertyType: '',
+    reference: undefined
+  },
+  {
+    id: 2, reportName: 'قائمة معدات الرياض', reportType: 'PDF', source: 'نظام المعدات', size: '0.9 MB', date: '12/05/2023', status: 'مكتمل', equipmentType: 'آلية متحركة', location: 'الرياض', referenceNo: '20230429-1', quantity: '1',
+    condition: '',
+    propertyType: '',
+    reference: undefined
+  },
+  {
+    id: 3, reportName: 'تقرير معدات جدة', reportType: 'CSV', source: 'نظام المعدات', size: '0.7 MB', date: '10/05/2023', status: 'مكتمل', equipmentType: 'حفارة', location: 'جدة', referenceNo: '20230413-1', quantity: '1',
+    condition: '',
+    propertyType: '',
+    reference: undefined
+  },
+  {
+    id: 4, reportName: 'بيانات معدات لوجي', reportType: 'XLSX', source: 'نظام المعدات', size: '1.2 MB', date: '08/05/2023', status: 'مكتمل', equipmentType: 'شاحنة نقالة', location: 'لوجي', referenceNo: '20230517-1', quantity: '1',
+    condition: '',
+    propertyType: '',
+    reference: undefined
+  },
+  {
+    id: 5, reportName: 'تقرير معدات الدمام', reportType: 'XLSX', source: 'نظام المعدات', size: '0.8 MB', date: '05/05/2023', status: 'مكتمل', equipmentType: 'آلية متحركة', location: 'الدمام', referenceNo: '20230428-1', quantity: '1',
+    condition: '',
+    propertyType: '',
+    reference: undefined
+  },
+  {
+    id: 6, reportName: 'تقرير معدات الدمام', reportType: 'XLSX', source: 'نظام المعدات', size: '0.8 MB', date: '01/05/2023', status: 'مكتمل', equipmentType: 'آلية متحركة', location: 'الدمام', referenceNo: '20230428-1', quantity: '1',
+    condition: '',
+    propertyType: '',
+    reference: undefined
+  },
+  {
+    id: 7, reportName: 'بيانات معدات الرياض', reportType: 'XLSX', source: 'نظام المعدات', size: '6.3 MB', date: '28/04/2023', status: 'مكتمل', equipmentType: 'شاحنة نقالة', location: 'الرياض', referenceNo: '20230418-1', quantity: '1',
+    condition: '',
+    propertyType: '',
+    reference: undefined
+  },
+  {
+    id: 8, reportName: 'بيانات معدات الرياض', reportType: 'XLSX', source: 'نظام المعدات', size: '5.2 MB', date: '25/04/2023', status: 'مكتمل', equipmentType: 'شاحنة نقالة', location: 'الرياض', referenceNo: '20230415-1', quantity: '1',
+    condition: '',
+    propertyType: '',
+    reference: undefined
+  }
 ];
 
 // Column defs matching Screenshot 2 UI precisely
 export const columns = [
-  // // bulk checkbox
-  // {
-  //   header: (
-  //     <input type="checkbox" className="h-4 w-4 rounded border-gray-300" aria-label="Select all" />
-  //   ),
-  //   accessor: "__select_all",
-  //   className: "w-10",
-  //   render: () => <input type="checkbox" className="h-4 w-4 rounded border-gray-300" />,
-  // },
 
   // ID
   {
