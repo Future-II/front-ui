@@ -17,6 +17,31 @@ export default function TicketsTable({
 }: TicketsTableProps) {
   const { t } = useTranslation();
 
+  const getPriorityClass = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "bg-red-100 text-red-800";
+      case "medium":
+        return "bg-amber-100 text-amber-800";
+      case "low":
+      default:
+        return "bg-green-100 text-green-800";
+    }
+  };
+
+  const getStatusClass = (status: string) => {
+    switch (status) {
+      case "open":
+        return "bg-blue-100 text-blue-800";
+      case "in-progress":
+        return "bg-amber-100 text-amber-800";
+      case "resolved":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
   return (
     <div className="w-full overflow-x-auto">
       <table className="w-full table-auto min-w-0 divide-y divide-gray-200">
@@ -47,73 +72,78 @@ export default function TicketsTable({
         <tbody className="bg-white divide-y divide-gray-200">
           {filteredTickets.map((ticket) => (
             <tr key={ticket.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4">
-                <div className="text-sm text-gray-500">#{ticket.id}</div>
-              </td>
+              {/* Ticket ID */}
+              <td className="px-6 py-4 text-sm text-gray-500">#{ticket.id}</td>
+
+              {/* Subject & First Message */}
               <td className="px-6 py-4">
                 <div className="flex flex-col">
-                  <div className="text-sm font-medium text-gray-900">
-                    {ticket.subject}
-                  </div>
+                  <div className="text-sm font-medium text-gray-900">{ticket.subject}</div>
                   <div className="text-xs text-gray-400 mt-1 truncate max-w-sm">
-                    {ticket.messages && ticket.messages.length > 0
+                    {ticket.messages?.length
                       ? ticket.messages[0].message
                       : t("common.noData", "لا يوجد وصف")}
                   </div>
                 </div>
               </td>
+
+              {/* Company & Sender */}
               <td className="px-6 py-4">
                 <div className="flex flex-col">
                   <div className="text-sm font-medium text-gray-900">
-                    {ticket.company}
+                    {ticket.company ?? t("common.companyUnknown", "غير معروف")}
                   </div>
                   <div className="text-xs text-gray-400 mt-1">
-                    {ticket.messages && ticket.messages.length > 0
+                    {ticket.messages?.length
                       ? ticket.messages[0].sender
                       : t("common.notAssigned", "غير محدد")}
                   </div>
                 </div>
               </td>
+
+              {/* Priority */}
               <td className="px-6 py-4">
                 <span
-                  className={`px-2 py-1 text-xs rounded-full ${ticket.priority === t("support.newTicket.priorityHigh", "عالي")
-                      ? "bg-red-100 text-red-800"
-                      : ticket.priority === t("support.newTicket.priorityMedium", "متوسط")
-                        ? "bg-amber-100 text-amber-800"
-                        : "bg-green-100 text-green-800"
-                    }`}
+                  className={`inline-flex justify-center whitespace-nowrap px-3 py-0.5 text-xs rounded-full ${getPriorityClass(
+                    ticket.priority
+                  )}`}
                 >
-                  {ticket.priority}
+                  {t(`ticket.priority.${ticket.priority}`)}
                 </span>
               </td>
+
+              {/* Status */}
               <td className="px-6 py-4">
                 <span
-                  className={`px-2 py-1 text-xs rounded-full ${ticket.status === t("dashboard.ticketStatus.open", "مفتوح")
-                      ? "bg-blue-100 text-blue-800"
-                      : ticket.status === t("dashboard.ticketStatus.inProgress", "قيد المعالجة")
-                        ? "bg-amber-100 text-amber-800"
-                        : ticket.status === t("dashboard.ticketStatus.closed", "مغلق")
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
-                    }`}
+                  className={`inline-flex justify-center whitespace-nowrap px-3 py-0.5 text-xs rounded-full ${getStatusClass(
+                    ticket.status
+                  )}`}
                 >
-                  {ticket.status}
+                  {t(`ticket.status.${ticket.status.replace("-p", "P")}`)}
                 </span>
               </td>
-              <td className="px-6 py-4">
-                <div className="text-sm text-gray-500">
-                  {ticket.assignedTo || t("common.notAssigned", "غير معين")}
-                </div>
+
+              {/* Assigned To */}
+              <td className="px-6 py-4 text-sm text-gray-500">
+                {ticket.assignedTo || t("common.notAssigned", "غير معين")}
               </td>
+
+              {/* Created At */}
               <td className="px-6 py-4 text-sm text-gray-500">
                 {formatDateTime(ticket.createdAt)}
               </td>
+
+              {/* Updated At */}
               <td className="px-6 py-4 text-sm text-gray-500">
                 {formatDateTime(ticket.updatedAt)}
               </td>
+
+              {/* Replies Count */}
               <td className="px-6 py-4 text-sm text-gray-500 text-center">
-                {ticket.messages ? ticket.messages.length : 0}
+                {ticket.messages?.length ?? 0}
               </td>
+
+              {/* Actions */}
               <td className="px-6 py-4">
                 <div className="flex items-center space-x-3 space-x-reverse">
                   <button
@@ -122,7 +152,7 @@ export default function TicketsTable({
                   >
                     {t("support.recentTickets.viewDetails", "عرض التفاصيل")}
                   </button>
-                  {ticket.status === t("dashboard.ticketStatus.closed", "مغلق") && (
+                  {ticket.status === "resolved" && (
                     <CheckSquare size={20} className="mr-1 text-green-600" />
                   )}
                   <button

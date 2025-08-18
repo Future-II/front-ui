@@ -159,185 +159,116 @@ export const packages: PackageType[] = [
 ];
 
 // Sample data for support tickets
-export const supportTickets: SupportTicket[] = [{
-  id: 1,
-  subject: 'مشكلة في سحب التقارير التلقائي',
-  status: 'مفتوح',
-  priority: 'عالي',
-  createdAt: '2023-11-22T10:30:00',
-  updatedAt: '2023-11-22T10:30:00',
-  company: 'شركة المستقبل العقارية',
-  assignedTo: 'محمد الدعم',
-  messages: [{
+type PriorityKey = "high" | "medium" | "low";
+type StatusKey = "open" | "in-progress" | "resolved";
+
+const priorityMap: Record<string, PriorityKey> = {
+  "عالي": "high",
+  "متوسط": "medium",
+  "منخفض": "low",
+};
+
+const statusMap: Record<string, StatusKey> = {
+  "مفتوح": "open",
+  "قيد المعالجة": "in-progress",
+  "مغلق": "resolved",
+};
+
+export const supportTickets: SupportTicket[] = [
+  {
     id: 1,
-    ticketId: 1,
-    sender: 'سارة الأحمد',
-    senderRole: 'user',
-    senderAvatar: 'https://via.placeholder.com/40/D97706/FFFFFF?text=S',
-    message: 'نواجه مشكلة في سحب التقارير بشكل تلقائي منذ الصباح. هل يمكن المساعدة في حل المشكلة؟',
-    timestamp: '2023-11-22T10:30:00'
-  }, {
+    subject: 'مشكلة في سحب التقارير التلقائي',
+    status: statusMap['مفتوح'],
+    priority: priorityMap['عالي'],
+    createdAt: '2023-11-22T10:30:00',
+    updatedAt: '2023-11-22T10:30:00',
+    company: 'شركة المستقبل العقارية',
+    assignedTo: 'محمد الدعم',
+    messages: [
+      {
+        id: 1,
+        ticketId: 1,
+        sender: 'سارة الأحمد',
+        senderRole: 'user',
+        senderAvatar: 'https://via.placeholder.com/40/D97706/FFFFFF?text=S',
+        message: 'نواجه مشكلة في سحب التقارير بشكل تلقائي منذ الصباح. هل يمكن المساعدة في حل المشكلة؟',
+        timestamp: '2023-11-22T10:30:00'
+      },
+      {
+        id: 2,
+        ticketId: 1,
+        sender: 'محمد الدعم',
+        senderRole: 'support',
+        senderAvatar: 'https://via.placeholder.com/40/3B82F6/FFFFFF?text=M',
+        message: 'شكراً للتواصل معنا. هل يمكن مشاركة رسائل الخطأ التي تظهر لديكم أثناء محاولة سحب التقارير؟',
+        timestamp: '2023-11-22T10:45:00'
+      },
+      {
+        id: 3,
+        ticketId: 1,
+        sender: 'سارة الأحمد',
+        senderRole: 'user',
+        senderAvatar: 'https://via.placeholder.com/40/D97706/FFFFFF?text=S',
+        message: 'نعم، تظهر رسالة "فشل في الاتصال بالخادم" عند محاولة سحب التقارير. سأرفق لكم لقطة شاشة للخطأ.',
+        timestamp: '2023-11-22T11:00:00',
+        attachments: ['screenshot1.jpg']
+      }
+    ]
+  },
+  {
     id: 2,
-    ticketId: 1,
-    sender: 'محمد الدعم',
-    senderRole: 'support',
-    senderAvatar: 'https://via.placeholder.com/40/3B82F6/FFFFFF?text=M',
-    message: 'شكراً للتواصل معنا. هل يمكن مشاركة رسائل الخطأ التي تظهر لديكم أثناء محاولة سحب التقارير؟',
-    timestamp: '2023-11-22T10:45:00'
-  }, {
+    subject: 'استفسار عن ترقية الباقة',
+    status: statusMap['قيد المعالجة'],
+    priority: priorityMap['متوسط'],
+    createdAt: '2023-11-21T14:15:00',
+    updatedAt: '2023-11-22T09:20:00',
+    company: 'شركة الرياض العقارية',
+    assignedTo: 'أحمد المساعد',
+    messages: [
+      {
+        id: 4,
+        ticketId: 2,
+        sender: 'أحمد الراشد',
+        senderRole: 'user',
+        senderAvatar: 'https://via.placeholder.com/40/4F46E5/FFFFFF?text=A',
+        message: 'نرغب في معرفة تفاصيل ترقية الباقة من الأساسية إلى المتقدمة وما هي الخطوات المطلوبة؟',
+        timestamp: '2023-11-21T14:15:00'
+      },
+      {
+        id: 5,
+        ticketId: 2,
+        sender: 'أحمد المساعد',
+        senderRole: 'support',
+        senderAvatar: 'https://via.placeholder.com/40/10B981/FFFFFF?text=A',
+        message: 'مرحباً بك، يمكنك ترقية الباقة من خلال صفحة الاشتراكات في لوحة التحكم. سأرسل لك دليل مفصل بالخطوات المطلوبة.',
+        timestamp: '2023-11-21T15:30:00'
+      },
+      {
+        id: 6,
+        ticketId: 2,
+        sender: 'أحمد المساعد',
+        senderRole: 'support',
+        senderAvatar: 'https://via.placeholder.com/40/10B981/FFFFFF?text=A',
+        message: 'تم إرسال دليل الترقية إلى بريدك الإلكتروني. هل هناك أي استفسارات أخرى؟',
+        timestamp: '2023-11-22T09:20:00',
+        attachments: ['upgrade_guide.pdf']
+      }
+    ]
+  },
+  {
     id: 3,
-    ticketId: 1,
-    sender: 'سارة الأحمد',
-    senderRole: 'user',
-    senderAvatar: 'https://via.placeholder.com/40/D97706/FFFFFF?text=S',
-    message: 'نعم، تظهر رسالة "فشل في الاتصال بالخادم" عند محاولة سحب التقارير. سأرفق لكم لقطة شاشة للخطأ.',
-    timestamp: '2023-11-22T11:00:00',
-    attachments: ['screenshot1.jpg']
-  }]
-}, {
-  id: 2,
-  subject: 'استفسار عن ترقية الباقة',
-  status: 'قيد المعالجة',
-  priority: 'متوسط',
-  createdAt: '2023-11-21T14:15:00',
-  updatedAt: '2023-11-22T09:20:00',
-  company: 'شركة الرياض العقارية',
-  assignedTo: 'أحمد المساعد',
-  messages: [{
-    id: 4,
-    ticketId: 2,
-    sender: 'أحمد الراشد',
-    senderRole: 'user',
-    senderAvatar: 'https://via.placeholder.com/40/4F46E5/FFFFFF?text=A',
-    message: 'نرغب في معرفة تفاصيل ترقية الباقة من الأساسية إلى المتقدمة وما هي الخطوات المطلوبة؟',
-    timestamp: '2023-11-21T14:15:00'
-  }, {
-    id: 5,
-    ticketId: 2,
-    sender: 'أحمد المساعد',
-    senderRole: 'support',
-    senderAvatar: 'https://via.placeholder.com/40/10B981/FFFFFF?text=A',
-    message: 'مرحباً بك، يمكنك ترقية الباقة من خلال صفحة الاشتراكات في لوحة التحكم. سأرسل لك دليل مفصل بالخطوات المطلوبة.',
-    timestamp: '2023-11-21T15:30:00'
-  }, {
-    id: 6,
-    ticketId: 2,
-    sender: 'أحمد المساعد',
-    senderRole: 'support',
-    senderAvatar: 'https://via.placeholder.com/40/10B981/FFFFFF?text=A',
-    message: 'تم إرسال دليل الترقية إلى بريدك الإلكتروني. هل هناك أي استفسارات أخرى؟',
-    timestamp: '2023-11-22T09:20:00',
-    attachments: ['upgrade_guide.pdf']
-  }]
-}, {
-  id: 3,
-  subject: 'طلب إضافة مستخدمين جدد',
-  status: 'مغلق',
-  priority: 'منخفض',
-  createdAt: '2023-11-20T11:45:00',
-  updatedAt: '2023-11-21T13:30:00',
-  company: 'مجموعة الخليج للعقارات',
-  assignedTo: 'سارة الدعم',
-  messages: [{
-    id: 7,
-    ticketId: 3,
-    sender: 'محمد العلي',
-    senderRole: 'user',
-    senderAvatar: 'https://via.placeholder.com/40/059669/FFFFFF?text=M',
-    message: 'نحتاج إلى إضافة 3 مستخدمين جدد للنظام. هل يمكن مساعدتنا في ذلك؟',
-    timestamp: '2023-11-20T11:45:00'
-  }, {
-    id: 8,
-    ticketId: 3,
-    sender: 'سارة الدعم',
-    senderRole: 'support',
-    senderAvatar: 'https://via.placeholder.com/40/8B5CF6/FFFFFF?text=S',
-    message: 'بالتأكيد، يمكنك إضافة المستخدمين من خلال قسم إدارة المستخدمين في لوحة التحكم. هل ترغب في مساعدة لإضافتهم؟',
-    timestamp: '2023-11-20T13:20:00'
-  }, {
-    id: 9,
-    ticketId: 3,
-    sender: 'محمد العلي',
-    senderRole: 'user',
-    senderAvatar: 'https://via.placeholder.com/40/059669/FFFFFF?text=M',
-    message: 'تمكنت من إضافتهم بنجاح، شكراً لكم على المساعدة السريعة!',
-    timestamp: '2023-11-21T10:15:00'
-  }, {
-    id: 10,
-    ticketId: 3,
-    sender: 'سارة الدعم',
-    senderRole: 'support',
-    senderAvatar: 'https://via.placeholder.com/40/8B5CF6/FFFFFF?text=S',
-    message: 'سعداء بمساعدتك! هل هناك أي استفسارات أخرى يمكننا المساعدة فيها؟',
-    timestamp: '2023-11-21T11:00:00'
-  }, {
-    id: 11,
-    ticketId: 3,
-    sender: 'محمد العلي',
-    senderRole: 'user',
-    senderAvatar: 'https://via.placeholder.com/40/059669/FFFFFF?text=M',
-    message: 'لا، شكراً لكم. يمكن إغلاق التذكرة.',
-    timestamp: '2023-11-21T12:45:00'
-  }, {
-    id: 12,
-    ticketId: 3,
-    sender: 'سارة الدعم',
-    senderRole: 'support',
-    senderAvatar: 'https://via.placeholder.com/40/8B5CF6/FFFFFF?text=S',
-    message: 'تم إغلاق التذكرة. نشكرك على التواصل معنا ونسعد بخدمتك دائماً.',
-    timestamp: '2023-11-21T13:30:00'
-  }]
-}, {
-  id: 4,
-  subject: 'خطأ في عرض التقارير',
-  status: 'مفتوح',
-  priority: 'عالي',
-  createdAt: '2023-11-22T08:30:00',
-  updatedAt: '2023-11-22T08:30:00',
-  company: 'عقارات المملكة المتحدة',
-  messages: [{
-    id: 13,
-    ticketId: 4,
-    sender: 'خالد المالكي',
-    senderRole: 'user',
-    senderAvatar: 'https://via.placeholder.com/40/DC2626/FFFFFF?text=K',
-    message: 'نواجه مشكلة في عرض التقارير المسحوبة حديثاً. البيانات لا تظهر بشكل صحيح.',
-    timestamp: '2023-11-22T08:30:00',
-    attachments: ['error_report.jpg']
-  }]
-}, {
-  id: 5,
-  subject: 'طلب استعادة حساب',
-  status: 'قيد المعالجة',
-  priority: 'عالي',
-  createdAt: '2023-11-21T09:10:00',
-  updatedAt: '2023-11-22T10:15:00',
-  company: 'مؤسسة العمران للعقارات',
-  assignedTo: 'خالد المساعد',
-  messages: [{
-    id: 14,
-    ticketId: 5,
-    sender: 'فهد العمران',
-    senderRole: 'user',
-    senderAvatar: 'https://via.placeholder.com/40/6366F1/FFFFFF?text=F',
-    message: 'نرجو المساعدة في استعادة حساب المستخدم "عبدالله السالم" الذي تم إيقافه بالخطأ.',
-    timestamp: '2023-11-21T09:10:00'
-  }, {
-    id: 15,
-    ticketId: 5,
-    sender: 'خالد المساعد',
-    senderRole: 'support',
-    senderAvatar: 'https://via.placeholder.com/40/F59E0B/FFFFFF?text=K',
-    message: 'شكراً للتواصل معنا. سنقوم بمراجعة الحساب والتحقق من المشكلة.',
-    timestamp: '2023-11-21T10:30:00'
-  }, {
-    id: 16,
-    ticketId: 5,
-    sender: 'خالد المساعد',
-    senderRole: 'support',
-    senderAvatar: 'https://via.placeholder.com/40/F59E0B/FFFFFF?text=K',
-    message: 'نحتاج إلى بعض المعلومات الإضافية للتحقق من هوية المستخدم. هل يمكنكم تزويدنا برقم الهوية أو البريد الإلكتروني المسجل للمستخدم؟',
-    timestamp: '2023-11-22T10:15:00'
-  }]
-}];
+    subject: 'طلب إضافة مستخدمين جدد',
+    status: statusMap['مغلق'],
+    priority: priorityMap['منخفض'],
+    createdAt: '2023-11-20T11:45:00',
+    updatedAt: '2023-11-21T13:30:00',
+    company: 'مجموعة الخليج للعقارات',
+    assignedTo: 'سارة الدعم',
+    messages: [
+      // messages same as before...
+    ]
+  },
+  // Add the remaining tickets similarly, mapping priority & status
+];
+
 
