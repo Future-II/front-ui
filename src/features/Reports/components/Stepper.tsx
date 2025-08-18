@@ -1,13 +1,15 @@
 import React from "react";
+import { t } from "i18next";
 import type { WorkflowStep } from "../components/types";
 
 const Stepper: React.FC<{ current: WorkflowStep }> = ({ current }) => {
   const steps: Array<{ key: WorkflowStep; label: string; n: number }> = [
-    { key: "select", label: "اختيار التقارير", n: 1 },
-    { key: "verify", label: "التحقق من البيانات", n: 2 },
-    { key: "send", label: "إرسال التقارير", n: 3 },
-    { key: "result", label: "النتيجة", n: 4 },
+    { key: "select", label: t("mekyas.stepper.select"), n: 1 },
+    { key: "verify", label: t("mekyas.stepper.verify"), n: 2 },
+    { key: "send", label: t("mekyas.stepper.send"), n: 3 },
+    { key: "result", label: t("mekyas.stepper.result"), n: 4 },
   ];
+
   const idx = steps.findIndex((s) => s.key === current);
 
   return (

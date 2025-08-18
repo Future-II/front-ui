@@ -443,11 +443,13 @@
     "price": "السعر",
     "filter": "فلتر",
     "actions": "إجراءات",
+    "username": "اسم المستخدم",
     "status": "الحالة",
     "date": "التاريخ",
     "name": "الاسم",
     "email": "البريد الإلكتروني",
     "phone": "الهاتف",
+    "submit": "إرسال",
     "company": "الشركة",
     "role": "الدور",
     "active": "نشط",
@@ -666,5 +668,213 @@
       "close": "إغلاق"
     },
     "companyUnknown": "غير معروف"
+  },
+  "form": {
+    "login": {
+      "title": "تسجيل الدخول",
+      "subtitle": "الرجاء تسجيل الدخول باستخدام حساب مكاياس للوصول إلى تقارير",
+      "footer": "هذا النظام محمي ومخصص للمستخدمين الموثوقين فقط.",
+      "testingNoteTitle": "التجربة التجريبية للاختبار:",
+      "testingUsername": "اسم المستخدم",
+      "testingPassword": "كلمة المرور",
+      "verifyingTitle": "التحقق من بياناتك",
+      "verifyingText": "التحقق من بياناتك مع...",
+      "verifyingButton": "الرجاء الانتظار، لا تغلق هذه الصفحة.",
+      "successTitle": "تم تسجيل الدخول بنجاح",
+      "successNote": "تم التحقق من بياناتك مع مكاياس",
+      "redirect": "يتم تحويلك إلى صفحة التقارير"
+    }
+  },
+  "mekyas": {
+    "title": "تقارير العقارات",
+    "subtitle": "إدارة سحب وإرسال تقارير العقارات من نظام الهيئة",
+    "automatic": "تحليل تقارير المنتج التلقائي",
+    "single": "تقارير المنتج المفرد",
+    "pullReport": {
+      "title": "اسحب تقرير منتج واحد",
+      "subtitle": "ابحث عن تقرير منتج معين، قم بإستخراجه، وإرساله إلى نظام الهيئة الموثوق.",
+      "searchTitle": "ابحث عن التقرير",
+      "searchSection": "ابحث عن التقرير",
+      "searchHint": "ابحث عن تقرير لبدء الاستخدام",
+      "selectHint": "ابحث عن التقرير واختره للمتابعة.",
+      "lookupHint": "اختر تقرير للمتابعة",
+      "disabledButton": "اختر تقرير للمتابعة",
+      "referenceNumber": "رقم المرجع",
+      "referencePlaceholder": "أدخل رقم المرجع (مثال: 065428)",
+      "reportName": "اسم التقرير",
+      "reportPlaceholder": "أدخل اسم التقرير أو جزء منه",
+      "site": "الموقع",
+      "sitePlaceholder": "أدخل اسم المدينة أو المنطقة",
+      "propertyType": "نوع العقار",
+      "types": {
+        "all": "جميع الأنواع",
+        "residential": "منتج سكني",
+        "commercial": "مكتب تجاري",
+        "industrial": "محل صناعي",
+        "apartment": "غرفة سكنية",
+        "store": "متجر تجاري",
+        "complex": "مركز تجاري",
+        "agriculture": "الزراعة"
+      },
+      "searchButton": "ابحث عن التقرير",
+      "clearButton": "مسح الحقول",
+      "instructions": "ابحث عن التقرير واختره للمتابعة.",
+      "emptyState": "ابحث عن تقرير لبدء الاستخدام",
+      "selectButton": "اختر تقرير للمتابعة"
+    },
+    "manual": {
+      "title": "تحليل تقارير المنتج يدوي",
+      "subtitle": "تحميل ملفات التقرير من جهازك لإرسالها إلى نظام الهيئة",
+      "uploadExcel": "اسحب Excel هنا أو انقر للتحميل",
+      "uploadPdf": "اسحب الملفات PDF ذات الصلة هنا أو انقر للتحميل",
+      "start": "بدء التحليل والإرسال",
+      "chooseFile": "اختر ملفا"
+    },
+    "stepper": {
+      "select": "اختيار التقارير",
+      "verify": "التحقق من البيانات",
+      "send": "إرسال التقارير",
+      "result": "النتيجة"
+    },
+    "selectStep": {
+      "title": "سحب التقارير التلقائي",
+      "refresh": "تحديث ومقياس",
+      "description": "اختر التقارير التي ترغب في سحبها وإرسالها تلقائياً إلى نظام الهيئة",
+      "lastUpdated": "آخر تحديث",
+      "searchPlaceholder": "البحث في التقارير...",
+      "advancedSearch": "بحث متقدم",
+      "reportName": "اسم التقرير",
+      "reportNamePlaceholder": "ابحث باسم التقرير...",
+      "site": "الموقع",
+      "sitePlaceholder": "ابحث بالموقع...",
+      "propertyType": "نوع العقار",
+      "propertyTypePlaceholder": "ابحث بنوع العقار...",
+      "condition": "الحالة",
+      "conditions": {
+        "all": "جميع الحالات",
+        "complete": "مكتمل",
+        "pending": "قيد الانتظار",
+        "failed": "فشل"
+      },
+      "dateFrom": "من تاريخ",
+      "dateTo": "إلى تاريخ",
+      "clearFilters": "مسح الفلاتر",
+      "selectedCount": "تم اختيار {{count}} تقارير",
+      "continue": "متابعة للتحقق من البيانات"
+    },
+    "sendStep": {
+      "title": "جاري إرسال البيانات",
+      "description": "يرجى الانتظار حتى اكتمال عملية إرسال البيانات إلى نظام الهيئة",
+      "stages": {
+        "withdraw": "جاري سحب البيانات من النظام...",
+        "verify": "جاري التحقق من صحة البيانات...",
+        "send": "جاري إرسال البيانات إلى نظام الهيئة..."
+      },
+      "cancel": "إلغاء العملية"
+    },
+    "resultStep": {
+      "title": "نتيجة العملية",
+      "success": {
+        "title": "تمت العملية بنجاح",
+        "message": "تم إرسال {{count}} تقارير بنجاح إلى نظام الهيئة",
+        "ref": "رقم المرجع: {{ref}}",
+        "date": "تاريخ الإرسال: {{date}}"
+      },
+      "error": {
+        "title": "فشلت العملية",
+        "message": "حدث خطأ أثناء إرسال البيانات، يرجى المحاولة مرة أخرى أو الاتصال بالدعم الفني",
+        "code": "رمز الخطأ: {{code}}",
+        "hint": "يرجى التواصل مع الدعم الفني وإرسال رمز الخطأ للمساعدة"
+      },
+      "back": "العودة للصفحة الرئيسية"
+    }
+  },
+  "noqraReports": {
+    "title": "تقارير نقرة",
+    "subtitle": "إدارة تقارير العقارات من مكاياس",
+    "comingSoonTitle": "قريبا",
+    "comingSoonDescription": "نحن نعمل على ميزة تقارير نقرة حاليا. تابع للتحديثات."
+  },
+  "viewReports": {
+    "title": "عرض التقارير",
+    "subtitle": "تتبع وتتعقب تقارير العقارات من مكاياس",
+    "kpis": {
+      "totalReports": "إجمالي التقارير",
+      "completed": "مكتمل",
+      "errors": "مع أخطاء",
+      "processing": "جاري المعالجة",
+      "totalSize": "الحجم الإجمالي",
+      "totalDownloads": "إجمالي التحميلات",
+      "totalRecords": "إجمالي التسجيلات"
+    },
+    "table": {
+      "title": "تفاصيل التقرير",
+      "searchPlaceholder": "ابحث في التقارير...",
+      "filter": "فلتر",
+      "status": "الحالة",
+      "fileType": "نوع الملف",
+      "reset": "إعادة تعيين",
+      "apply": "تطبيق",
+      "showing": "يعرض {{shown}} من {{total}} تقارير"
+    },
+    "filters": {
+      "allStatuses": "جميع الحالات",
+      "complete": "مكتمل",
+      "processing": "جاري المعالجة",
+      "error": "خطأ",
+      "allTypes": "جميع الأنواع"
+    }
+  },
+  "reportTable": {
+    "reportNumber": "رقم التقرير",
+    "id": "ID",
+    "reportName": "اسم التقرير",
+    "reference": "مرجع",
+    "presentedBy": "مقدم بواسطة",
+    "propertyType": "نوع العقار",
+    "theSite": "الموقع",
+    "area": "المنطقة",
+    "value": "القيمة",
+    "priority": "الأولوية",
+    "theDate": "تاريخ",
+    "theCondition": "الحالة",
+    "reportDetails": "تفاصيل التقرير",
+    "propertyAndLocation": "الموقع والعقار",
+    "requiredAndCompany": "المطلوب والشركة",
+    "timingAndPerformance": "التوقيت والأداء",
+    "statistics": "الإحصائيات",
+    "tracking": "تتبع",
+    "reportStatus": "حالة التقرير",
+    "uploaded": "تم التحميل",
+    "processing": "جاري المعالجة",
+    "minutes": "دقائق",
+    "lastModified": "آخر تعديل",
+    "status": {
+      "Open": "مفتوح",
+      "In Progress": "قيد المعالجة",
+      "Complete": "مكتمل",
+      "Error": "خطأ",
+      "Processing": "جاري المعالجة",
+      "readyToDownload": "جاهز للتحميل"
+    },
+    "fileType": {
+      "PDF": "PDF",
+      "XLSX": "XLSX",
+      "CSV": "CSV",
+      "ZIP": "ZIP"
+    },
+    "downloads": "تحميلات",
+    "records": "تسجيلات",
+    "download": "تحميل",
+    "record": "تسجيل",
+    "recordsCount": "{{count}} تسجيلات",
+    "downloadCount": "{{count}} تحميلات",
+    "actions": {
+      "edit": "تعديل",
+      "close": "إغلاق"
+    },
+    "viewDetails": "عرض التفاصيل",
+    "viewMore": "عرض المزيد",
+    "subjectDescription": "الموضوع والوصف"
   }
 }

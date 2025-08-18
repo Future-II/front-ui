@@ -453,6 +453,7 @@
     "name": "Name",
     "email": "Email",
     "phone": "Phone",
+    "username": "Username",
     "company": "Company",
     "role": "Role",
     "active": "Active",
@@ -461,6 +462,7 @@
     "completed": "Completed",
     "edit": "Edit",
     "delete": "Delete",
+    "submit": "Submit",
     "save": "Save",
     "cancel": "Cancel",
     "close": "Close",
@@ -670,6 +672,214 @@
       "edit": "Edit",
       "close": "Close"
     },
-    "companyUnknown": "Unknown" 
+    "companyUnknown": "Unknown"
+  },
+  "form": {
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Please sign in with your Mekyas account to access reports",
+      "footer": "This system is protected and intended for authorized users only.",
+      "testingNoteTitle": "Experimental data for testing:",
+      "testingUsername": "Username",
+      "testingPassword": "Password",
+      "verifyingTitle": "Verifying your credentials",
+      "verifyingText": "Validating your data with Mekyas...",
+      "verifyingButton": "Please wait, do not close this page.",
+      "successTitle": "Logged in successfully",
+      "successNote": "Your identity has been verified with Mekyas",
+      "redirect": "You will be redirected to the reports page"
+    }
+  },
+  "mekyas": {
+    "title": "Real Estate Reports",
+    "subtitle": "Manage the withdrawal and submission of real estate system reports",
+    "automatic": "Automatic Property Report Extraction",
+    "single": "Single Property Report",
+    "pullReport": {
+      "title": "Pull one property report",
+      "subtitle": "Search for a specific property report, extract it, and submit it to the Authority's system.",
+      "searchSection": "Search for the report",
+      "searchTitle": "Search for the report",
+      "searchHint": "Look up a report to begin",
+      "selectHint": "Find the report and select it to proceed.",
+      "lookupHint": "Select a report to follow up on.",
+      "disabledButton": "Select a report to follow up on.",
+      "referenceNumber": "Reference number",
+      "referencePlaceholder": "Enter the reference number (example: 065428)",
+      "reportName": "Report name",
+      "reportPlaceholder": "Enter the name of the report or part of it.",
+      "site": "The site",
+      "sitePlaceholder": "Enter the name of the city or region",
+      "propertyType": "Property type",
+      "types": {
+        "all": "All types",
+        "residential": "Residential villa",
+        "commercial": "Commercial office",
+        "industrial": "Industrial warehouse",
+        "apartment": "Residential apartment",
+        "store": "Commercial store",
+        "complex": "Investment complex",
+        "agriculture": "Agricultural land"
+      },
+      "searchButton": "Search for the report",
+      "clearButton": "Clear fields",
+      "instructions": "Find the report and select it to proceed.",
+      "emptyState": "Look up a report to begin",
+      "selectButton": "Select a report to follow up on."
+    },
+    "manual": {
+      "title": "Manual Property Report Extraction",
+      "subtitle": "Upload report files from your device to send to the authority system",
+      "uploadExcel": "Drag Excel here or click to upload",
+      "uploadPdf": "Drag related PDFs here or click to upload",
+      "start": "Start extraction & sending",
+      "chooseFile": "Choose File"
+    },
+    "stepper": {
+      "select": "Select Reports",
+      "verify": "Verify Reports",
+      "send": "Send Reports",
+      "result": "Result Reports"
+    },
+    "selectStep": {
+      "title": "Pull Property Reports",
+      "refresh": "Refresh",
+      "description": "Select the reports you want to pull and send to the system",
+      "lastUpdated": "Last Updated",
+      "searchPlaceholder": "Search reports...",
+      "advancedSearch": "Advanced Search",
+      "reportName": "Report name",
+      "reportNamePlaceholder": "Search by report name...",
+      "site": "Site",
+      "sitePlaceholder": "Search by site...",
+      "propertyType": "Property type",
+      "propertyTypePlaceholder": "Search by property type...",
+      "condition": "Condition",
+      "conditions": {
+        "all": "All conditions",
+        "complete": "Complete",
+        "pending": "Pending",
+        "failed": "Failed"
+      },
+      "dateFrom": "From date",
+      "dateTo": "To date",
+      "clearFilters": "Clear filters",
+      "selectedCount": "Selected {{count}} reports",
+      "continue": "Continue to verify data"
+    },
+    "sendStep": {
+      "title": "Sending data",
+      "description": "Please wait until the data is sent to the system",
+      "stages": {
+        "withdraw": "Withdrawing data from the system...",
+        "verify": "Verifying data...",
+        "send": "Sending data to the system..."
+      },
+      "cancel": "Cancel process"
+    },
+    "resultStep": {
+      "title": "Result",
+      "success": {
+        "title": "Success",
+        "message": "{{count}} reports were sent successfully to the system",
+        "ref": "REF: {{ref}}",
+        "date": "Date: {{date}}"
+      },
+      "error": {
+        "title": "Error",
+        "message": "An error occurred while sending the data, please try again or contact technical support",
+        "code": "Error code: {{code}}",
+        "hint": "Please contact technical support and send the error code for assistance"
+      },
+      "back": "Back to Home"
+    }
+  },
+  "noqraReports": {
+    "title": "Noqra Reports",
+    "subtitle": "Manage real estate reports from Mekyas",
+    "comingSoonTitle": "Coming soon",
+    "comingSoonDescription": "We are currently working on the Noqra Reports feature. Stay tuned for updates."
+  },
+  "viewReports": {
+    "title": "View Reports",
+    "subtitle": "Track and monitor real estate reports from Mekyas",
+    "kpis": {
+      "totalReports": "Total reports",
+      "completed": "Completed",
+      "errors": "With errors",
+      "processing": "Processing",
+      "totalSize": "Total size",
+      "totalDownloads": "Total downloads",
+      "totalRecords": "Total records"
+    },
+    "table": {
+      "title": "Report Details",
+      "searchPlaceholder": "Search reports...",
+      "filter": "Filter",
+      "status": "Status",
+      "fileType": "File type",
+      "reset": "Reset",
+      "apply": "Apply",
+      "showing": "Showing {{shown}} of {{total}} reports"
+    },
+    "filters": {
+      "allStatuses": "All statuses",
+      "complete": "Complete",
+      "processing": "Processing",
+      "error": "Error",
+      "allTypes": "All types"
+    }
+  },
+  "reportTable": {
+    "id": "ID",
+    "reportName": "Report Name",
+    "reference": "Reference",
+    "presentedBy": "Presented By",
+    "propertyType": "Property Type",
+    "theSite": "The Site",
+    "area": "Area",
+    "value": "Value",
+    "priority": "Priority",
+    "theCondition": "Condition",
+    "theDate": "The Date",
+    "reportNumber": "Report Number",
+    "reportDetails": "Report Details",
+    "propertyAndLocation": "Property & Location",
+    "requiredAndCompany": "Required & Company",
+    "timingAndPerformance": "Timing & Performance",
+    "statistics": "Statistics",
+    "tracking": "Tracking",
+    "reportStatus": "Report Status",
+    "uploaded": "Uploaded",
+    "processing": "Processing",
+    "minutes": "minutes",
+    "lastModified": "Last Modified",
+    "status": {
+      "Open": "Open",
+      "In Progress": "In Progress",
+      "Complete": "Complete",
+      "Error": "Error",
+      "Processing": "Processing",
+      "readyToDownload": "Ready to download"
+    },
+    "fileType": {
+      "PDF": "PDF",
+      "XLSX": "XLSX",
+      "CSV": "CSV",
+      "ZIP": "ZIP"
+    },
+    "downloads": "Downloads",
+    "records": "Records",
+    "download": "Download",
+    "record": "Record",
+    "recordsCount": "{{count}} records",
+    "downloadCount": "{{count}} downloads",
+    "actions": {
+      "edit": "Edit",
+      "close": "Close"
+    },
+    "viewDetails": "View Details",
+    "viewMore": "View More",
+    "subjectDescription": "Subject and Description"
   }
 }

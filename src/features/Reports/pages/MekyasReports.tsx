@@ -3,30 +3,32 @@ import TabButton from "../components/TabButton";
 import AutomaticPropertyExtraction from "../sections/AutomaticPropertyExtraction";
 import SinglePropertyReport from "../sections/PullPropertyReport";
 import ManualPropertyExtraction from "../sections/ManualPropertyExtraction";
+import { useTranslation } from "react-i18next";
 
 type TabKey = "automatic" | "single" | "manual";
 
 const MekyasReports: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>("automatic");
+  const { t } = useTranslation();
 
   return (
     <div className="w-full">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Real Estate Reports</h1>
-        <p className="text-gray-600">Manage the withdrawal and submission of real estate system reports</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t("mekyas.title")}</h1>
+        <p className="text-gray-600">{t("mekyas.subtitle")}</p>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="border-b border-gray-200">
           <nav className="flex -mb-px">
             <TabButton active={activeTab === "automatic"} onClick={() => setActiveTab("automatic")}>
-              Automatic property report extraction
+              {t("mekyas.automatic")}
             </TabButton>
             <TabButton active={activeTab === "single"} onClick={() => setActiveTab("single")}>
-              Pull one property report
+              {t("mekyas.single")}
             </TabButton>
             <TabButton active={activeTab === "manual"} onClick={() => setActiveTab("manual")}>
-              Manual property report extraction
+              {t("mekyas.manual.title")}
             </TabButton>
           </nav>
         </div>

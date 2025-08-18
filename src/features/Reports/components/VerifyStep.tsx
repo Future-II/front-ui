@@ -120,7 +120,7 @@ const VerifyStep: React.FC<Props> = ({
   );
 };
 
-const Row: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+const Row: React.FC<{ label: string; value: string | number }> = ({ label, value }) => (
   <div className="flex justify-between">
     <span className="text-sm text-gray-500">{label}</span>
     <span className="text-sm font-medium">{value}</span>
