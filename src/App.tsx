@@ -10,7 +10,7 @@ import SupportPage from './features/Support/pages/SupportPage';
 import MekyasLogin from './features/Reports/pages/MekyasLogin';
 import AuthGuard from './shared/components/AuthGuard'; // ⬅️ add this
 import EquipmentReport from './features/Equipment/pages/EquipmentReport';
-
+import ManualPropertyExtraction from './features/Reports/sections/ManualPropertyExtraction';
 export function App() {
   return (
     <Router>
@@ -27,7 +27,7 @@ export function App() {
               </AuthGuard>
             }
           />
-
+          <Route path="/reports/manual" element={<ManualPropertyExtraction/>} />
           <Route path="/reports/view" element={<ViewReports />} />
           <Route path="/reports/noqra" element={<NoqraReports />} />
           <Route path="/dashboard" element={<ManagementDashboard />} />
