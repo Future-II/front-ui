@@ -9,6 +9,7 @@ import UserSettings from './features/Settings/pages/UserSettings';
 import SupportPage from './features/Support/pages/SupportPage';
 import MekyasLogin from './features/Reports/pages/MekyasLogin';
 import AuthGuard from './shared/components/AuthGuard'; // ⬅️ add this
+import EquipmentReport from './features/Equipment/pages/EquipmentReport';
 
 export function App() {
   return (
@@ -35,6 +36,7 @@ export function App() {
 
           {/* Login route */}
           <Route path="/auth/mekyas" element={<MekyasLogin />} />
+          <Route path='/reports/equipment' element={<EquipmentReport/>} />
         </Routes>
       </Layout>
     </Router>
