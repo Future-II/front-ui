@@ -35,7 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       icon: <Home className="h-5 w-5" />
     },
     {
-      name: t('REAL ESTATE') || 'تقارير المعدات',
+      name: t('Real Estate Reports') || 'تقارير المعدات',
       path: '/reports',
       icon: <Building2 className="h-5 w-5" />,
       subItems: [
@@ -43,6 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
           name: t('reports.mekyas') || 'تقارير مقياس',
           path: '/reports/mekyas'
         },
+        
         {
           name: t('reports.view') || 'عرض التقارير',
           path: '/reports/view'

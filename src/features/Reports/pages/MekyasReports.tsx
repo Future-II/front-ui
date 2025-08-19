@@ -2,10 +2,9 @@ import React, { useState } from "react";
 import TabButton from "../components/TabButton";
 import AutomaticPropertyExtraction from "../sections/AutomaticPropertyExtraction";
 import SinglePropertyReport from "../sections/PullPropertyReport";
-import ManualPropertyExtraction from "../sections/ManualPropertyExtraction";
 import { useTranslation } from "react-i18next";
 
-type TabKey = "automatic" | "single" | "manual";
+type TabKey = "automatic" | "single";
 
 const MekyasReports: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>("automatic");
@@ -21,14 +20,17 @@ const MekyasReports: React.FC = () => {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="border-b border-gray-200">
           <nav className="flex -mb-px">
-            <TabButton active={activeTab === "automatic"} onClick={() => setActiveTab("automatic")}>
+            <TabButton
+              active={activeTab === "automatic"}
+              onClick={() => setActiveTab("automatic")}
+            >
               {t("mekyas.automatic")}
             </TabButton>
-            <TabButton active={activeTab === "single"} onClick={() => setActiveTab("single")}>
+            <TabButton
+              active={activeTab === "single"}
+              onClick={() => setActiveTab("single")}
+            >
               {t("mekyas.single")}
-            </TabButton>
-            <TabButton active={activeTab === "manual"} onClick={() => setActiveTab("manual")}>
-              {t("mekyas.manual.title")}
             </TabButton>
           </nav>
         </div>
@@ -36,7 +38,6 @@ const MekyasReports: React.FC = () => {
         <div className="p-6">
           {activeTab === "automatic" && <AutomaticPropertyExtraction />}
           {activeTab === "single" && <SinglePropertyReport />}
-          {activeTab === "manual" && <ManualPropertyExtraction />}
         </div>
       </div>
     </div>
