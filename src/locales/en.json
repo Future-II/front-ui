@@ -245,6 +245,7 @@
   },
   "equipment": {
     "title": "Real Estate Reports Management System",
+    "tab1": "Pull and Send Property Report",
     "steps": {
       "1": {
         "label": "Pull Property Report (Excel/PDF)"
