@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BarChart, FileText, Settings, Home, ChevronRight, ChevronDown, HelpCircle } from 'lucide-react';
+import { BarChart, FileText, Settings, Home, ChevronRight, ChevronDown, HelpCircle,Building2  } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../../hooks/useLanguage';
 
@@ -18,9 +18,7 @@ interface MenuItem {
   }[];
 }
 
-const Sidebar: React.FC<SidebarProps> = ({
-  isOpen
-}) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
   const location = useLocation();
@@ -37,9 +35,9 @@ const Sidebar: React.FC<SidebarProps> = ({
       icon: <Home className="h-5 w-5" />
     },
     {
-      name: t('reports.title') || 'تقارير المعدات',
+      name: t('REAL ESTATE') || 'تقارير المعدات',
       path: '/reports',
-      icon: <FileText className="h-5 w-5" />,
+      icon: <Building2 className="h-5 w-5" />,
       subItems: [
         {
           name: t('reports.mekyas') || 'تقارير مقياس',
@@ -53,6 +51,15 @@ const Sidebar: React.FC<SidebarProps> = ({
           name: t('reports.noqra') || 'تقارير نقرة',
           path: '/reports/noqra'
         }
+      ]
+    },
+    
+    {
+      name: t('reports.title') || 'تقارير المعدات',
+      path: '',
+      icon: <FileText className="h-5 w-5" />,
+      subItems: [
+        
       ]
     },
     {
@@ -72,13 +79,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   ];
 
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
-
-  const isSubActive = (path: string) => {
-    return location.pathname.startsWith(path);
-  };
+  const isActive = (path: string) => location.pathname === path;
+  const isSubActive = (path: string) => location.pathname.startsWith(path);
 
   const toggleMenu = (path: string) => {
     setExpandedMenus(prev => ({
