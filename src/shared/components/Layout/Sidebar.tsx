@@ -35,7 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       icon: <Home className="h-5 w-5" />
     },
     {
-      name: t('REAL ESTATE') || 'تقارير المعدات',
+      name: t('reports.title') || 'تقارير المعدات',
       path: '/reports',
       icon: <Building2 className="h-5 w-5" />,
       subItems: [
@@ -55,11 +55,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     },
     
     {
-      name: t('reports.title') || 'تقارير المعدات',
+      name: t('equipment.title') || 'تقارير المعدات',
       path: '',
       icon: <FileText className="h-5 w-5" />,
       subItems: [
-        
+        {
+          name: t('equipment.tab1') || 'تقارير المعدات',
+          path: '/reports/equipment'
+        }
       ]
     },
     {

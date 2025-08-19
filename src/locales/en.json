@@ -243,6 +243,36 @@
       "contactSupport": "Contact technical support"
     }
   },
+  "equipment": {
+    "title": "Real Estate Reports Management System",
+    "steps": {
+      "1": {
+        "label": "Pull Property Report (Excel/PDF)"
+      },
+      "2": {
+        "label": "Property Report Data"
+      },
+      "3": {
+        "label": "Property Data"
+      },
+      "4": {
+        "label": "Sending Data"
+      }
+    },
+    "button": "Continue",
+    "upload": {
+      "excel": {
+        "label": "Drag Excel here or click to upload",
+        "button": "Choose Excel",
+        "subLabel": "The file must be in XLSX or XLS format"
+      },
+      "pdf": {
+        "label": "Drag related PDFs here or click to upload",
+        "button": "Choose PDFs",
+        "subLabel": "The file must be in PDF format"
+      }
+    }
+  },
   "dashboard": {
     "title": "Management Dashboard",
     "description": "Manage your system, users and reports",
