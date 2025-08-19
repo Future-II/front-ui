@@ -4,11 +4,10 @@ import SelectStep from "../components/SelectStep";
 import VerifyStep from "../components/VerifyStep";
 import SendStep from "../components/SendStep";
 import ResultStep from "../components/ResultStep";
-import Stepper from "../components/Stepper";            // ✅ use shared Stepper
+import Stepper from "../components/Stepper";            
 import type { ProgressStage, WorkflowStep } from "../components/types";
 
 const AutomaticPropertyExtraction: React.FC = () => {
-  // state local to this section
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [progressStage, setProgressStage] = useState<ProgressStage>("withdraw");
   const [progressPercentage, setProgressPercentage] = useState(0);
@@ -102,7 +101,6 @@ const AutomaticPropertyExtraction: React.FC = () => {
 
   return (
     <>
-      {/* ✅ Shared Stepper, just like ManualPropertyExtraction */}
       <Stepper current={currentStep} />
 
       {(() => {

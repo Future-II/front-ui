@@ -55,18 +55,14 @@ export const reportData: Report[] = [
 
 // Column defs matching Screenshot 2 UI precisely
 export const columns = [
-
-  // ID
   {
-    header: "ID",
+    header: "reportTable.id",
     accessor: "id",
     className: "w-12 tabular-nums text-gray-700",
     render: (v: string | number) => <span className="tabular-nums">{v}</span>,
   },
-
-  // REPORT NAME (file icon + type chip + size line)
   {
-    header: "REPORT NAME",
+    header: "reportTable.reportName",
     accessor: "reportName",
     className: "min-w-[280px]",
     render: (_: string, row: Report) => (
@@ -87,18 +83,14 @@ export const columns = [
       </div>
     ),
   },
-
-  // REFERENCE
   {
-    header: "REFERENCE",
+    header: "reportTable.reference",
     accessor: "referenceNo",
     className: "min-w-[120px] text-gray-700",
     render: (v: string) => <span className="tabular-nums">{v}</span>,
   },
-
-  // PRESENTED BY (two lines)
   {
-    header: "PRESENTED BY",
+    header: "reportTable.presentedBy",
     accessor: "source",
     className: "min-w-[190px]",
     render: (v: string) => (
@@ -108,10 +100,8 @@ export const columns = [
       </div>
     ),
   },
-
-  // PROPERTY TYPE pill
   {
-    header: "PROPERTY TYPE",
+    header: "reportTable.propertyType",
     accessor: "equipmentType",
     className: "min-w-[160px]",
     render: (v: string) => (
@@ -120,10 +110,8 @@ export const columns = [
       </span>
     ),
   },
-
-  // THE SITE (pin + city)
   {
-    header: "THE SITE",
+    header: "reportTable.theSite",
     accessor: "location",
     className: "min-w-[140px]",
     render: (v: string) => (
@@ -133,10 +121,8 @@ export const columns = [
       </div>
     ),
   },
-
-  // AREA (quantity + m²)
   {
-    header: "AREA",
+    header: "reportTable.area",
     accessor: "quantity",
     className: "w-24",
     render: (v: string | number) => (
@@ -145,10 +131,8 @@ export const columns = [
       </div>
     ),
   },
-
-  // VALUE (derived for visuals)
   {
-    header: "VALUE",
+    header: "reportTable.value",
     accessor: "__value",
     className: "min-w-[120px]",
     render: (_: any, row: Report) => {
@@ -162,10 +146,8 @@ export const columns = [
       );
     },
   },
-
-  // PRIORITY (red / yellow / green)
   {
-    header: "PRIORITY",
+    header: "reportTable.priority",
     accessor: "__priority",
     className: "w-28",
     render: (_: any, row: Report) => {
@@ -183,10 +165,8 @@ export const columns = [
       );
     },
   },
-
-  // THE DATE
   {
-    header: "THE DATE",
+    header: "reportTable.theDate",
     accessor: "date",
     className: "min-w-[120px]",
     render: (v: string) => (
@@ -196,10 +176,8 @@ export const columns = [
       </div>
     ),
   },
-
-  // THE CONDITION (status)
   {
-    header: "THE CONDITION",
+    header: "reportTable.theCondition",
     accessor: "status",
     className: "w-36",
     render: (value: string) =>
@@ -214,3 +192,4 @@ export const columns = [
       ),
   },
 ];
+

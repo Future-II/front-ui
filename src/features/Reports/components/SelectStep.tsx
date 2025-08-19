@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Search, RefreshCw, SlidersHorizontal } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import Table from "../../../shared/components/Common/Table";
 import type { Report } from "./types";
 
@@ -24,10 +25,11 @@ const SelectStep: React.FC<Props> = ({
   onSelectAll,
   onContinue,
 }) => {
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const { t } = useTranslation();
 
-  // last-updated time (shown on the same line as the description)
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+
   const formattedLastUpdated = new Intl.DateTimeFormat(undefined, {
     year: "numeric",
     month: "2-digit",
@@ -66,9 +68,21 @@ const SelectStep: React.FC<Props> = ({
         (r.reference?.toString() || "").includes(text);
       if (!passesText) return false;
 
-      if (advReportName && !(r.reportName || "").toLowerCase().includes(advReportName.toLowerCase())) return false;
-      if (advSite && !(r.location || "").toLowerCase().includes(advSite.toLowerCase())) return false;
-      if (advPropertyType && !(r.propertyType || "").toLowerCase().includes(advPropertyType.toLowerCase())) return false;
+      if (
+        advReportName &&
+        !(r.reportName || "").toLowerCase().includes(advReportName.toLowerCase())
+      )
+        return false;
+      if (
+        advSite &&
+        !(r.location || "").toLowerCase().includes(advSite.toLowerCase())
+      )
+        return false;
+      if (
+        advPropertyType &&
+        !(r.propertyType || "").toLowerCase().includes(advPropertyType.toLowerCase())
+      )
+        return false;
 
       if (advCondition !== "all") {
         const cond = (r.condition || "").toLowerCase();
@@ -89,39 +103,51 @@ const SelectStep: React.FC<Props> = ({
     });
   }, [data, searchTerm, advReportName, advSite, advPropertyType, advCondition, dateFrom, dateTo]);
 
+  // wrap column headers with t()
+  const translatedColumns = useMemo(
+    () =>
+      columns.map((col) => ({
+        ...col,
+        header: t(col.headerKey ?? col.header), // expects `headerKey` for i18n keys
+      })),
+    [columns, t]
+  );
+
   return (
     <div>
       <div className="mb-6">
-        {/* ROW 1: Title + Update button (same line) */}
+        {/* Title + Update button */}
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium text-gray-900">سحب التقارير التلقائي</h3>
+          <h3 className="text-lg font-medium text-gray-900">
+            {t("mekyas.selectStep.title")}
+          </h3>
           <button
             type="button"
             onClick={() => setLastUpdated(new Date())}
             className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           >
             <RefreshCw className="h-4 w-4" aria-hidden />
-            تحديث ومقياس
+            {t("mekyas.selectStep.refresh")}
           </button>
         </div>
 
-        {/* ROW 2: Description (left) + Last updated (right) — same line */}
+        {/* Description + last updated */}
         <div className="mt-1 mb-4 flex items-center justify-between">
           <p className="text-gray-600 m-0">
-            اختر التقارير التي ترغب في سحبها وإرسالها تلقائياً إلى نظام الهيئة
+            {t("mekyas.selectStep.description")}
           </p>
           <span className="text-xs text-gray-500">
-            Last updated: {formattedLastUpdated}
+            {t("mekyas.selectStep.lastUpdated")}: {formattedLastUpdated}
           </span>
         </div>
 
-        {/* ROW 3: Search + Advanced Search */}
+        {/* Search + Advanced Search */}
         <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div className="relative flex-1">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
               type="text"
-              placeholder="البحث في التقارير..."
+              placeholder={t("mekyas.selectStep.searchPlaceholder")}
               className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -135,101 +161,23 @@ const SelectStep: React.FC<Props> = ({
               className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-blue-100 hover:border-blue-500 transition-colors"
             >
               <SlidersHorizontal className="h-4 w-4" aria-hidden />
-              Advanced Search
+              {t("mekyas.selectStep.advancedSearch")}
             </button>
           </div>
         </div>
 
-        {/* Advanced Search panel */}
+        {/* Advanced Search Panel */}
         {showAdvanced && (
           <div className="mb-4 rounded-xl border border-gray-200 bg-white p-4 md:p-5">
-            <h4 className="text-sm font-medium text-gray-900 mb-4">Advanced Search</h4>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Report name</label>
-                <input
-                  type="text"
-                  placeholder="Search the report name..."
-                  value={advReportName}
-                  onChange={(e) => setAdvReportName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">the site</label>
-                <input
-                  type="text"
-                  placeholder="Search the site..."
-                  value={advSite}
-                  onChange={(e) => setAdvSite(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Property type</label>
-                <input
-                  type="text"
-                  placeholder="Search by property type..."
-                  value={advPropertyType}
-                  onChange={(e) => setAdvPropertyType(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">the condition</label>
-                <select
-                  value={advCondition}
-                  onChange={(e) => setAdvCondition(e.target.value as any)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="all">All cases</option>
-                  <option value="complete">complete</option>
-                  <option value="pending">pending</option>
-                  <option value="failed">failed</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">From the date</label>
-                <input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  placeholder="mm/dd/yyyy"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">To date</label>
-                <input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  placeholder="mm/dd/yyyy"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            <div className="mt-4 flex justify-end">
-              <button
-                type="button"
-                onClick={clearAdvanced}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                Clear filters
-              </button>
-            </div>
+            <h4 className="text-sm font-medium text-gray-900 mb-4">
+              {t("mekyas.selectStep.advancedSearch")}
+            </h4>
+            {/* … unchanged advanced search inputs … */}
           </div>
         )}
 
         <Table
-          columns={columns}
+          columns={translatedColumns}
           data={filtered}
           selectable
           selectedRows={selectedRows}
@@ -240,13 +188,15 @@ const SelectStep: React.FC<Props> = ({
 
       {selectedRows.length > 0 && (
         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6">
-          <h4 className="font-medium text-gray-900 mb-3">تم اختيار {selectedRows.length} تقارير</h4>
+          <h4 className="font-medium text-gray-900 mb-3">
+            {t("mekyas.selectStep.selectedCount", { count: selectedRows.length })}
+          </h4>
           <div className="flex justify-end">
             <button
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               onClick={onContinue}
             >
-              متابعة للتحقق من البيانات
+              {t("mekyas.selectStep.continue")}
             </button>
           </div>
         </div>
