@@ -23,9 +23,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const { isRTL } = useLanguage();
   const location = useLocation();
   
-  // Track which menus are expanded
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
-    '/reports': true // Default expanded for reports menu
+    '/reports': true 
   });
 
   const menuItems: MenuItem[] = [
@@ -35,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       icon: <Home className="h-5 w-5" />
     },
     {
-      name: t('REAL ESTATE') || 'تقارير المعدات',
+      name: t('reports.title') || 'تقارير المعدات',
       path: '/reports',
       icon: <Building2 className="h-5 w-5" />,
       subItems: [
@@ -60,12 +59,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     
     {
       name: t('equipment.title') || 'تقارير المعدات',
-      path: '',
+      path: '/equipment',
       icon: <FileText className="h-5 w-5" />,
       subItems: [
         {
           name: t('equipment.tab1') || 'تقارير المعدات',
-          path: '/reports/equipment'
+          path: '/equipment/report'
         }
       ]
     },
@@ -87,7 +86,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   ];
 
   const isActive = (path: string) => location.pathname === path;
-  const isSubActive = (path: string) => location.pathname.startsWith(path);
+  const isSubActive = (path: string) => {
+    if(!path) return false;
+    return location.pathname.startsWith(path);
+  }
 
   const toggleMenu = (path: string) => {
     setExpandedMenus(prev => ({

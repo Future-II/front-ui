@@ -244,8 +244,8 @@
     }
   },
   "equipment": {
-    "title": "Real Estate Reports Management System",
-    "tab1": "Pull and Send Property Report",
+    "title": "Equipment Reports",
+    "tab1": "Manual Equipment Report Upload",
     "steps": {
       "1": {
         "label": "Pull Property Report (Excel/PDF)"
@@ -330,7 +330,7 @@
     }
   },
   "reports": {
-    "title": "Equipment Reports",
+    "title": "Real Estate Reports",
     "mekyas": "Mekyas Reports",
     "noqra": "Noqra Reports",
     "view": "View Reports",

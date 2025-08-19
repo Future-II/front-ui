@@ -36,7 +36,7 @@ export function App() {
 
           {/* Login route */}
           <Route path="/auth/mekyas" element={<MekyasLogin />} />
-          <Route path='/reports/equipment' element={<EquipmentReport/>} />
+          <Route path='/equipment/report' element={<EquipmentReport />} />
         </Routes>
       </Layout>
     </Router>
