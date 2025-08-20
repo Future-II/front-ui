@@ -759,8 +759,9 @@
       "selectButton": "Select a report to follow up on."
     },
     "manual": {
-      "title": "Manual Property Report Extraction",
-      "subtitle": "Upload report files from your device to send to the authority system",
+      "title": "Manually submit a report",
+      "subtitle": "Upload the property report files from your device to send them to the Authority’s system.",
+      "subtitle2": "Manually upload and send property reports to the Authority’s system",
       "uploadExcel": "Drag Excel here or click to upload",
       "uploadPdf": "Drag related PDFs here or click to upload",
       "start": "Start extraction & sending",
@@ -771,6 +772,12 @@
       "verify": "Verify Reports",
       "send": "Send Reports",
       "result": "Result Reports"
+    },
+    "stepper2": {
+      "upload": "Upload files",
+      "data": "Data verification",
+      "send": "Send",
+      "result": "The result"
     },
     "selectStep": {
       "title": "Pull Property Reports",

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link,} from "react-router-dom";
+import { Link} from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import UploadBlock from "../components/UploadBlock";
-import Stepper from "../components/Stepper";
+import Stepper2 from "../components/Stepper manual";
 import type { WorkflowStep } from "../components/types";
 
 const ManualPropertyExtraction: React.FC = () => {
@@ -16,11 +16,10 @@ const ManualPropertyExtraction: React.FC = () => {
       <div className="mb-6 flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            {"Manually submit a report"}
+            {t("mekyas.manual.title") || "Manually submit a report"}
           </h1>
           <p className="text-gray-600">
-            {
-              "Manually upload and send property reports to the Authority’s system"}
+            {t("mekyas.manual.subtitle2") || "Manually upload and send property reports to the Authority’s system"}
           </p>
         </div>
 
@@ -40,7 +39,7 @@ const ManualPropertyExtraction: React.FC = () => {
       <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
         <div className="p-6">
           <div className="mb-6 flex justify-center">
-        <Stepper current={currentStep} />
+        <Stepper2 current={currentStep} />
       </div>
           <h3 className="mb-2 text-lg font-semibold text-gray-900">
             {t("mekyas.manual.title") || "Manually submit a report"}
