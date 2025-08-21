@@ -12,7 +12,6 @@ const ManualPropertyExtraction: React.FC = () => {
 
   return (
     <div className="w-full">
-      {/* Top bar: title + back button */}
       <div className="mb-6 flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
@@ -24,7 +23,6 @@ const ManualPropertyExtraction: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* If you prefer router back: onClick={() => navigate(-1)} */}
           <Link
             to="/reports/mekyas"
             className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
@@ -35,7 +33,6 @@ const ManualPropertyExtraction: React.FC = () => {
         </div>
       </div>
 
-      {/* Card wrapper like screenshot */}
       <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
         <div className="p-6">
           <div className="mb-6 flex justify-center">
@@ -74,16 +71,6 @@ const ManualPropertyExtraction: React.FC = () => {
               />
             </div>
           </div>
-
-          {/* Footer actions */}
-          {/* <div className="mt-6 flex justify-end">
-            <button
-              className="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-              disabled
-            >
-              {t("mekyas.manual.start") || "Start"}
-            </button>
-          </div> */}
         </div>
       </div>
     </div>
