@@ -759,7 +759,9 @@
       "uploadExcel": "اسحب Excel هنا أو انقر للتحميل",
       "uploadPdf": "اسحب الملفات PDF ذات الصلة هنا أو انقر للتحميل",
       "start": "بدء التحليل والإرسال",
-      "chooseFile": "اختر ملفا"
+      "chooseFile": "اختر ملفا",
+      "multiFilesHint": "يمكنك تحميل الملفات المتعددة في وقت واحد.",
+      "submit": "إرسال"
     },
     "stepper": {
       "select": "اختيار التقارير",
@@ -913,5 +915,8 @@
     "viewDetails": "عرض التفاصيل",
     "viewMore": "عرض المزيد",
     "subjectDescription": "الموضوع والوصف"
+  },
+  "taqeem": {
+    "loginButton": "تسجيل الدخول"
   }
 }

@@ -6,11 +6,18 @@ export default function UploadBlock({
   accept,
   inputId,
   multiple,
+  type,
+  onFileChange,
 }: {
   label: string;
   accept: string;
   inputId: string;
   multiple?: boolean;
+  type: "excel" | "pdf";
+  onFileChange: (
+    event: React.ChangeEvent<HTMLInputElement>,
+    type: "excel" | "pdf"
+  ) => void;
 }) {
   const { t } = useTranslation();
 
@@ -34,6 +41,7 @@ export default function UploadBlock({
         accept={accept}
         multiple={multiple}
         id={inputId}
+        onChange={(e) => onFileChange(e, type)}
       />
 
       <button

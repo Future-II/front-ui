@@ -765,7 +765,9 @@
       "uploadExcel": "Drag Excel here or click to upload",
       "uploadPdf": "Drag related PDFs here or click to upload",
       "start": "Start extraction & sending",
-      "chooseFile": "Choose File"
+      "chooseFile": "Choose File",
+      "multiFilesHint": "You can upload multiple files at once.",
+      "submit": "Submit"
     },
     "stepper": {
       "select": "Select Reports",
@@ -919,5 +921,8 @@
     "viewDetails": "View Details",
     "viewMore": "View More",
     "subjectDescription": "Subject and Description"
+  },
+  "taqeem": {
+    "loginButton": "Login" 
   }
 }
