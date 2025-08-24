@@ -15,6 +15,7 @@ const ManualPropertyExtraction: React.FC = () => {
   const [excelFile, setExcelFile] = useState<File | null>(null);
   const [pdfFiles, setPdfFiles] = useState<File[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
 
   const handleOpen = () => setIsOpen(true);
   const handleClose = () => setIsOpen(false);
@@ -61,7 +62,7 @@ const ManualPropertyExtraction: React.FC = () => {
             {t("mekyas.manual.title") || "Manually submit a report"}
           </h1>
           <p className="text-gray-600">
-            {t("mekyas.manual.subtitle2") ||
+            {t("mekyas.manual.subtitle") ||
               "Manually upload and send property reports to the Authority’s system"}
           </p>
         </div>
@@ -92,12 +93,14 @@ const ManualPropertyExtraction: React.FC = () => {
                   "Upload the property report files from your device to send them to the Authority’s system."}
               </p>
             </div>
-            <button
-              onClick={handleOpen}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              {t("taqeem.loginButton") || "Login"}
-            </button>
+            {!loggedIn && (
+              <button
+                onClick={handleOpen}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                {t("taqeem.loginButton") || "Login"}
+              </button>
+            )}
           </div>
 
           <div className="mt-6 space-y-5">
@@ -141,7 +144,7 @@ const ManualPropertyExtraction: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-6 flex justify-end">
+          <div className="mt-6 flex gap-2 justify-end">
             <button
               onClick={handleSubmit}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -151,7 +154,7 @@ const ManualPropertyExtraction: React.FC = () => {
           </div>
         </div>
       </div>
-      <LoginModal isOpen={isOpen} onClose={handleClose} />
+      <LoginModal isOpen={isOpen} onClose={handleClose} setIsLoggedIn={setLoggedIn} />
     </div>
   );
 };
