@@ -4,9 +4,10 @@ import { taqeemLogin } from "../api";
 interface LoginModalProps {
     isOpen: boolean;
     onClose: () => void;
+    setIsLoggedIn: (isLoggedIn: boolean) => void;
 }
 
-export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
+export default function LoginModal({ isOpen, onClose, setIsLoggedIn }: LoginModalProps) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [otpRequired, setOtpRequired] = useState(false);
@@ -20,8 +21,8 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
             if (response.status === "OTP_REQUIRED") {
                 setOtpRequired(true);
-            } else if (response.status === "LOGIN_SUCCESS") {
-                alert("Login successful!");
+            } else if (response.status === "SUCCESS") {
+                setIsLoggedIn(true);
                 onClose();
             } else {
                 alert("Login failed");
