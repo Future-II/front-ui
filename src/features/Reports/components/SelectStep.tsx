@@ -57,6 +57,16 @@ const SelectStep: React.FC<Props> = ({
     setDateTo("");
   };
 
+  const handleSendSpecificReports = () => {
+    // Implement send specific reports logic
+    console.log("Send specific reports for selected rows:", selectedRows);
+  };
+
+  const handleDeleteSelectedReports = () => {
+    // Implement delete selected reports logic
+    console.log("Delete selected reports:", selectedRows);
+  };
+
   const filtered = useMemo(() => {
     const text = searchTerm.trim().toLowerCase();
     return data.filter((r) => {
@@ -127,7 +137,7 @@ const SelectStep: React.FC<Props> = ({
             className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           >
             <RefreshCw className="h-4 w-4" aria-hidden />
-            {t("mekyas.selectStep.refresh")}
+            Update from Scale
           </button>
         </div>
 
@@ -139,6 +149,35 @@ const SelectStep: React.FC<Props> = ({
           <span className="text-xs text-gray-500">
             {t("mekyas.selectStep.lastUpdated")}: {formattedLastUpdated}
           </span>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-3 mb-4">
+          <button
+            onClick={handleSendSpecificReports}
+            className={`px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-all duration-200 ${
+              selectedRows.length === 0
+                ? 'bg-green-300 text-white opacity-60 cursor-not-allowed blur-[0.5px]'
+                : 'bg-green-500 hover:bg-green-600 text-white opacity-100'
+            }`}
+            disabled={selectedRows.length === 0}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+            Send specific reports
+          </button>
+          <button
+            onClick={handleDeleteSelectedReports}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+              selectedRows.length === 0
+                ? 'bg-red-300 text-white opacity-60 cursor-not-allowed blur-[0.5px]'
+                : 'bg-red-500 hover:bg-red-600 text-white opacity-100'
+            }`}
+            disabled={selectedRows.length === 0}
+          >
+            Delete selected reports
+          </button>
         </div>
 
         {/* Search + Advanced Search */}

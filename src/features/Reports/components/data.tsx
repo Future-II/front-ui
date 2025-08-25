@@ -1,55 +1,84 @@
 // data.ts
-import { AlertTriangle, Calendar, Check, FileText, MapPin } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, FileText, MapPin, Edit, Trash2, Send } from 'lucide-react';
 import type { Report } from './types';
 
-export const reportData: Report[] = [
+// Extended Report type to include procedures
+interface ExtendedReport extends Report {
+  procedures?: string[];
+}
+
+export const reportData: ExtendedReport[] = [
   {
     id: 1, reportName: 'بيانات معدات الرياض', reportType: 'XLSX', source: 'نظام المعدات', size: '1.6 MB', date: '15/05/2023', status: 'مكتمل', equipmentType: 'شاحنة نقالة', location: 'الرياض', referenceNo: '20230419-1', quantity: '1',
     condition: '',
     propertyType: '',
-    reference: undefined
+    reference: undefined,
+    site: undefined,
+    name: undefined,
+    procedures: ['an_offer', 'amendment', 'delete', 'send']
   },
   {
     id: 2, reportName: 'قائمة معدات الرياض', reportType: 'PDF', source: 'نظام المعدات', size: '0.9 MB', date: '12/05/2023', status: 'مكتمل', equipmentType: 'آلية متحركة', location: 'الرياض', referenceNo: '20230429-1', quantity: '1',
     condition: '',
     propertyType: '',
-    reference: undefined
+    reference: undefined,
+    site: undefined,
+    name: undefined,
+    procedures: ['an_offer', 'amendment', 'delete', 'send']
   },
   {
     id: 3, reportName: 'تقرير معدات جدة', reportType: 'CSV', source: 'نظام المعدات', size: '0.7 MB', date: '10/05/2023', status: 'مكتمل', equipmentType: 'حفارة', location: 'جدة', referenceNo: '20230413-1', quantity: '1',
     condition: '',
     propertyType: '',
-    reference: undefined
+    reference: undefined,
+    site: undefined,
+    name: undefined,
+    procedures: ['an_offer', 'amendment', 'delete', 'send']
   },
   {
     id: 4, reportName: 'بيانات معدات لوجي', reportType: 'XLSX', source: 'نظام المعدات', size: '1.2 MB', date: '08/05/2023', status: 'مكتمل', equipmentType: 'شاحنة نقالة', location: 'لوجي', referenceNo: '20230517-1', quantity: '1',
     condition: '',
     propertyType: '',
-    reference: undefined
+    reference: undefined,
+    site: undefined,
+    name: undefined,
+    procedures: ['an_offer', 'amendment', 'delete', 'send']
   },
   {
     id: 5, reportName: 'تقرير معدات الدمام', reportType: 'XLSX', source: 'نظام المعدات', size: '0.8 MB', date: '05/05/2023', status: 'مكتمل', equipmentType: 'آلية متحركة', location: 'الدمام', referenceNo: '20230428-1', quantity: '1',
     condition: '',
     propertyType: '',
-    reference: undefined
+    reference: undefined,
+    site: undefined,
+    name: undefined,
+    procedures: ['an_offer', 'amendment', 'delete', 'send']
   },
   {
     id: 6, reportName: 'تقرير معدات الدمام', reportType: 'XLSX', source: 'نظام المعدات', size: '0.8 MB', date: '01/05/2023', status: 'مكتمل', equipmentType: 'آلية متحركة', location: 'الدمام', referenceNo: '20230428-1', quantity: '1',
     condition: '',
     propertyType: '',
-    reference: undefined
+    reference: undefined,
+    site: undefined,
+    name: undefined,
+    procedures: ['an_offer', 'amendment', 'delete', 'send']
   },
   {
     id: 7, reportName: 'بيانات معدات الرياض', reportType: 'XLSX', source: 'نظام المعدات', size: '6.3 MB', date: '28/04/2023', status: 'مكتمل', equipmentType: 'شاحنة نقالة', location: 'الرياض', referenceNo: '20230418-1', quantity: '1',
     condition: '',
     propertyType: '',
-    reference: undefined
+    reference: undefined,
+    site: undefined,
+    name: undefined,
+    procedures: ['an_offer', 'amendment', 'delete', 'send']
   },
   {
     id: 8, reportName: 'بيانات معدات الرياض', reportType: 'XLSX', source: 'نظام المعدات', size: '5.2 MB', date: '25/04/2023', status: 'مكتمل', equipmentType: 'شاحنة نقالة', location: 'الرياض', referenceNo: '20230415-1', quantity: '1',
     condition: '',
     propertyType: '',
-    reference: undefined
+    reference: undefined,
+    site: undefined,
+    name: undefined,
+    procedures: ['amendment', 'delete', 'send']
   }
 ];
 
@@ -65,7 +94,7 @@ export const columns = [
     header: "reportTable.reportName",
     accessor: "reportName",
     className: "min-w-[280px]",
-    render: (_: string, row: Report) => (
+    render: (_: string, row: ExtendedReport) => (
       <div className="flex items-start gap-3">
         <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 ring-1 ring-blue-100">
           <FileText className="h-4 w-4 text-blue-600" />
@@ -135,7 +164,7 @@ export const columns = [
     header: "reportTable.value",
     accessor: "__value",
     className: "min-w-[120px]",
-    render: (_: any, row: Report) => {
+    render: (_: any, row: ExtendedReport) => {
       const mb = parseFloat(String(row.size || "0").replace(/[^\d.]/g, "")) || 1;
       const val = Math.round((mb * 1_000_000) / 400);
       return (
@@ -150,7 +179,7 @@ export const columns = [
     header: "reportTable.priority",
     accessor: "__priority",
     className: "w-28",
-    render: (_: any, row: Report) => {
+    render: (_: any, row: ExtendedReport) => {
       const mb = parseFloat(String(row.size || "0").replace(/[^\d.]/g, "")) || 0;
       const level = mb >= 1.5 ? "High" : mb >= 0.9 ? "middle" : "low";
       const styles: Record<string, string> = {
@@ -191,5 +220,44 @@ export const columns = [
         </span>
       ),
   },
+  // New Procedures Column
+  {
+    header: "procedures",
+    accessor: "procedures",
+    className: "w-80 text-center",
+    render: (_: any, row: ExtendedReport) => (
+      <div className="w-full flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <button
+            className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+            onClick={() => console.log('An offer clicked for:', row.id)}
+          >
+            <FileText className="h-3.5 w-3.5" />
+            an offer
+          </button>
+          <button
+            className="inline-flex items-center gap-1 rounded-md bg-yellow-50 px-3 py-1.5 text-xs font-medium text-yellow-700 hover:bg-yellow-100 transition-colors"
+            onClick={() => console.log('Amendment clicked for:', row.id)}
+          >
+            <Edit className="h-3.5 w-3.5" />
+            amendment
+          </button>
+          <button
+            className="inline-flex items-center gap-1 rounded-md bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100 transition-colors"
+            onClick={() => console.log('Delete clicked for:', row.id)}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            delete
+          </button>
+          <button
+            className="inline-flex items-center gap-1 rounded-md bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100 transition-colors"
+            onClick={() => console.log('Send clicked for:', row.id)}
+          >
+            <Send className="h-3.5 w-3.5" />
+            send
+          </button>
+        </div>
+      </div>
+    ),
+  },
 ];
-

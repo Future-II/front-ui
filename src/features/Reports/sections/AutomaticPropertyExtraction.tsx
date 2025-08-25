@@ -4,7 +4,6 @@ import SelectStep from "../components/SelectStep";
 import VerifyStep from "../components/VerifyStep";
 import SendStep from "../components/SendStep";
 import ResultStep from "../components/ResultStep";
-import Stepper from "../components/Stepper";            
 import type { ProgressStage, WorkflowStep } from "../components/types";
 
 const AutomaticPropertyExtraction: React.FC = () => {
@@ -16,6 +15,15 @@ const AutomaticPropertyExtraction: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<WorkflowStep>("select");
   const [processingResult, setProcessingResult] = useState<"success" | "error" | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<Record<number, boolean>>({});
+
+  // New state for search filters
+  const [reportName, setReportName] = useState("");
+  const [siteLocation, setSiteLocation] = useState("");
+  const [condition, setCondition] = useState("");
+  const [referenceNumber, setReferenceNumber] = useState("");
+  const [propertyType, setPropertyType] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   const handleRowSelect = (rowId: number) => {
     setSelectedRows((prev) =>
@@ -99,9 +107,112 @@ const AutomaticPropertyExtraction: React.FC = () => {
     setVerificationStatus((prev) => ({ ...prev, [rowIndex]: !prev[rowIndex] }));
   };
 
+  const handleSearch = () => {
+    // Implement search logic here
+    console.log("Search with filters:", {
+      reportName,
+      siteLocation,
+      condition,
+      referenceNumber,
+      propertyType,
+      fromDate,
+      toDate
+    });
+  };
+
+  // Search Interface Component
+  const SearchInterface = () => (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900">Automatic property report extraction</h2>
+        <p className="text-sm text-gray-500 mt-1">Select the property reports you wish to extract and have them automatically sent to the Authority's system.</p>
+      </div>
+
+      {/* Search Filters */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <div>
+          <input
+            type="text"
+            placeholder="Report name..."
+            value={reportName}
+            onChange={(e) => setReportName(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <input
+            type="text"
+            placeholder="the site..."
+            value={siteLocation}
+            onChange={(e) => setSiteLocation(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <select
+            value={condition}
+            onChange={(e) => setCondition(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">the condition...</option>
+            <option value="complete">Complete</option>
+            <option value="pending">Pending</option>
+            <option value="draft">Draft</option>
+          </select>
+        </div>
+        <div>
+          <input
+            type="text"
+            placeholder="Reference number..."
+            value={referenceNumber}
+            onChange={(e) => setReferenceNumber(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <input
+            type="text"
+            placeholder="Property type..."
+            value={propertyType}
+            onChange={(e) => setPropertyType(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+
+      {/* Search Button */}
+      <div>
+        <button
+          onClick={handleSearch}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md font-medium flex items-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          research
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <>
-      <Stepper current={currentStep} />
+      {/* Show search interface when on select step */}
+      {currentStep === "select" && <SearchInterface />}
 
       {(() => {
         switch (currentStep) {
