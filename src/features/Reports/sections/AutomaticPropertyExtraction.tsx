@@ -123,10 +123,10 @@ const AutomaticPropertyExtraction: React.FC = () => {
   // Search Interface Component
   const SearchInterface = () => (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <h2 className="text-lg font-semibold text-gray-900">Automatic property report extraction</h2>
         <p className="text-sm text-gray-500 mt-1">Select the property reports you wish to extract and have them automatically sent to the Authority's system.</p>
-      </div>
+      </div> */}
 
       {/* Search Filters */}
       <div className="grid grid-cols-3 gap-4 mb-6">

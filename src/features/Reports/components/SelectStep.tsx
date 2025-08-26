@@ -129,7 +129,7 @@ const SelectStep: React.FC<Props> = ({
         {/* Title + Update button */}
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-medium text-gray-900">
-            {t("mekyas.selectStep.title")}
+            {t("mekyas.selectStep.title2")}
           </h3>
           <button
             type="button"
@@ -137,14 +137,14 @@ const SelectStep: React.FC<Props> = ({
             className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           >
             <RefreshCw className="h-4 w-4" aria-hidden />
-            Update from Scale
+                        {t("mekyas.selectStep.updatebutton")}
           </button>
         </div>
 
         {/* Description + last updated */}
         <div className="mt-1 mb-4 flex items-center justify-between">
           <p className="text-gray-600 m-0">
-            {t("mekyas.selectStep.description")}
+            {t("mekyas.selectStep.description2")}
           </p>
           <span className="text-xs text-gray-500">
             {t("mekyas.selectStep.lastUpdated")}: {formattedLastUpdated}
@@ -157,7 +157,7 @@ const SelectStep: React.FC<Props> = ({
             onClick={handleSendSpecificReports}
             className={`px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-all duration-200 ${
               selectedRows.length === 0
-                ? 'bg-green-300 text-white opacity-60 cursor-not-allowed blur-[0.5px]'
+                ? 'bg-green-400 text-white opacity-60 cursor-not-allowed blur-[0.5px]'
                 : 'bg-green-500 hover:bg-green-600 text-white opacity-100'
             }`}
             disabled={selectedRows.length === 0}
@@ -165,18 +165,18 @@ const SelectStep: React.FC<Props> = ({
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
             </svg>
-            Send specific reports
+             {t("mekyas.selectStep.sendspecific")}
           </button>
           <button
             onClick={handleDeleteSelectedReports}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
               selectedRows.length === 0
-                ? 'bg-red-300 text-white opacity-60 cursor-not-allowed blur-[0.5px]'
+                ? 'bg-red-400 text-white opacity-60 cursor-not-allowed blur-[0.5px]'
                 : 'bg-red-500 hover:bg-red-600 text-white opacity-100'
             }`}
             disabled={selectedRows.length === 0}
           >
-            Delete selected reports
+           {t("mekyas.selectStep.deleteselect")}
           </button>
         </div>
 

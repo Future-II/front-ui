@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { User, Mail, Phone, Lock, Eye, EyeOff } from "lucide-react";
 import { api } from "../../../utils/api";
 
@@ -14,21 +14,43 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   
-  // Form data state
+  // Form data state - ensure all fields are completely empty
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
     companyName: "",
-    companyType: "real-estate",
+    companyType: "",
     licenseNumber: "",
     city: "",
     password: "",
     confirmPassword: "",
     termsAccepted: false,
-    newsletter: true
+    newsletter: false
   });
+
+  // Clear form when component mounts
+  useEffect(() => {
+    setFormData({
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      companyName: "",
+      companyType: "",
+      licenseNumber: "",
+      city: "",
+      password: "",
+      confirmPassword: "",
+      termsAccepted: false,
+      newsletter: false
+    });
+    setError(null);
+    setSuccessMessage(null);
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -77,20 +99,20 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
         // DO NOT store the token - just show success message
         setSuccessMessage("Account created successfully! Redirecting to login...");
         
-        // Reset form
+        // Reset form completely
         setFormData({
           firstName: "",
           lastName: "",
           email: "",
           phone: "",
           companyName: "",
-          companyType: "real-estate",
+          companyType: "",
           licenseNumber: "",
           city: "",
           password: "",
           confirmPassword: "",
           termsAccepted: false,
-          newsletter: true
+          newsletter: false
         });
 
         // Switch to login tab after 2 seconds
@@ -250,6 +272,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             >
+              <option value="">Choose company type</option>
               <option value="real-estate">Real estate company</option>
               <option value="construction">Construction company</option>
               <option value="property-management">Property management</option>

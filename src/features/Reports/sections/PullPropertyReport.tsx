@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { FileText, MapPin, LayoutGrid, Search } from "lucide-react";
-import Stepper from "../components/Stepper";
+import { FileText, Search, Filter } from "lucide-react";
 import type { WorkflowStep } from "../components/types";
 import { useTranslation } from "react-i18next";
 
@@ -12,151 +11,159 @@ const PullPropertyReport: React.FC = () => {
 
   const [referenceNumber, setReferenceNumber] = useState("");
   const [reportName, setReportName] = useState("");
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [site, setSite] = useState("");
   const [propertyType, setPropertyType] = useState<PropertyType>("all");
+  const [condition, setCondition] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   const onSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ referenceNumber, reportName, site, propertyType });
+    console.log({ referenceNumber, reportName, site, propertyType, condition, fromDate, toDate });
   };
 
-  const onClear = () => {
-    setReferenceNumber("");
-    setReportName("");
-    setSite("");
-    setPropertyType("all");
-  };
 
   return (
-    <div>
-      <Stepper current={currentStep} />
-
+    <div className="max-w-4xl mx-auto p-6">
+      {/* Header */}
       <div className="mb-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          {t("mekyas.pullReport.title")}
-        </h3>
-        <p className="text-gray-600">{t("mekyas.pullReport.subtitle")}</p>
+        <div className="flex items-center gap-2 mb-2">
+          <FileText className="h-6 w-6 text-blue-600" />
+          <h2 className="text-xl font-semibold text-gray-900">
+                        {t("mekyas.selectStep.title")}
+          </h2>
+        </div>
+        <p className="text-gray-600 text-sm">
+                      {t("mekyas.selectStep.description3")}
+        </p>
       </div>
 
-      <form onSubmit={onSearch} className="bg-white border border-gray-200 rounded-xl p-4 md:p-6">
-        <h4 className="text-base font-medium text-gray-900 mb-4">
-          {t("mekyas.pullReport.searchTitle")}
-        </h4>
+      {/* Search Form */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+        <form onSubmit={onSearch} className="space-y-4">
+          {/* Basic Search Fields */}
+          <div className="space-y-4">
+            <div>
+              <input
+                type="text"
+                value={referenceNumber}
+                onChange={(e) => setReferenceNumber(e.target.value)}
+                placeholder="Reference number..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Reference number */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              <span className="inline-flex items-center gap-2">
-                <Search className="h-4 w-4 text-gray-500" aria-hidden />
-                {t("mekyas.pullReport.referenceNumber")}
-              </span>
-            </label>
-            <input
-              type="text"
-              value={referenceNumber}
-              onChange={(e) => setReferenceNumber(e.target.value)}
-              placeholder={t("mekyas.pullReport.referencePlaceholder")}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Report name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              <span className="inline-flex items-center gap-2">
-                <FileText className="h-4 w-4 text-gray-500" aria-hidden />
-                {t("mekyas.pullReport.reportName")}
-              </span>
-            </label>
-            <input
-              type="text"
-              value={reportName}
-              onChange={(e) => setReportName(e.target.value)}
-              placeholder={t("mekyas.pullReport.reportPlaceholder")}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Site */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              <span className="inline-flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-gray-500" aria-hidden />
-                {t("mekyas.pullReport.site")}
-              </span>
-            </label>
-            <input
-              type="text"
-              value={site}
-              onChange={(e) => setSite(e.target.value)}
-              placeholder={t("mekyas.pullReport.sitePlaceholder")}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              <span className="inline-flex items-center gap-2">
-                <LayoutGrid className="h-4 w-4 text-gray-500" aria-hidden />
-                {t("mekyas.pullReport.propertyType")}
-              </span>
-            </label>
-            <select
-              value={propertyType}
-              onChange={(e) => setPropertyType(e.target.value as PropertyType)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-            >
-              <option value="all">{t("mekyas.pullReport.types.all")}</option>
-              <option value="residential">{t("mekyas.pullReport.types.residential")}</option>
-              <option value="commercial">{t("mekyas.pullReport.types.commercial")}</option>
-              <option value="industrial">{t("mekyas.pullReport.types.industrial")}</option>
-              <option value="land">{t("mekyas.pullReport.types.apartment")}</option>
-              <option value="land">{t("mekyas.pullReport.types.store")}</option>
-              <option value="land">{t("mekyas.pullReport.types.complex")}</option>
-              <option value="land">{t("mekyas.pullReport.types.agriculture")}</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="mt-4 flex items-center gap-3">
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
-          >
-            <Search className="h-4 w-4" aria-hidden />
-            {t("mekyas.pullReport.searchButton")}
-          </button>
-          <button
-            type="button"
-            onClick={onClear}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            {t("mekyas.pullReport.clearButton")}
-          </button>
-        </div>
-      </form>
-
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-        <div className="md:col-span-2">
-          <div className="text-gray-600 text-sm mb-2">{t("mekyas.pullReport.selectHint")}</div>
-
-          <div className="flex items-center justify-center border border-dashed border-gray-300 rounded-xl py-10 text-gray-500 bg-gray-50">
-            <div className="text-center">
-              <FileText className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-              <p>{t("mekyas.pullReport.lookupHint")}</p>
+            <div>
+              <input
+                type="text"
+                value={reportName}
+                onChange={(e) => setReportName(e.target.value)}
+                placeholder="Report name..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
             </div>
           </div>
-        </div>
 
-        <div>
+          {/* Advanced Search Toggle */}
           <button
             type="button"
-            disabled
-            className="w-full px-4 py-2 rounded-lg bg-gray-200 text-gray-600 cursor-not-allowed"
+            onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium"
           >
-            {t("mekyas.pullReport.disabledButton")}
+            <Filter className="h-4 w-4" />
+            Advanced Search
+            <span className={`transform transition-transform ${showAdvancedSearch ? 'rotate-180' : ''}`}>
+              ▼
+            </span>
           </button>
+
+          {/* Advanced Search Fields */}
+          {showAdvancedSearch && (
+            <div className="space-y-4 pt-4 border-t border-gray-200">
+              {/* Site Field */}
+              <div>
+                <input
+                  type="text"
+                  value={site}
+                  onChange={(e) => setSite(e.target.value)}
+                  placeholder="the site..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Property Type Field */}
+              <div>
+                <input
+                  type="text"
+                  value={propertyType === "all" ? "" : propertyType}
+                  onChange={(e) => setPropertyType(e.target.value as PropertyType)}
+                  placeholder="Property type..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Condition Dropdown */}
+              <div>
+                <select
+                  value={condition}
+                  onChange={(e) => setCondition(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-500"
+                >
+                  <option value="">the condition...</option>
+                  <option value="excellent">Excellent</option>
+                  <option value="good">Good</option>
+                  <option value="fair">Fair</option>
+                  <option value="poor">Poor</option>
+                  <option value="under-construction">Under Construction</option>
+                </select>
+              </div>
+
+              {/* Date Range Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <input
+                    type="date"
+                    value={fromDate}
+                    onChange={(e) => setFromDate(e.target.value)}
+                    placeholder="mm/dd/yyyy"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-500"
+                  />
+                </div>
+                <div>
+                  <input
+                    type="date"
+                    value={toDate}
+                    onChange={(e) => setToDate(e.target.value)}
+                    placeholder="mm/dd/yyyy"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-500"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Search Button */}
+          <div className="pt-4">
+            <button
+              type="submit"
+              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2"
+            >
+              <Search className="h-5 w-5" />
+              research
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Results Area */}
+      <div className="bg-white rounded-lg border border-gray-200 p-8">
+        <div className="text-center text-gray-500">
+          <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+          <p className="text-lg mb-2">No reports selected</p>
+          <p className="text-sm text-gray-400">
+            Enter search criteria above to find property reports
+          </p>
         </div>
       </div>
     </div>
