@@ -5,7 +5,7 @@ export const taqeemLogin = async (email: string, password: string, otp?: string)
     const response = await axiosInstance.post('/scripts/taqeemLogin', {
       email,
       password,
-      otp, // optional — only sent on second step
+      otp, 
     });
     return response.data;
   } catch (error) {
@@ -22,7 +22,7 @@ export const uploadFiles = async (excelFile: File, pdfFiles: any[]) => {
   });
 
   try {
-    const response = await axiosInstance.post('/scripts/run', formData, {
+    const response = await axiosInstance.post('/scripts/taqeemLogin', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
