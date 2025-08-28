@@ -329,6 +329,101 @@
       "pendingTickets": "Pending Tickets"
     }
   },
+  "logintranslator":{
+    "realstate":{
+      "title": "Real Estate Reporting System",
+      "description":"An integrated platform for managing and sending real estate reports",
+      "title1": "High security",
+      "description1":"Advanced protection for your data and reports",
+      "title2": "Ease of use",
+      "description2":"Simple and understandable interface for everyone",
+      "title3": "Comprehensive integration",
+      "description3":"Connecting with gauge, click and body systems"
+    },
+    "login":{
+      "title":"Login",
+      "subtitle":"Welcome back",
+      "description":"Sign in to access your account",
+      "email":"Email",
+      "placeholder": "Enter your email",
+      "pass":"Password",
+      "placeholder1":"Enter your password",
+      "remember":"Remember me",
+      "forget":"Forgot password?",
+      "button": "Login"
+
+    },
+    "register":{
+      "title":"Create Account",
+      "subtitle":"Create a new account",
+      "description":"Join us and start managing your reports",
+      "personal":{
+        "title":"Personal information",
+        "ist":"First Name",
+        "last":"Last Name",
+        "istplace":"First Name",
+        "lastplace":"Last Name",
+        "email":"Email",
+        "emailplace":"Enter your email",
+        "phone":"Phone number",
+        "phoneplace":"xxxxxxxx"
+      },
+      "company":{
+        "title":"Company information",
+        "name":"Company name",
+        "placeholder":"Enter your company name",
+        "type":{
+          "title":"Company type",
+          "a":"Choose your type",
+          "b":"Real estate company",
+          "c":"Construction company",
+          "d":"property management"
+        },
+        "license":"License number",
+        "licplaceholder":"License number",
+        "city":{
+          "title":"City",
+          "a":"Choose a city",
+          "b":"Riyadh",
+          "c":"Jeddah",
+          "d":"Dammam",
+          "e":"Mecca",
+          "f":"Medina"
+        }
+      },
+      "account":{
+        "title":"Account information",
+        "pass":"Password",
+        "passplace":"Enter your password",
+        "cpass":"Confirm Paasword",
+        "cpassplace":"Enter your confirm password",
+        "agree":"I agree to Terms & Conditions and Privacy Policy",
+        "receive":"I want to receive the newsletter and updates",
+        "button":"Create Account"
+      }
+
+    }
+  },
+  "automation":{
+     "automation report":{
+      "report name":"Report name...",
+      "site":"Site...",
+      "condition":{
+        "a":"the condition...",
+        "b":"Complete",
+        "c":"Pending",
+        "d":"Draft"
+      },
+      "reference":"Reference number..",
+      "property":"Property type..",
+      "button":"research"
+     },
+     "pull property":{
+      "title":"No reports selected",
+      "description":"Enter search criteria above to find property reports"
+     }
+  },
+
   "reports": {
     "title": "Real Estate Reports",
     "mekyas": "Mekyas Reports",

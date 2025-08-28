@@ -5,6 +5,7 @@ import VerifyStep from "../components/VerifyStep";
 import SendStep from "../components/SendStep";
 import ResultStep from "../components/ResultStep";
 import type { ProgressStage, WorkflowStep } from "../components/types";
+import { useTranslation } from "react-i18next";
 
 const AutomaticPropertyExtraction: React.FC = () => {
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
@@ -15,6 +16,7 @@ const AutomaticPropertyExtraction: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<WorkflowStep>("select");
   const [processingResult, setProcessingResult] = useState<"success" | "error" | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<Record<number, boolean>>({});
+  const { t } = useTranslation();
 
   // New state for search filters
   const [reportName, setReportName] = useState("");
@@ -133,7 +135,7 @@ const AutomaticPropertyExtraction: React.FC = () => {
         <div>
           <input
             type="text"
-            placeholder="Report name..."
+            placeholder={t("automation.automation report.report name") }
             value={reportName}
             onChange={(e) => setReportName(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -142,7 +144,7 @@ const AutomaticPropertyExtraction: React.FC = () => {
         <div>
           <input
             type="text"
-            placeholder="the site..."
+            placeholder={t("automation.automation report.site") }
             value={siteLocation}
             onChange={(e) => setSiteLocation(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -154,16 +156,16 @@ const AutomaticPropertyExtraction: React.FC = () => {
             onChange={(e) => setCondition(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">the condition...</option>
-            <option value="complete">Complete</option>
-            <option value="pending">Pending</option>
-            <option value="draft">Draft</option>
+            <option value="">{t("automation.automation report.condition.a") }</option>
+            <option value="complete">{t("automation.automation report.condition.b") }</option>
+            <option value="pending">{t("automation.automation report.condition.c") }</option>
+            <option value="draft">{t("automation.automation report.condition.d") }</option>
           </select>
         </div>
         <div>
           <input
             type="text"
-            placeholder="Reference number..."
+            placeholder={t("automation.automation report.reference") }
             value={referenceNumber}
             onChange={(e) => setReferenceNumber(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -172,7 +174,7 @@ const AutomaticPropertyExtraction: React.FC = () => {
         <div>
           <input
             type="text"
-            placeholder="Property type..."
+            placeholder={t("automation.automation report.property") }
             value={propertyType}
             onChange={(e) => setPropertyType(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -203,7 +205,7 @@ const AutomaticPropertyExtraction: React.FC = () => {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          research
+          {t("automation.automation report.button") }
         </button>
       </div>
     </div>

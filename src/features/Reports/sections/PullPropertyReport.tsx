@@ -49,7 +49,7 @@ const PullPropertyReport: React.FC = () => {
                 type="text"
                 value={referenceNumber}
                 onChange={(e) => setReferenceNumber(e.target.value)}
-                placeholder="Reference number..."
+                placeholder={t("automation.automation report.reference") }
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -59,7 +59,7 @@ const PullPropertyReport: React.FC = () => {
                 type="text"
                 value={reportName}
                 onChange={(e) => setReportName(e.target.value)}
-                placeholder="Report name..."
+                placeholder={t("automation.automation report.report name") }
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -87,7 +87,7 @@ const PullPropertyReport: React.FC = () => {
                   type="text"
                   value={site}
                   onChange={(e) => setSite(e.target.value)}
-                  placeholder="the site..."
+                  placeholder={t("automation.automation report.site") }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -98,7 +98,7 @@ const PullPropertyReport: React.FC = () => {
                   type="text"
                   value={propertyType === "all" ? "" : propertyType}
                   onChange={(e) => setPropertyType(e.target.value as PropertyType)}
-                  placeholder="Property type..."
+                  placeholder={t("automation.automation report.property") }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -110,12 +110,10 @@ const PullPropertyReport: React.FC = () => {
                   onChange={(e) => setCondition(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-500"
                 >
-                  <option value="">the condition...</option>
-                  <option value="excellent">Excellent</option>
-                  <option value="good">Good</option>
-                  <option value="fair">Fair</option>
-                  <option value="poor">Poor</option>
-                  <option value="under-construction">Under Construction</option>
+                  <option value="">{t("automation.automation report.condition.a") }</option>
+            <option value="complete">{t("automation.automation report.condition.b") }</option>
+            <option value="pending">{t("automation.automation report.condition.c") }</option>
+            <option value="draft">{t("automation.automation report.condition.d") }</option>
                 </select>
               </div>
 
@@ -150,7 +148,7 @@ const PullPropertyReport: React.FC = () => {
               className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2"
             >
               <Search className="h-5 w-5" />
-              research
+              {t("automation.automation report.button") }
             </button>
           </div>
         </form>
@@ -160,9 +158,9 @@ const PullPropertyReport: React.FC = () => {
       <div className="bg-white rounded-lg border border-gray-200 p-8">
         <div className="text-center text-gray-500">
           <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-          <p className="text-lg mb-2">No reports selected</p>
+          <p className="text-lg mb-2"> {t("automation.pull property.title") }</p>
           <p className="text-sm text-gray-400">
-            Enter search criteria above to find property reports
+            {t("automation.pull property.description") }
           </p>
         </div>
       </div>

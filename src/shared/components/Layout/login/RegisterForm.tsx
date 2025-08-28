@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { User, Mail, Phone, Lock, Eye, EyeOff } from "lucide-react";
 import { api } from "../../../utils/api";
+import { useTranslation } from "react-i18next";
 
 interface RegisterFormProps {
   onSuccess: () => void;
@@ -13,6 +14,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const { t } = useTranslation();
   
   // Form data state - ensure all fields are completely empty
   const [formData, setFormData] = useState({
@@ -133,10 +135,10 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
   return (
     <form onSubmit={handleSubmit}>
       <h2 className="text-2xl font-bold text-gray-900 mb-2">
-        Create a new account
+        {t("logintranslator.register.subtitle")}
       </h2>
       <p className="text-gray-600 mb-6">
-        Join us and start managing your reports
+         {t("logintranslator.register.description")}
       </p>
 
       {error && (
@@ -156,14 +158,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
         <div className="flex items-center mb-4">
           <User className="h-5 w-5 text-blue-600 mr-2" />
           <h3 className="text-lg font-semibold text-gray-800">
-            Personal information
+            {t("logintranslator.register.personal.title")}
           </h3>
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
-              First name
+              {t("logintranslator.register.personal.ist")}
             </label>
             <input 
               type="text" 
@@ -171,14 +173,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
               name="firstName"
               value={formData.firstName}
               onChange={handleInputChange}
-              placeholder="First name"
+              placeholder={t("logintranslator.register.personal.istplace")}
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
             />
           </div>
           <div>
             <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-              Last name
+              {t("logintranslator.register.personal.last")}
             </label>
             <input 
               type="text" 
@@ -186,7 +188,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
               name="lastName"
               value={formData.lastName}
               onChange={handleInputChange}
-              placeholder="Last name"
+              placeholder={t("logintranslator.register.personal.istplace")}
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
             />
@@ -195,7 +197,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
 
         <div className="mb-4">
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-            Email
+            {t("logintranslator.register.personal.email")}
           </label>
           <div className="relative">
             <input 
@@ -204,7 +206,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
               name="email"
               value={formData.email}
               onChange={handleInputChange}
-              placeholder="Enter your email"
+              placeholder={t("logintranslator.register.personal.emailplace")}
               required
               className="w-full pl-4 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
             />
@@ -214,7 +216,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
 
         <div className="mb-6">
           <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-            Phone number
+            {t("logintranslator.register.personal.phone")}
           </label>
           <div className="relative">
             <input 
@@ -223,7 +225,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
               name="phone"
               value={formData.phone}
               onChange={handleInputChange}
-              placeholder="05xxxxxxxx"
+              placeholder={t("logintranslator.register.personal.phoneplace")}
               required
               className="w-full pl-4 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
             />
@@ -239,13 +241,13 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
             <div className="h-3 w-3 bg-green-600 rounded"></div>
           </div>
           <h3 className="text-lg font-semibold text-gray-800">
-            Company information
+            {t("logintranslator.register.company.title")}
           </h3>
         </div>
 
         <div className="mb-4">
           <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-2">
-            Company name
+            {t("logintranslator.register.company.name")}
           </label>
           <input 
             type="text" 
@@ -253,7 +255,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
             name="companyName"
             value={formData.companyName}
             onChange={handleInputChange}
-            placeholder="Enter company name"
+            placeholder={t("logintranslator.register.company.placeholder")}
             required
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
           />
@@ -262,7 +264,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <label htmlFor="companyType" className="block text-sm font-medium text-gray-700 mb-2">
-              Company type
+              {t("logintranslator.register.company.type.title")}
             </label>
             <select 
               id="companyType"
@@ -272,15 +274,15 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             >
-              <option value="">Choose company type</option>
-              <option value="real-estate">Real estate company</option>
-              <option value="construction">Construction company</option>
-              <option value="property-management">Property management</option>
+              <option value="">{t("logintranslator.register.company.type.a")}</option>
+              <option value="real-estate">{t("logintranslator.register.company.type.b")}</option>
+              <option value="construction">{t("logintranslator.register.company.type.c")}</option>
+              <option value="property-management">{t("logintranslator.register.company.type.d")}</option>
             </select>
           </div>
           <div>
             <label htmlFor="licenseNumber" className="block text-sm font-medium text-gray-700 mb-2">
-              License number
+              {t("logintranslator.register.company.license")}
             </label>
             <input 
               type="text" 
@@ -288,7 +290,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
               name="licenseNumber"
               value={formData.licenseNumber}
               onChange={handleInputChange}
-              placeholder="License number"
+              placeholder={t("logintranslator.register.company.licplaceholder")}
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
             />
@@ -297,7 +299,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
 
         <div className="mb-6">
           <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
-            City
+            {t("logintranslator.register.company.city.title")}
           </label>
           <select 
             id="city"
@@ -307,12 +309,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
             required
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           >
-            <option value="">Choose a city</option>
-            <option value="riyadh">Riyadh</option>
-            <option value="jeddah">Jeddah</option>
-            <option value="dammam">Dammam</option>
-            <option value="mecca">Mecca</option>
-            <option value="medina">Medina</option>
+            <option value="">{t("logintranslator.register.company.city.a")}</option>
+            <option value="riyadh">{t("logintranslator.register.company.city.b")}</option>
+            <option value="jeddah">{t("logintranslator.register.company.city.c")}</option>
+            <option value="dammam">{t("logintranslator.register.company.city.d")}</option>
+            <option value="mecca">{t("logintranslator.register.company.city.e")}</option>
+            <option value="medina">{t("logintranslator.register.company.city.f")}</option>
           </select>
         </div>
       </div>
@@ -324,13 +326,13 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
             <Lock className="h-3 w-3 text-purple-600" />
           </div>
           <h3 className="text-lg font-semibold text-gray-800">
-            Account information
+            {t("logintranslator.register.account.title")}
           </h3>
         </div>
 
         <div className="mb-4">
           <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-            Password
+            {t("logintranslator.register.account.pass")}
           </label>
           <div className="relative">
             <input 
@@ -339,7 +341,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
               name="password"
               value={formData.password}
               onChange={handleInputChange}
-              placeholder="Enter your password"
+              placeholder={t("logintranslator.register.account.passplace")}
               required
               minLength={6}
               className="w-full pl-4 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
@@ -356,7 +358,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
 
         <div className="mb-6">
           <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-            Confirm password
+            {t("logintranslator.register.account.cpass")}
           </label>
           <div className="relative">
             <input 
@@ -365,7 +367,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleInputChange}
-              placeholder="Re-enter your password"
+              placeholder={t("logintranslator.register.account.cpassplace")}
               required
               className="w-full pl-4 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
             />
@@ -409,7 +411,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-0.5" 
           />
           <label htmlFor="newsletter" className="ml-2 text-sm text-gray-700">
-            I want to receive the newsletter and updates
+                        {t("logintranslator.register.account.receive")}
           </label>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Mail, Eye, EyeOff } from "lucide-react";
 import { api } from "../../../utils/api";
+import { useTranslation } from "react-i18next";
 
 interface LoginFormProps {
   onSuccess: () => void;
@@ -13,6 +14,7 @@ const  LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,19 +51,18 @@ const  LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back</h2>
-      <p className="text-gray-600 mb-2">Sign in to access your account</p>
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">{t("logintranslator.login.subtitle")}</h2>
+      <p className="text-gray-600 mb-2">{t("logintranslator.login.description")}</p>
       
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
           {error}
         </div>
       )}
-
       {/* Email Field */}
       <div className="mb-4">
         <label htmlFor="loginEmail" className="block text-sm font-medium text-gray-700 mb-2">
-          Email
+          {t("logintranslator.login.email")}
         </label>
         <div className="relative">
           <input 
@@ -69,7 +70,7 @@ const  LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             type="email" 
             value={email} 
             onChange={(e) => setEmail(e.target.value)} 
-            placeholder="Enter your email"
+            placeholder={t("logintranslator.login.placeholder")}
             required
             className="w-full pl-4 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
           />
@@ -80,7 +81,7 @@ const  LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
       {/* Password Field */}
       <div className="mb-4">
         <label htmlFor="loginPassword" className="block text-sm font-medium text-gray-700 mb-2">
-          Password
+          {t("logintranslator.login.pass")}
         </label>
         <div className="relative">
           <input 
@@ -88,7 +89,7 @@ const  LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             type={showPassword ? "text" : "password"} 
             value={password}
             onChange={(e) => setPassword(e.target.value)} 
-            placeholder="Enter your password"
+            placeholder={t("logintranslator.login.placeholder1")}
             required
             className="w-full pl-4 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
           />
@@ -113,11 +114,11 @@ const  LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" 
           />
           <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-700">
-            Remember me
+            {t("logintranslator.login.remember")}
           </label>
         </div>
         <a href="#" className="text-sm text-blue-600 hover:text-blue-800">
-          Forgot password?
+          {t("logintranslator.login.forget")}
         </a>
       </div>
 
