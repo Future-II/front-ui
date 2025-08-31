@@ -871,10 +871,10 @@
       "result": "Result Reports"
     },
     "stepper2": {
-      "upload": "Upload files",
-      "data": "Data verification",
-      "send": "Send",
-      "result": "The result"
+      "dataVerification": "Data Verification",
+      "preparingForms": "Preparing Forms",
+      "uploadingData": "Uploading Data",
+      "completed": "Completed"
     },
     "selectStep": {
       "title": "Pull Property Reports",

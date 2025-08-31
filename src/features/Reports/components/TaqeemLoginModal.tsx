@@ -12,23 +12,34 @@ export default function LoginModal({ isOpen, onClose, setIsLoggedIn }: LoginModa
     const [password, setPassword] = useState("");
     const [otpRequired, setOtpRequired] = useState(false);
     const [otp, setOtp] = useState("");
+    const [progressMessage, setProgressMessage] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            if (!otpRequired) {
+                setProgressMessage("🔑 Entering Email and Password...");
+            } else {
+                setProgressMessage("📲 Verifying OTP...");
+            }
+
             const response = await taqeemLogin(email, password, otpRequired ? otp : undefined);
             console.log(response);
 
             if (response.status === "OTP_REQUIRED") {
                 setOtpRequired(true);
+                setProgressMessage("✅ Email and Password accepted. Please enter OTP.");
             } else if (response.status === "SUCCESS") {
                 setIsLoggedIn(true);
+                setProgressMessage("🎉 Login successful!");
                 onClose();
             } else {
+                setProgressMessage("❌ Login failed");
                 alert("Login failed");
             }
         } catch (error) {
             console.error(error);
+            setProgressMessage("⚠️ Something went wrong");
             alert("Something went wrong");
         }
     };
@@ -36,8 +47,8 @@ export default function LoginModal({ isOpen, onClose, setIsLoggedIn }: LoginModa
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
-            <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+        <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center">
+            <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative pointer-events-auto">
                 <button
                     onClick={onClose}
                     className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
@@ -113,6 +124,13 @@ export default function LoginModal({ isOpen, onClose, setIsLoggedIn }: LoginModa
                         {otpRequired ? "Verify OTP" : "Sign In"}
                     </button>
                 </form>
+
+                {/* Progress message at bottom */}
+                {progressMessage && (
+                    <div className="mt-4 text-sm text-indigo-600 text-center">
+                        {progressMessage}
+                    </div>
+                )}
             </div>
         </div>
     );
