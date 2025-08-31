@@ -1,5 +1,7 @@
 // data.ts
 import { AlertTriangle, Calendar, Check, FileText, MapPin, Edit, Trash2, Send } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { api } from '../../../shared/utils/api';
 import type { Report } from './types';
 
 // Extended Report type to include procedures
@@ -7,6 +9,128 @@ interface ExtendedReport extends Report {
   procedures?: string[];
 }
 
+// Database Report interface matching MongoDB structure
+interface DBReport {
+  _id: string;
+  reportName: string;
+  reportType: string;
+  source: string;
+  size: string;
+  date: string;
+  status: string;
+  equipmentType: string;
+  location: string;
+  referenceNo: string;
+  quantity: string;
+  condition: string;
+  propertyType: string;
+  reference: string | null;
+  site: string | null;
+  name: string | null;
+  area: string;
+  value: number;
+  priority: 'High' | 'middle' | 'low';
+  procedures: string[];
+  presentedBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+
+interface ReportFilters {
+  reportName?: string;
+  site?: string;
+  propertyType?: string;
+  condition?: string;
+  fromDate?: string;
+  toDate?: string;
+  page?: number;
+  limit?: number;
+}
+
+// Hook for fetching reports from database
+export const useReportsData = () => {
+  const [reports, setReports] = useState<ExtendedReport[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalReports: 0,
+    hasNext: false,
+    hasPrev: false
+  });
+
+  const fetchReports = async (filters: ReportFilters = {}) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const queryParams = new URLSearchParams();
+      
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          queryParams.append(key, value.toString());
+        }
+      });
+      
+      const response = await api.get(`/reports?${queryParams.toString()}`);
+      
+      if (response.data.success) {
+        // Transform DB data to match existing interface
+        const transformedReports: ExtendedReport[] = response.data.data.reports.map((dbReport: DBReport, index: number) => ({
+          id: index + 1,
+          reportName: dbReport.reportName,
+          reportType: dbReport.reportType,
+          source: dbReport.source,
+          size: dbReport.size,
+          date: new Date(dbReport.date).toLocaleDateString('en-GB'),
+          status: dbReport.status,
+          equipmentType: dbReport.equipmentType,
+          location: dbReport.location,
+          referenceNo: dbReport.referenceNo,
+          quantity: dbReport.quantity,
+          condition: dbReport.condition,
+          propertyType: dbReport.propertyType,
+          reference: dbReport.reference,
+          site: dbReport.site,
+          name: dbReport.name,
+          procedures: dbReport.procedures || ['an_offer', 'amendment', 'delete', 'send']
+        }));
+        
+        setReports(transformedReports);
+        setPagination(response.data.data.pagination);
+      } else {
+        throw new Error('Failed to fetch reports');
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(errorMessage);
+      console.error('Error fetching reports:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const refreshReports = () => {
+    fetchReports();
+  };
+
+  useEffect(() => {
+    fetchReports();
+  }, []);
+
+  return {
+    reports,
+    loading,
+    error,
+    pagination,
+    fetchReports,
+    refreshReports
+  };
+};
+
+// Fallback manual data (keep as backup)
 export const reportData: ExtendedReport[] = [
   {
     id: 1, reportName: 'بيانات معدات الرياض', reportType: 'XLSX', source: 'نظام المعدات', size: '1.6 MB', date: '15/05/2023', status: 'مكتمل', equipmentType: 'شاحنة نقالة', location: 'الرياض', referenceNo: '20230419-1', quantity: '1',
@@ -45,7 +169,7 @@ export const reportData: ExtendedReport[] = [
     procedures: ['an_offer', 'amendment', 'delete', 'send']
   },
   {
-    id: 5, reportName: 'تقرير معدات الدمام', reportType: 'XLSX', source: 'نظام المعدات', size: '0.8 MB', date: '05/05/2023', status: 'مكتمل', equipmentType: 'آلية متحركة', location: 'الدمام', referenceNo: '20230428-1', quantity: '1',
+    id: 5, reportName: 'షషرير معدات الدمام', reportType: 'XLSX', source: 'نظام المعدات', size: '0.8 MB', date: '05/05/2023', status: 'مكتمل', equipmentType: 'آلية متحركة', location: 'الدمام', referenceNo: '20230428-1', quantity: '1',
     condition: '',
     propertyType: '',
     reference: undefined,

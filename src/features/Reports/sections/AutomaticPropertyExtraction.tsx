@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { columns, reportData } from "../components/data";
+import { columns, useReportsData, reportData } from "../components/data";
 import SelectStep from "../components/SelectStep";
 import VerifyStep from "../components/VerifyStep";
 import SendStep from "../components/SendStep";
@@ -18,6 +18,12 @@ const AutomaticPropertyExtraction: React.FC = () => {
   const [verificationStatus, setVerificationStatus] = useState<Record<number, boolean>>({});
   const { t } = useTranslation();
 
+  // Database integration
+  const { reports: dbReports, loading, error, fetchReports } = useReportsData();
+  
+  // Use database reports if available, fallback to manual data
+  const currentReports = dbReports.length > 0 ? dbReports : reportData;
+
   // New state for search filters
   const [reportName, setReportName] = useState("");
   const [siteLocation, setSiteLocation] = useState("");
@@ -35,7 +41,7 @@ const AutomaticPropertyExtraction: React.FC = () => {
 
   const handleSelectAll = () => {
     setSelectedRows((prev) =>
-      prev.length === reportData.length ? [] : reportData.map((_, index) => index)
+      prev.length === currentReports.length ? [] : currentReports.map((_, index) => index)
     );
   };
 
@@ -110,32 +116,65 @@ const AutomaticPropertyExtraction: React.FC = () => {
   };
 
   const handleSearch = () => {
-    // Implement search logic here
-    console.log("Search with filters:", {
-      reportName,
-      siteLocation,
-      condition,
-      referenceNumber,
-      propertyType,
-      fromDate,
-      toDate
-    });
+    // Build filters object
+    const filters: any = {};
+    
+    if (reportName) filters.reportName = reportName;
+    if (siteLocation) filters.site = siteLocation;
+    if (condition && condition !== "") filters.condition = condition;
+    if (referenceNumber) filters.referenceNo = referenceNumber;
+    if (propertyType) filters.propertyType = propertyType;
+    if (fromDate) filters.fromDate = fromDate;
+    if (toDate) filters.toDate = toDate;
+    
+    // Reset to page 1 for new search
+    filters.page = 1;
+    filters.limit = 25;
+
+    console.log("Search with filters:", filters);
+    
+    // Call the database fetch with filters
+    fetchReports(filters);
   };
+
 
   // Search Interface Component
   const SearchInterface = () => (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-      {/* <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900">Automatic property report extraction</h2>
-        <p className="text-sm text-gray-500 mt-1">Select the property reports you wish to extract and have them automatically sent to the Authority's system.</p>
-      </div> */}
+      <div className="mb-6">
+        {/* <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Automatic property report extraction</h2>
+            <p className="text-sm text-gray-500 mt-1">Select the property reports you wish to extract and have them automatically sent to the Authority's system.</p>
+          </div>
+          <button
+            onClick={handleUpdateFromScale}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md text-sm font-medium"
+            disabled={loading}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {loading ? 'Updating...' : 'Update From Scale'}
+          </button>
+        </div> */}
+        
+        {/* <div className="flex gap-2 mt-4">
+          <button className="px-4 py-1 bg-green-100 text-green-700 rounded-md text-sm">
+            Send specific reports
+          </button>
+          <button className="px-4 py-1 bg-red-100 text-red-700 rounded-md text-sm">
+            Delete selected reports
+          </button>
+        </div> */}
+      </div>
 
       {/* Search Filters */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div>
           <input
             type="text"
-            placeholder={t("automation.automation report.report name") }
+            placeholder={t("automation.automation report.report name")}
             value={reportName}
             onChange={(e) => setReportName(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -144,7 +183,7 @@ const AutomaticPropertyExtraction: React.FC = () => {
         <div>
           <input
             type="text"
-            placeholder={t("automation.automation report.site") }
+            placeholder={t("automation.automation report.site")}
             value={siteLocation}
             onChange={(e) => setSiteLocation(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -156,16 +195,16 @@ const AutomaticPropertyExtraction: React.FC = () => {
             onChange={(e) => setCondition(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">{t("automation.automation report.condition.a") }</option>
-            <option value="complete">{t("automation.automation report.condition.b") }</option>
-            <option value="pending">{t("automation.automation report.condition.c") }</option>
-            <option value="draft">{t("automation.automation report.condition.d") }</option>
+            <option value="">{t("automation.automation report.condition.a")}</option>
+            <option value="مكتمل">{t("automation.automation report.condition.b")}</option>
+            <option value="معلق">{t("automation.automation report.condition.c")}</option>
+            <option value="مسودة">{t("automation.automation report.condition.d")}</option>
           </select>
         </div>
         <div>
           <input
             type="text"
-            placeholder={t("automation.automation report.reference") }
+            placeholder={t("automation.automation report.reference")}
             value={referenceNumber}
             onChange={(e) => setReferenceNumber(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -174,7 +213,7 @@ const AutomaticPropertyExtraction: React.FC = () => {
         <div>
           <input
             type="text"
-            placeholder={t("automation.automation report.property") }
+            placeholder={t("automation.automation report.property")}
             value={propertyType}
             onChange={(e) => setPropertyType(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -200,14 +239,35 @@ const AutomaticPropertyExtraction: React.FC = () => {
       <div>
         <button
           onClick={handleSearch}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md font-medium flex items-center gap-2"
+          disabled={loading}
+          className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-6 py-2 rounded-md font-medium flex items-center gap-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          {t("automation.automation report.button") }
+          {loading ? 'Searching...' : t("automation.automation report.button")}
         </button>
       </div>
+
+      {/* Error Display */}
+      {error && (
+        <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Error fetching reports: {error}
+          </div>
+        </div>
+      )}
+
+      {/* Loading indicator */}
+      {loading && (
+        <div className="mt-4 flex justify-center">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+          <span className="ml-2 text-gray-600">Loading reports...</span>
+        </div>
+      )}
     </div>
   );
 
@@ -222,7 +282,7 @@ const AutomaticPropertyExtraction: React.FC = () => {
             return (
               <SelectStep
                 columns={columns}
-                data={reportData}
+                data={currentReports}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 selectedRows={selectedRows}
@@ -234,7 +294,7 @@ const AutomaticPropertyExtraction: React.FC = () => {
           case "verify":
             return (
               <VerifyStep
-                reportData={reportData}
+                reportData={currentReports}
                 selectedRows={selectedRows}
                 verificationStatus={verificationStatus}
                 toggleVerificationStatus={toggleVerificationStatus}
