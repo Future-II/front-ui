@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { columns, useReportsData, reportData } from "../components/data";
+import { columns, useReportsData } from "../components/data"; // Removed reportData import
 import SelectStep from "../components/SelectStep";
 import VerifyStep from "../components/VerifyStep";
 import SendStep from "../components/SendStep";
@@ -18,11 +18,8 @@ const AutomaticPropertyExtraction: React.FC = () => {
   const [verificationStatus, setVerificationStatus] = useState<Record<number, boolean>>({});
   const { t } = useTranslation();
 
-  // Database integration
-  const { reports: dbReports, loading, error, fetchReports } = useReportsData();
-  
-  // Use database reports if available, fallback to manual data
-  const currentReports = dbReports.length > 0 ? dbReports : reportData;
+  // Database integration - using the fixed hook
+  const { reports, loading, error, fetchReports, searchReports } = useReportsData();
 
   // New state for search filters
   const [reportName, setReportName] = useState("");
@@ -41,7 +38,7 @@ const AutomaticPropertyExtraction: React.FC = () => {
 
   const handleSelectAll = () => {
     setSelectedRows((prev) =>
-      prev.length === currentReports.length ? [] : currentReports.map((_, index) => index)
+      prev.length === reports.length ? [] : reports.map((_, index) => index)
     );
   };
 
@@ -115,15 +112,28 @@ const AutomaticPropertyExtraction: React.FC = () => {
     setVerificationStatus((prev) => ({ ...prev, [rowIndex]: !prev[rowIndex] }));
   };
 
-  const handleSearch = () => {
-    // Build filters object
+  const handleSearch = async () => {
+    // Clear previous selections when searching
+    setSelectedRows([]);
+    
+    // Check if we have any search criteria
+    const hasSearchCriteria = reportName || siteLocation || condition || referenceNumber || propertyType || fromDate || toDate;
+    
+    if (!hasSearchCriteria) {
+      // No search criteria - fetch all reports
+      console.log("No search criteria, fetching all reports");
+      await fetchReports();
+      return;
+    }
+
+    // Build filters object for API
     const filters: any = {};
     
-    if (reportName) filters.reportName = reportName;
-    if (siteLocation) filters.site = siteLocation;
-    if (condition && condition !== "") filters.condition = condition;
-    if (referenceNumber) filters.referenceNo = referenceNumber;
-    if (propertyType) filters.propertyType = propertyType;
+    if (reportName) filters.reportTitle = reportName;
+    if (siteLocation) filters.city = siteLocation; // Assuming site maps to city
+    if (condition && condition !== "") filters.status = condition;
+    if (referenceNumber) filters.certificateNumber = referenceNumber;
+    if (propertyType) filters.assetType = propertyType;
     if (fromDate) filters.fromDate = fromDate;
     if (toDate) filters.toDate = toDate;
     
@@ -133,42 +143,30 @@ const AutomaticPropertyExtraction: React.FC = () => {
 
     console.log("Search with filters:", filters);
     
-    // Call the database fetch with filters
-    fetchReports(filters);
+    // Use searchReports if we have reportName, otherwise use fetchReports with filters
+    if (reportName) {
+      await searchReports(reportName, filters);
+    } else {
+      await fetchReports(filters);
+    }
   };
 
+  const clearSearch = () => {
+    setReportName("");
+    setSiteLocation("");
+    setCondition("");
+    setReferenceNumber("");
+    setPropertyType("");
+    setFromDate("");
+    setToDate("");
+    setSelectedRows([]);
+    // Fetch all reports without filters
+    fetchReports();
+  };
 
   // Search Interface Component
   const SearchInterface = () => (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-      <div className="mb-6">
-        {/* <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">Automatic property report extraction</h2>
-            <p className="text-sm text-gray-500 mt-1">Select the property reports you wish to extract and have them automatically sent to the Authority's system.</p>
-          </div>
-          <button
-            onClick={handleUpdateFromScale}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md text-sm font-medium"
-            disabled={loading}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            {loading ? 'Updating...' : 'Update From Scale'}
-          </button>
-        </div> */}
-        
-        {/* <div className="flex gap-2 mt-4">
-          <button className="px-4 py-1 bg-green-100 text-green-700 rounded-md text-sm">
-            Send specific reports
-          </button>
-          <button className="px-4 py-1 bg-red-100 text-red-700 rounded-md text-sm">
-            Delete selected reports
-          </button>
-        </div> */}
-      </div>
-
       {/* Search Filters */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div>
@@ -235,8 +233,8 @@ const AutomaticPropertyExtraction: React.FC = () => {
         </div>
       </div>
 
-      {/* Search Button */}
-      <div>
+      {/* Search Buttons */}
+      <div className="flex gap-3">
         <button
           onClick={handleSearch}
           disabled={loading}
@@ -246,6 +244,17 @@ const AutomaticPropertyExtraction: React.FC = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           {loading ? 'Searching...' : t("automation.automation report.button")}
+        </button>
+        
+        <button
+          onClick={clearSearch}
+          disabled={loading}
+          className="bg-gray-500 hover:bg-gray-600 disabled:bg-gray-300 text-white px-6 py-2 rounded-md font-medium flex items-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Clear
         </button>
       </div>
 
@@ -263,10 +272,36 @@ const AutomaticPropertyExtraction: React.FC = () => {
 
       {/* Loading indicator */}
       {loading && (
-        <div className="mt-4 flex justify-center">
+        <div className="mt-4 flex justify-center items-center">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
           <span className="ml-2 text-gray-600">Loading reports...</span>
         </div>
+      )}
+    </div>
+  );
+
+  // Empty State Component
+  const EmptyState = () => (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+      <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+        <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </div>
+      <h3 className="text-lg font-medium text-gray-900 mb-2">No Reports Found</h3>
+      <p className="text-gray-500 mb-6">
+        {reportName || siteLocation || condition || referenceNumber || propertyType || fromDate || toDate
+          ? "No reports match your search criteria. Try adjusting your filters."
+          : "There are currently no reports in the database. Import some data to get started."
+        }
+      </p>
+      {(reportName || siteLocation || condition || referenceNumber || propertyType || fromDate || toDate) && (
+        <button
+          onClick={clearSearch}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md font-medium"
+        >
+          Clear Search Filters
+        </button>
       )}
     </div>
   );
@@ -279,10 +314,15 @@ const AutomaticPropertyExtraction: React.FC = () => {
       {(() => {
         switch (currentStep) {
           case "select":
+            // Show empty state if no reports and not loading
+            if (reports.length === 0 && !loading) {
+              return <EmptyState />;
+            }
+            
             return (
               <SelectStep
                 columns={columns}
-                data={currentReports}
+                data={reports}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 selectedRows={selectedRows}
@@ -294,7 +334,7 @@ const AutomaticPropertyExtraction: React.FC = () => {
           case "verify":
             return (
               <VerifyStep
-                reportData={currentReports}
+                reportData={reports}
                 selectedRows={selectedRows}
                 verificationStatus={verificationStatus}
                 toggleVerificationStatus={toggleVerificationStatus}

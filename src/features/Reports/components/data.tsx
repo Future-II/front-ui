@@ -9,43 +9,61 @@ interface ExtendedReport extends Report {
   procedures?: string[];
 }
 
-// Database Report interface matching MongoDB structure
+// Database Report interface matching the ACTUAL response from backend
 interface DBReport {
-  _id: string;
-  reportName: string;
-  reportType: string;
-  source: string;
-  size: string;
-  date: string;
-  status: string;
-  equipmentType: string;
-  location: string;
-  referenceNo: string;
-  quantity: string;
-  condition: string;
-  propertyType: string;
-  reference: string | null;
-  site: string | null;
-  name: string | null;
-  area: string;
-  value: number;
-  priority: 'High' | 'middle' | 'low';
-  procedures: string[];
-  presentedBy: string;
+  id: string;
+  title: string | { value: string; label_ar: string; label_en: string };
+  reportType: string | { value: string; label_ar: string; label_en: string };
+  valuationDate: string;
+  submissionDate: string;
+  finalValue: number;
+  currency: number | { value: number; label_ar: string; label_en: string };
+  clientName: string | { value: string; label_ar: string; label_en: string };
+  clientEmail: string;
+  clientPhone: string;
+  assetType: number | { value: number; label_ar: string; label_en: string };
+  assetUsage: number | { value: number; label_ar: string; label_en: string };
+  inspectionDate: string;
+  country: number | { value: number; label_ar: string; label_en: string };
+  region: number | { value: number; label_ar: string; label_en: string };
+  city: number | { value: number; label_ar: string; label_en: string };
+  address: string;
+  coordinates: {
+    longitude: number;
+    latitude: number;
+  };
+  certificateNumber: string;
+  landArea: number;
+  buildingArea: number;
+  assetAge: number;
   createdAt: string;
   updatedAt: string;
 }
 
-
 interface ReportFilters {
-  reportName?: string;
-  site?: string;
-  propertyType?: string;
-  condition?: string;
+  reportTitle?: string;
+  country?: string;
+  region?: string;
+  city?: string;
+  assetType?: string;
+  assetUsage?: string;
+  valuationPurpose?: string;
+  reportType?: string;
   fromDate?: string;
   toDate?: string;
+  clientName?: string;
+  certificateNumber?: string;
   page?: number;
   limit?: number;
+}
+
+// Report Statistics interface
+interface ReportStats {
+  totalReports: number;
+  totalValue: number;
+  averageValue: number;
+  reportTypes: string[];
+  countries: number[];
 }
 
 // Hook for fetching reports from database
@@ -53,6 +71,7 @@ export const useReportsData = () => {
   const [reports, setReports] = useState<ExtendedReport[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState<ReportStats | null>(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -61,6 +80,7 @@ export const useReportsData = () => {
     hasPrev: false
   });
 
+  // Fetch reports with filters
   const fetchReports = async (filters: ReportFilters = {}) => {
     setLoading(true);
     setError(null);
@@ -77,36 +97,173 @@ export const useReportsData = () => {
       const response = await api.get(`/reports?${queryParams.toString()}`);
       
       if (response.data.success) {
+        // Check if reports array exists and has data
+        const reportsArray = response.data.data?.reports || [];
+        
+        if (reportsArray.length === 0) {
+          // No data in database - set empty array
+          console.log('No reports found in database');
+          setReports([]);
+          setPagination({
+            currentPage: 1,
+            totalPages: 1,
+            totalReports: 0,
+            hasNext: false,
+            hasPrev: false
+          });
+          return;
+        }
+
         // Transform DB data to match existing interface
-        const transformedReports: ExtendedReport[] = response.data.data.reports.map((dbReport: DBReport, index: number) => ({
-          id: index + 1,
-          reportName: dbReport.reportName,
-          reportType: dbReport.reportType,
-          source: dbReport.source,
-          size: dbReport.size,
-          date: new Date(dbReport.date).toLocaleDateString('en-GB'),
-          status: dbReport.status,
-          equipmentType: dbReport.equipmentType,
-          location: dbReport.location,
-          referenceNo: dbReport.referenceNo,
-          quantity: dbReport.quantity,
-          condition: dbReport.condition,
-          propertyType: dbReport.propertyType,
-          reference: dbReport.reference,
-          site: dbReport.site,
-          name: dbReport.name,
-          procedures: dbReport.procedures || ['an_offer', 'amendment', 'delete', 'send']
-        }));
+        const transformedReports: ExtendedReport[] = reportsArray.map((dbReport: DBReport, index: number) => {
+          // Debug log to see actual structure
+          console.log(`Transforming report ${index + 1}:`, dbReport);
+          
+          return {
+            id: index + 1,
+            reportName: extractLabel(dbReport.title) || 'Unnamed Report',
+            reportType: extractLabel(dbReport.reportType) || 'PDF',
+            source: extractLabel(dbReport.clientName) || 'Unknown Client',
+            size: calculateFileSize(extractValue(dbReport.finalValue)),
+            date: dbReport.valuationDate ? new Date(dbReport.valuationDate).toLocaleDateString('en-GB') : 'No Date',
+            status: 'مكتمل',
+            equipmentType: getAssetTypeName(extractValue(dbReport.assetType)),
+            location: getLocationName(
+              extractValue(dbReport.country), 
+              extractValue(dbReport.region), 
+              extractValue(dbReport.city)
+            ),
+            referenceNo: extractValue(dbReport.certificateNumber) || `REP-${String(dbReport.id).slice(-6)}`,
+            quantity: String(extractValue(dbReport.landArea) || '0'),
+            condition: 'جيد',
+            propertyType: getAssetTypeName(extractValue(dbReport.assetType)),
+            reference: extractValue(dbReport.certificateNumber),
+            site: getLocationName(
+              extractValue(dbReport.country), 
+              extractValue(dbReport.region), 
+              extractValue(dbReport.city)
+            ),
+            name: extractLabel(dbReport.clientName),
+            procedures: ['an_offer', 'amendment', 'delete', 'send']
+          };
+        });
         
         setReports(transformedReports);
-        setPagination(response.data.data.pagination);
+        setPagination(response.data.data.pagination || {
+          currentPage: 1,
+          totalPages: 1,
+          totalReports: transformedReports.length,
+          hasNext: false,
+          hasPrev: false
+        });
       } else {
-        throw new Error('Failed to fetch reports');
+        throw new Error(response.data.message || 'Failed to fetch reports');
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(errorMessage);
       console.error('Error fetching reports:', err);
+      
+      // Set empty array on error - don't use fallback data
+      setReports([]);
+      setPagination({
+        currentPage: 1,
+        totalPages: 1,
+        totalReports: 0,
+        hasNext: false,
+        hasPrev: false
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch report statistics
+  const fetchStats = async () => {
+    try {
+      const response = await api.get('/reports/stats');
+      if (response.data.success) {
+        setStats(response.data.data.statistics);
+      } else {
+        // Set empty stats if no data
+        setStats({
+          totalReports: 0,
+          totalValue: 0,
+          averageValue: 0,
+          reportTypes: [],
+          countries: []
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching stats:', err);
+      setStats({
+        totalReports: 0,
+        totalValue: 0,
+        averageValue: 0,
+        reportTypes: [],
+        countries: []
+      });
+    }
+  };
+
+  // Search reports
+  const searchReports = async (searchTerm: string, filters: ReportFilters = {}) => {
+    if (!searchTerm.trim() || searchTerm.length < 2) {
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await api.post('/reports/search', {
+        searchTerm: searchTerm.trim(),
+        filters
+      });
+
+      if (response.data.success) {
+        const reportsArray = response.data.data?.reports || [];
+        
+        if (reportsArray.length === 0) {
+          setReports([]);
+          return;
+        }
+
+        const transformedReports: ExtendedReport[] = reportsArray.map((dbReport: DBReport, index: number) => ({
+          id: index + 1,
+          reportName: extractLabel(dbReport.title) || 'Unnamed Report',
+          reportType: extractLabel(dbReport.reportType) || 'PDF',
+          source: extractLabel(dbReport.clientName) || 'Unknown Client',
+          size: calculateFileSize(extractValue(dbReport.finalValue)),
+          date: dbReport.valuationDate ? new Date(dbReport.valuationDate).toLocaleDateString('en-GB') : 'No Date',
+          status: 'مكتمل',
+          equipmentType: getAssetTypeName(extractValue(dbReport.assetType)),
+          location: getLocationName(
+            extractValue(dbReport.country), 
+            extractValue(dbReport.region), 
+            extractValue(dbReport.city)
+          ),
+          referenceNo: extractValue(dbReport.certificateNumber) || `REP-${String(dbReport.id).slice(-6)}`,
+          quantity: String(extractValue(dbReport.landArea) || '0'),
+          condition: 'جيد',
+          propertyType: getAssetTypeName(extractValue(dbReport.assetType)),
+          reference: extractValue(dbReport.certificateNumber),
+          site: getLocationName(
+            extractValue(dbReport.country), 
+            extractValue(dbReport.region), 
+            extractValue(dbReport.city)
+          ),
+          name: extractLabel(dbReport.clientName),
+          procedures: ['an_offer', 'amendment', 'delete', 'send']
+        }));
+
+        setReports(transformedReports);
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Search failed';
+      setError(errorMessage);
+      console.error('Error searching reports:', err);
+      setReports([]);
     } finally {
       setLoading(false);
     }
@@ -114,97 +271,96 @@ export const useReportsData = () => {
 
   const refreshReports = () => {
     fetchReports();
+    fetchStats();
   };
 
   useEffect(() => {
     fetchReports();
+    fetchStats();
   }, []);
 
   return {
     reports,
     loading,
     error,
+    stats,
     pagination,
     fetchReports,
+    searchReports,
     refreshReports
   };
 };
 
-// Fallback manual data (keep as backup)
-export const reportData: ExtendedReport[] = [
-  {
-    id: 1, reportName: 'بيانات معدات الرياض', reportType: 'XLSX', source: 'نظام المعدات', size: '1.6 MB', date: '15/05/2023', status: 'مكتمل', equipmentType: 'شاحنة نقالة', location: 'الرياض', referenceNo: '20230419-1', quantity: '1',
-    condition: '',
-    propertyType: '',
-    reference: undefined,
-    site: undefined,
-    name: undefined,
-    procedures: ['an_offer', 'amendment', 'delete', 'send']
-  },
-  {
-    id: 2, reportName: 'قائمة معدات الرياض', reportType: 'PDF', source: 'نظام المعدات', size: '0.9 MB', date: '12/05/2023', status: 'مكتمل', equipmentType: 'آلية متحركة', location: 'الرياض', referenceNo: '20230429-1', quantity: '1',
-    condition: '',
-    propertyType: '',
-    reference: undefined,
-    site: undefined,
-    name: undefined,
-    procedures: ['an_offer', 'amendment', 'delete', 'send']
-  },
-  {
-    id: 3, reportName: 'تقرير معدات جدة', reportType: 'CSV', source: 'نظام المعدات', size: '0.7 MB', date: '10/05/2023', status: 'مكتمل', equipmentType: 'حفارة', location: 'جدة', referenceNo: '20230413-1', quantity: '1',
-    condition: '',
-    propertyType: '',
-    reference: undefined,
-    site: undefined,
-    name: undefined,
-    procedures: ['an_offer', 'amendment', 'delete', 'send']
-  },
-  {
-    id: 4, reportName: 'بيانات معدات لوجي', reportType: 'XLSX', source: 'نظام المعدات', size: '1.2 MB', date: '08/05/2023', status: 'مكتمل', equipmentType: 'شاحنة نقالة', location: 'لوجي', referenceNo: '20230517-1', quantity: '1',
-    condition: '',
-    propertyType: '',
-    reference: undefined,
-    site: undefined,
-    name: undefined,
-    procedures: ['an_offer', 'amendment', 'delete', 'send']
-  },
-  {
-    id: 5, reportName: 'షషرير معدات الدمام', reportType: 'XLSX', source: 'نظام المعدات', size: '0.8 MB', date: '05/05/2023', status: 'مكتمل', equipmentType: 'آلية متحركة', location: 'الدمام', referenceNo: '20230428-1', quantity: '1',
-    condition: '',
-    propertyType: '',
-    reference: undefined,
-    site: undefined,
-    name: undefined,
-    procedures: ['an_offer', 'amendment', 'delete', 'send']
-  },
-  {
-    id: 6, reportName: 'تقرير معدات الدمام', reportType: 'XLSX', source: 'نظام المعدات', size: '0.8 MB', date: '01/05/2023', status: 'مكتمل', equipmentType: 'آلية متحركة', location: 'الدمام', referenceNo: '20230428-1', quantity: '1',
-    condition: '',
-    propertyType: '',
-    reference: undefined,
-    site: undefined,
-    name: undefined,
-    procedures: ['an_offer', 'amendment', 'delete', 'send']
-  },
-  {
-    id: 7, reportName: 'بيانات معدات الرياض', reportType: 'XLSX', source: 'نظام المعدات', size: '6.3 MB', date: '28/04/2023', status: 'مكتمل', equipmentType: 'شاحنة نقالة', location: 'الرياض', referenceNo: '20230418-1', quantity: '1',
-    condition: '',
-    propertyType: '',
-    reference: undefined,
-    site: undefined,
-    name: undefined,
-    procedures: ['an_offer', 'amendment', 'delete', 'send']
-  },
-  {
-    id: 8, reportName: 'بيانات معدات الرياض', reportType: 'XLSX', source: 'نظام المعدات', size: '5.2 MB', date: '25/04/2023', status: 'مكتمل', equipmentType: 'شاحنة نقالة', location: 'الرياض', referenceNo: '20230415-1', quantity: '1',
-    condition: '',
-    propertyType: '',
-    reference: undefined,
-    site: undefined,
-    name: undefined,
-    procedures: ['amendment', 'delete', 'send']
+// Helper functions for data transformation
+const extractValue = (field: any): any => {
+  // Handle objects with {value, label_ar, label_en} structure
+  if (field && typeof field === 'object' && field.value !== undefined) {
+    return field.value;
   }
-];
+  return field;
+};
+
+const extractLabel = (field: any, lang: 'ar' | 'en' = 'ar'): string => {
+  // Extract label from objects with {value, label_ar, label_en} structure
+  if (field && typeof field === 'object') {
+    if (lang === 'ar' && field.label_ar) return field.label_ar;
+    if (lang === 'en' && field.label_en) return field.label_en;
+    if (field.value !== undefined) return String(field.value);
+  }
+  return String(field || '');
+};
+
+const calculateFileSize = (value: number): string => {
+  if (!value) return '0.1 MB';
+  const sizeInMB = Math.max(0.1, value / 1000000); // Convert value to approximate file size
+  return `${sizeInMB.toFixed(1)} MB`;
+};
+
+const getAssetTypeName = (assetTypeId: number): string => {
+  // Map asset type IDs to names - you can expand this based on your data
+  const assetTypes: { [key: number]: string } = {
+    1: 'سكني',
+    2: 'تجاري', 
+    3: 'صناعي',
+    4: 'زراعي',
+    5: 'إداري',
+    // Add more mappings as needed
+  };
+  return assetTypes[assetTypeId] || 'غير محدد';
+};
+
+const getLocationName = (countryId: number, regionId: number, cityId: number): string => {
+  // Map location IDs to names - you can expand this based on your data
+  const countries: { [key: number]: string } = {
+    1: 'السعودية',
+    // Add more countries as needed
+  };
+  
+  const regions: { [key: number]: string } = {
+    1: 'الرياض',
+    2: 'مكة المكرمة',
+    3: 'المنطقة الشرقية',
+    4: 'عسير',
+    5: 'جازان',
+    // Add more regions as needed
+  };
+  
+  const cities: { [key: number]: string } = {
+    1: 'الرياض',
+    2: 'جدة', 
+    3: 'الدمام',
+    4: 'الطائف',
+    5: 'المدينة المنورة',
+    // Add more cities as needed
+  };
+
+  const country = countries[countryId] || 'غير محدد';
+  const region = regions[regionId] || 'غير محدد';
+  const city = cities[cityId] || 'غير محدد';
+  
+  return `${city}, ${region}`;
+};
+
 
 // Column defs matching Screenshot 2 UI precisely
 export const columns = [
