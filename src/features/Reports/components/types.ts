@@ -1,4 +1,4 @@
-export type WorkflowStep = 'select' | 'verify' | 'send' | 'result';
+export type WorkflowStep = 'verify' | 'prepare' | 'upload' | 'completed';
 export type ProgressStage = 'withdraw' | 'verify' | 'send';
 
 export interface Report {

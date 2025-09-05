@@ -863,10 +863,10 @@
       "result": "النتيجة"
     },
     "stepper2": {
-    "upload": "تحميل الملفات",
-    "data": "التحقق من البيانات",
-    "send": "إرسال",
-    "result": "النتيجة"
+      "dataVerification": "التحقق من البيانات",
+      "preparingForms": "إعداد النماذج",
+      "uploadingData": "تحميل البيانات",
+      "completed": "مكتمل"
     },
     "selectStep": {
       "title": "سحب التقارير التلقائي",
