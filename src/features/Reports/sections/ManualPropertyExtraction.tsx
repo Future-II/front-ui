@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import UploadBlock from "../components/UploadBlock";
 import Stepper2 from "../components/Stepper manual";
 import type { WorkflowStep } from "../components/types";
-import { uploadFiles } from "../api";
+import { retryUpload, uploadFiles } from "../api";
 import LoginModal from "../components/TaqeemLoginModal";
+import ResultModal from "../components/ResultModal";
 
 const ManualPropertyExtraction: React.FC = () => {
   const { t } = useTranslation();
@@ -19,6 +20,10 @@ const ManualPropertyExtraction: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [showPulsingLoader, setShowPulsingLoader] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [failedRecords, setFailedRecords] = useState(0);
+  const [batchId, setBatchId] = useState<string | null>(null);
+
   const uploadRequestRef = useRef<Promise<any> | null>(null);
 
   const handleFileChange = (
@@ -30,33 +35,24 @@ const ManualPropertyExtraction: React.FC = () => {
       if (type === "excel") {
         setExcelFile(files[0]);
       } else if (type === "pdf") {
-        setPdfFiles((prevFiles) => {
-          const newFiles = Array.from(files);
-          return [...prevFiles, ...newFiles];
-        });
+        setPdfFiles((prevFiles) => [...prevFiles, ...Array.from(files)]);
       }
     }
   };
 
   const simulateProgress = async () => {
-    // Step 1: Data Verification (3 seconds)
     setCurrentStep("verify");
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    // Step 2: Preparing Forms (3 seconds)
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
     setCurrentStep("prepare");
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    // Step 3: Uploading Data - simulate progress quickly to 85%
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
     setCurrentStep("upload");
-    
-    // Fast progress to 85%
     for (let progress = 0; progress <= 85; progress += 17) {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 300));
       setUploadProgress(progress);
     }
-    
-    // Pause at 85% but show pulsing animation
+
     setIsPaused(true);
     setShowPulsingLoader(true);
   };
@@ -70,39 +66,56 @@ const ManualPropertyExtraction: React.FC = () => {
     try {
       setIsSubmitting(true);
       setShowPulsingLoader(false);
-      
-      // Start the fake progress simulation
       simulateProgress();
-      
-      // Start the actual upload request immediately (in parallel)
+
       uploadRequestRef.current = uploadFiles(excelFile, pdfFiles);
       const data = await uploadRequestRef.current;
-      
+
       console.log("Upload successful:", data);
-      
-      // Once real upload completes, complete the progress
+
       setUploadProgress(100);
       setShowPulsingLoader(false);
-      await new Promise(resolve => setTimeout(resolve, 500)); // Brief pause at 100%
-      
-      // Check if form fill was successful
-      if (data.status === "FORM_FILL_SUCCESS") {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      if (data.status === "SUCCESS") {
         setCurrentStep("completed");
-        alert("Files uploaded and processed successfully!");
+        setBatchId(data.batchId || null);
+        setFailedRecords(data.failed_records || 0);
+        setShowResultModal(true);
       } else {
         alert("Upload completed but there might be an issue with form processing.");
-        setCurrentStep("verify"); // Reset on partial failure
+        setCurrentStep("verify");
       }
     } catch (error) {
       console.error("Error uploading files:", error);
       alert("An error occurred while uploading the files. Please try again.");
-      setCurrentStep("verify"); // Reset to first step on error
+      setCurrentStep("verify");
       setShowPulsingLoader(false);
     } finally {
       setIsSubmitting(false);
       setIsPaused(false);
       setUploadProgress(0);
       uploadRequestRef.current = null;
+    }
+  };
+
+  const handleRetry = async (batchId: string) => {
+    try {
+      console.log("Retrying batch:", batchId);
+      setShowResultModal(false);
+      setIsSubmitting(true);
+
+      const retryData = await retryUpload(batchId);
+
+      if (retryData.status === "SUCCESS") {
+        setFailedRecords(retryData.failed_records || 0);
+        setShowResultModal(true);
+      }
+    } catch (error) {
+      console.error("Retry failed:", error);
+      alert("Retry failed. Please try again later.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -114,12 +127,11 @@ const ManualPropertyExtraction: React.FC = () => {
     setCurrentStep("verify");
   };
 
-  // 🚨 Gate the page: show login modal until Taqeem login succeeds
   if (!loggedIn) {
     return (
       <LoginModal
         isOpen={true}
-        onClose={() => {}} // disable close since login is mandatory
+        onClose={() => {}}
         setIsLoggedIn={setLoggedIn}
       />
     );
@@ -137,7 +149,6 @@ const ManualPropertyExtraction: React.FC = () => {
               "Manually upload and send property reports to the Authority's system"}
           </p>
         </div>
-
         <div className="flex items-center gap-2">
           <Link
             to="/reports/mekyas"
@@ -152,13 +163,12 @@ const ManualPropertyExtraction: React.FC = () => {
       <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
         <div className="p-6">
           <div className="mb-6 flex justify-center">
-            <Stepper2 
-              current={currentStep} 
+            <Stepper2
+              current={currentStep}
               loading={currentStep === "upload" && (showPulsingLoader || !isPaused)}
             />
           </div>
 
-          {/* Progress bar for upload step */}
           {currentStep === "upload" && (
             <div className="mb-6">
               <div className="flex justify-between text-sm text-gray-600 mb-1">
@@ -169,35 +179,34 @@ const ManualPropertyExtraction: React.FC = () => {
                 <span>{uploadProgress}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 relative">
-                <div 
+                <div
                   className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${uploadProgress}%` }}
                 ></div>
-                
-                {/* Pulsing animation overlay when paused at 85% */}
                 {showPulsingLoader && (
                   <div className="absolute inset-0">
-                    <div 
+                    <div
                       className="bg-blue-400 h-2 rounded-full animate-pulse"
-                      style={{ width: '85%', opacity: 0.7 }}
+                      style={{ width: "85%", opacity: 0.7 }}
                     ></div>
                   </div>
                 )}
               </div>
-              
-              {/* Animated dots for waiting state */}
               {showPulsingLoader && (
                 <div className="flex justify-center space-x-1 mt-2">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+                  <div
+                    className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"
+                    style={{ animationDelay: "150ms" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"
+                    style={{ animationDelay: "300ms" }}
+                  ></div>
                 </div>
               )}
-              
               {isPaused && !showPulsingLoader && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Almost done...
-                </p>
+                <p className="text-xs text-gray-500 mt-1">Almost done...</p>
               )}
             </div>
           )}
@@ -292,6 +301,14 @@ const ManualPropertyExtraction: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <ResultModal
+        isOpen={showResultModal}
+        onClose={() => setShowResultModal(false)}
+        failedRecords={failedRecords}
+        batchId={batchId || ""}
+        onRetry={handleRetry}
+      />
     </div>
   );
 };
