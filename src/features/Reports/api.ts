@@ -34,6 +34,15 @@ export const uploadFiles = async (excelFile: File, pdfFiles: any[]) => {
   }
 };
 
+export const retryUpload = async (batchId: string) => {
+  try {
+    const response = await api.post(`/scripts/retryTaqeem/${batchId}`);
+    return response.data;
+  } catch (error) {
+    throw new Error('Error retrying upload');
+  }
+};
+
 // Add new reports functions
 export interface ReportFilters {
   reportName?: string;
