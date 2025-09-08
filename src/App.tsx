@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './shared/components/Layout/Layout';
 import Home from './features/Home/pages/Home';
 import MekyasReports from './features/Reports/pages/MekyasReports';
+import JadeerReports from './features/Reports/pages/JadeerReports';
 import ViewReports from './features/Reports/pages/ViewReports';
 import NoqraReports from './features/Reports/pages/NoqraReports';
 import ManagementDashboard from './features/Dashboard/pages/ManagementDashboard';
@@ -32,6 +33,7 @@ export function App() {
             />
             
             {/* All other routes are now protected by GlobalAuthGuard */}
+            <Route path="/reports/jadeer" element={<JadeerReports />} />
             <Route path="/reports/manual" element={<ManualPropertyExtraction />} />
             <Route path="/reports/view" element={<ViewReports />} />
             <Route path="/reports/noqra" element={<NoqraReports />} />

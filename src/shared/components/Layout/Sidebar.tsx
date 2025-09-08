@@ -41,7 +41,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         {
           name: t('reports.mekyas') || 'تقارير مقياس',
           path: '/reports/mekyas'
-        },{
+        },
+        {
+          name:  "jadeer reports",
+          path: '/reports/jadeer'
+        },
+        {
           name: t('reports.manual') || 'تقارير مقياس',
           path: '/reports/manual'
         },
