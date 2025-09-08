@@ -123,3 +123,25 @@ export const getReport = async (id: string) => {
     throw error;
   }
 };
+
+export const getMeqyasReport = async (username: string, password: string, query: string) => {
+  try {
+    const response = await api.post('/scripts/meqyas', {
+      username,
+      password,
+      query,
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error('Error fetching report');
+  }
+};
+
+export const createHalfReport = async (form: any) => {
+  try {
+    const response = await api.post('/reports/createHalfReport', {form});
+    return response.data;
+  } catch (error) {
+    throw new Error('Error creating half report');
+  }
+};

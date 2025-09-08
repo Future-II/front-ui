@@ -56,9 +56,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
           path: '/reports/view'
         },
         {
+          name: "Manual Report and Send Upload",
+          path: "/reports/newManual"
+        },
+        {
           name: t('reports.noqra') || 'تقارير نقرة',
           path: '/reports/noqra'
-        }
+        },
       ]
     },
     

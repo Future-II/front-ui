@@ -13,6 +13,7 @@ import AuthGuard from './shared/components/AuthGuard'; // Mekyas-specific auth g
 import GlobalAuthGuard from './shared/components/GlobalAuthGuard'; // Global auth guard
 import EquipmentReport from './features/Equipment/pages/EquipmentReport';
 import ManualPropertyExtraction from './features/Reports/sections/ManualPropertyExtraction';
+import ReportForm from './features/Reports/pages/ReportForm';
 
 export function App() {
   return (
@@ -37,6 +38,7 @@ export function App() {
             <Route path="/reports/manual" element={<ManualPropertyExtraction />} />
             <Route path="/reports/view" element={<ViewReports />} />
             <Route path="/reports/noqra" element={<NoqraReports />} />
+            <Route path="/reports/newManual" element={<ReportForm />} />
             <Route path="/dashboard" element={<ManagementDashboard />} />
             <Route path="/settings" element={<UserSettings />} />
             <Route path="/support" element={<SupportPage />} />
