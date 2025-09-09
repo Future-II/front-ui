@@ -74,6 +74,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         {
           name: t('equipment.tab1') || 'تقارير المعدات',
           path: '/equipment/report'
+        },
+        {
+          name: 'Report Upload',
+          path: '/equipment/manualEquipReport'
         }
       ]
     },

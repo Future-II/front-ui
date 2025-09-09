@@ -14,6 +14,7 @@ import GlobalAuthGuard from './shared/components/GlobalAuthGuard'; // Global aut
 import EquipmentReport from './features/Equipment/pages/EquipmentReport';
 import ManualPropertyExtraction from './features/Reports/sections/ManualPropertyExtraction';
 import ReportForm from './features/Reports/pages/ReportForm';
+import ManualEquipmentReportUpload from './features/Equipment/pages/ManualEquipReportUpload';
 
 export function App() {
   return (
@@ -39,10 +40,13 @@ export function App() {
             <Route path="/reports/view" element={<ViewReports />} />
             <Route path="/reports/noqra" element={<NoqraReports />} />
             <Route path="/reports/newManual" element={<ReportForm />} />
+
             <Route path="/dashboard" element={<ManagementDashboard />} />
             <Route path="/settings" element={<UserSettings />} />
             <Route path="/support" element={<SupportPage />} />
+            
             <Route path="/equipment/report" element={<EquipmentReport />} />
+            <Route path='/equipment/manualEquipReport' element={<ManualEquipmentReportUpload />} />
 
             {/* Mekyas login route (keep separate) */}
             <Route path="/auth/mekyas" element={<MekyasLogin />} />
