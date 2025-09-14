@@ -76,7 +76,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
           path: '/equipment/report'
         },
         {
-          name: 'Report Upload',
+          name: 'Manual Equipment Report Upload',
           path: '/equipment/manualEquipReport'
         }
       ]
