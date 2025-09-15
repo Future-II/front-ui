@@ -1,5 +1,38 @@
 import { api } from "../../shared/utils/api";
 
+export const addEquipmentReport = async (
+  reportData: any,
+  excelFile: File,
+  pdfFiles: File[]
+) => {
+  const formData = new FormData();
+
+  // Add metadata
+  formData.append("reportData", JSON.stringify(reportData));
+
+  // Add excel file
+  formData.append("excel", excelFile);
+
+  // Add pdf files with index
+  pdfFiles.forEach((file, index) => {
+    formData.append(`pdfFiles[${index}]`, file, file.name);
+  });
+
+  try {
+    const response = await api.post("/scripts/equip/fillForm", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error adding report:", error);
+    throw new Error("Error adding report");
+  }
+};
+
+
+
 export const addAssetsToReport = async (reportId: string, excelFile: File) => {
   const formData = new FormData();
   formData.append("reportId", reportId);
