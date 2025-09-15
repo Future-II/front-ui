@@ -7,41 +7,35 @@ interface Client {
   email_address: string;
 }
 
-interface Resident {
-  name: string;
-  contributionRate: string;
-}
-
-interface ReportUser {
-  username: string;
+interface Valuer {
+  valuer_name: string;
+  contribution_percentage: number;
 }
 
 interface FormData {
   // Report Information
-  reportTitle: string;
-  purposeOfAssessment: string;
-  valueHypothesis: string;
-  reportType: string;
-  evaluationDate: string;
-  reportReleaseDate: string;
-  specialAssumptions: string;
-  finalOpinionOnValue: string;
-  evaluationCurrency: string;
+  report_title: string;
+  valuation_purpose: string;
+  value_premise: string;
+  report_type: string;
+  valuation_date: string;
+  report_issuing_date: string;
   assumptions: string;
-  
+  special_assumptions: string;
+  final_value: string;
+  valuation_currency: string;
+
   // Client Data
   clients: Client[];
-  
+
   // Other Users Report
-  otherUsersReport: boolean;
-  reportUsers: ReportUser[];
-  
-  // Resident Data
-  residents: Resident[];
-  
-  // Report Condition
-  reportCondition: string;
+  has_other_users: boolean;
+  report_users: string[];
+
+  // Valuer Data
+  valuers: Valuer[];
 }
+
 
 const ReportsManagementSystem = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -78,10 +72,10 @@ const ReportsManagementSystem = () => {
   const validateStep1 = () => {
     const newErrors: {[key: string]: string} = {};
 
-    if (!formData.reportTitle.trim()) {
+    if (!formData.report_title.trim()) {
       newErrors.reportTitle = 'Report title is required';
     }
-    if (!formData.evaluationDate) {
+    if (!formData.valuation_date) {
       newErrors.evaluationDate = 'Evaluation date is required';
     }
     if (!formData.reportReleaseDate) {
@@ -106,7 +100,7 @@ const ReportsManagementSystem = () => {
     });
 
     if (formData.otherUsersReport) {
-      formData.reportUsers.forEach((user) => {
+      formData.report_users.forEach((user) => {
         if (!user.username.trim()) {
           newErrors[`user_${user.id}_username`] = 'Report username is required';
         }
@@ -181,16 +175,16 @@ const ReportsManagementSystem = () => {
 
   // Report user management functions
   const addUser = () => {
-    const newId = formData.reportUsers.length > 0 ? Math.max(...formData.reportUsers.map(u => u.id)) + 1 : 1;
+    const newId = formData.report_users.length > 0 ? Math.max(...formData.report_users.map(u => u.id)) + 1 : 1;
     updateFormData({
-      reportUsers: [...formData.reportUsers, { id: newId, username: '' }]
+      reportUsers: [...formData.report_users, { id: newId, username: '' }]
     });
   };
 
   const deleteUser = (id: number) => {
-    if (formData.reportUsers.length > 1) {
+    if (formData.report_users.length > 1) {
       updateFormData({
-        reportUsers: formData.reportUsers.filter(u => u.id !== id)
+        reportUsers: formData.report_users.filter(u => u.id !== id)
       });
       const newErrors = { ...errors };
       delete newErrors[`user_${id}_username`];
@@ -200,7 +194,7 @@ const ReportsManagementSystem = () => {
 
   const updateUser = (id: number, field: keyof ReportUser, value: string) => {
     updateFormData({
-      reportUsers: formData.reportUsers.map(u => u.id === id ? { ...u, [field]: value } : u)
+      reportUsers: formData.report_users.map(u => u.id === id ? { ...u, [field]: value } : u)
     });
     const errorKey = `user_${id}_${field}`;
     if (errors[errorKey]) {
@@ -354,7 +348,7 @@ const ReportsManagementSystem = () => {
             <input
               type="text"
               className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.reportTitle ? 'border-red-500' : 'border-gray-300'}`}
-              value={formData.reportTitle}
+              value={formData.report_title}
               onChange={(e) => updateReportData('reportTitle', e.target.value)}
             />
             {errors.reportTitle && (
@@ -407,12 +401,12 @@ const ReportsManagementSystem = () => {
                     type="radio" 
                     name="reportType" 
                     value={option.value}
-                    checked={formData.reportType === option.value} 
+                    checked={formData.report_type === option.value} 
                     onChange={(e) => updateReportData('reportType', e.target.value)} 
                     className="sr-only" 
                   />
-                  <div className={`w-4 h-4 rounded-full border-2 ${formData.reportType === option.value ? 'border-green-500' : 'border-gray-300'} mr-2`}>
-                    {formData.reportType === option.value && (
+                  <div className={`w-4 h-4 rounded-full border-2 ${formData.report_type === option.value ? 'border-green-500' : 'border-gray-300'} mr-2`}>
+                    {formData.report_type === option.value && (
                       <div className="w-2 h-2 bg-green-500 rounded-full m-0.5"></div>
                     )}
                   </div>
@@ -431,7 +425,7 @@ const ReportsManagementSystem = () => {
             <input
               type="date"
               className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.evaluationDate ? 'border-red-500' : 'border-gray-300'}`}
-              value={formData.evaluationDate}
+              value={formData.valuation_date}
               onChange={(e) => updateReportData('evaluationDate', e.target.value)}
             />
             {errors.evaluationDate && (
@@ -475,7 +469,7 @@ const ReportsManagementSystem = () => {
             <textarea
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               rows={1}
-              value={formData.specialAssumptions}
+              value={formData.special_assumptions}
               onChange={(e) => updateReportData('specialAssumptions', e.target.value)}
             />
           </div>
@@ -501,7 +495,7 @@ const ReportsManagementSystem = () => {
             </label>
             <select 
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={formData.evaluationCurrency}
+              value={formData.valuation_currency}
               onChange={(e) => updateReportData('evaluationCurrency', e.target.value)}
             >
               <option>Saudi riyal</option>
@@ -631,7 +625,7 @@ const ReportsManagementSystem = () => {
         {formData.otherUsersReport && (
           <div className="mt-4">
             <h4 className="text-md font-medium text-blue-600 mb-4">Other users of the report</h4>
-            {formData.reportUsers.map((user) => (
+            {formData.report_users.map((user) => (
               <div key={user.id} className="grid grid-cols-2 gap-6 mb-4 items-end">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -651,9 +645,9 @@ const ReportsManagementSystem = () => {
                   <button 
                     type="button"
                     onClick={() => deleteUser(user.id)}
-                    disabled={formData.reportUsers.length === 1}
+                    disabled={formData.report_users.length === 1}
                     className={`px-4 py-3 rounded-lg border ${
-                      formData.reportUsers.length === 1 
+                      formData.report_users.length === 1 
                         ? 'border-gray-300 text-gray-400 cursor-not-allowed' 
                         : 'border-red-500 text-red-500 hover:bg-red-50'
                     }`}
@@ -828,8 +822,8 @@ const ReportsManagementSystem = () => {
         
         <div className="grid grid-cols-6 gap-4 items-center">
           <div>---</div>
-          <div>{formData.reportTitle || '---'}</div>
-          <div>{formData.evaluationDate || '---'}</div>
+          <div>{formData.report_title || '---'}</div>
+          <div>{formData.valuation_date || '---'}</div>
           <div className="relative">
             <select 
               className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -919,11 +913,11 @@ const ReportsManagementSystem = () => {
         <div className="grid grid-cols-2 gap-6 text-sm">
           <div>
             <h4 className="font-semibold mb-2">Report Information:</h4>
-            <p><strong>Title:</strong> {formData.reportTitle}</p>
-            <p><strong>Type:</strong> {formData.reportType}</p>
-            <p><strong>Evaluation Date:</strong> {formData.evaluationDate}</p>
+            <p><strong>Title:</strong> {formData.report_title}</p>
+            <p><strong>Type:</strong> {formData.report_type}</p>
+            <p><strong>Evaluation Date:</strong> {formData.valuation_date}</p>
             <p><strong>Release Date:</strong> {formData.reportReleaseDate}</p>
-            <p><strong>Currency:</strong> {formData.evaluationCurrency}</p>
+            <p><strong>Currency:</strong> {formData.valuation_currency}</p>
           </div>
           
           <div>
@@ -934,8 +928,8 @@ const ReportsManagementSystem = () => {
             
             {formData.otherUsersReport && (
               <>
-                <h4 className="font-semibold mb-2 mt-4">Report Users ({formData.reportUsers.length}):</h4>
-                {formData.reportUsers.map((user, index) => (
+                <h4 className="font-semibold mb-2 mt-4">Report Users ({formData.report_users.length}):</h4>
+                {formData.report_users.map((user, index) => (
                   <p key={user.id}>{index + 1}. {user.username}</p>
                 ))}
               </>
