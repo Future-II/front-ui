@@ -1,22 +1,20 @@
 import { api } from "../../shared/utils/api";
 
 export const addEquipmentReport = async (
-  reportData: any,
+  baseData: any,
   excelFile: File,
   pdfFiles: File[]
 ) => {
   const formData = new FormData();
 
-  // Add metadata
-  formData.append("reportData", JSON.stringify(reportData));
+  // Use the correct key expected by backend
+  formData.append("baseData", JSON.stringify(baseData));
 
   // Add excel file
   formData.append("excel", excelFile);
 
-  // Add pdf files with index
-  pdfFiles.forEach((file, index) => {
-    formData.append(`pdfFiles[${index}]`, file, file.name);
-  });
+  // Add pdf files
+  pdfFiles.forEach(file => formData.append('pdfs', file));
 
   try {
     const response = await api.post("/scripts/equip/fillForm", formData, {
@@ -30,8 +28,6 @@ export const addEquipmentReport = async (
     throw new Error("Error adding report");
   }
 };
-
-
 
 export const addAssetsToReport = async (reportId: string, excelFile: File) => {
   const formData = new FormData();

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Upload, Plus, User, Loader2 } from 'lucide-react';
+import { Plus, User } from 'lucide-react';
 import UploadBlock from '../components/UploadBlock';
 import { addEquipmentReport } from '../api';
 
@@ -687,8 +687,8 @@ const handlePdfUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
                 value={valuer.valuer_name}
                 onChange={(e) => updateValuer(index, 'valuer_name', e.target.value)}
               >
-                <option value="">Select</option>
-                <option value="">4210000352</option>
+                <option>Select</option>
+                <option>4210000352</option>
               </select>
             </div>
 
