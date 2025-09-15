@@ -1,25 +1,23 @@
 import React, { useState, useMemo } from 'react';
-import { Upload, Plus, User } from 'lucide-react';
+import { Upload, Plus, User, Loader2 } from 'lucide-react';
 
 interface Client {
-  id: number;
-  name: string;
-  phone: string;
-  email: string;
+  client_name: string;
+  telephone_number: string;
+  email_address: string;
 }
 
 interface Resident {
-  id: number;
   name: string;
   contributionRate: string;
 }
 
 interface ReportUser {
-  id: number;
   username: string;
 }
 
-interface ReportData {
+interface FormData {
+  // Report Information
   reportTitle: string;
   purposeOfAssessment: string;
   valueHypothesis: string;
@@ -30,58 +28,70 @@ interface ReportData {
   finalOpinionOnValue: string;
   evaluationCurrency: string;
   assumptions: string;
+  
+  // Client Data
+  clients: Client[];
+  
+  // Other Users Report
+  otherUsersReport: boolean;
+  reportUsers: ReportUser[];
+  
+  // Resident Data
+  residents: Resident[];
+  
+  // Report Condition
+  reportCondition: string;
 }
 
 const ReportsManagementSystem = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [submitMessage, setSubmitMessage] = useState('');
   
-  const [reportData, setReportData] = useState<ReportData>({
-    reportTitle: '',
-    purposeOfAssessment: 'to set',
-    valueHypothesis: 'to set',
-    reportType: 'detailed',
-    evaluationDate: '',
-    reportReleaseDate: '',
-    specialAssumptions: '',
-    finalOpinionOnValue: '',
-    evaluationCurrency: 'Saudi riyal',
-    assumptions: ''
-  });
+  const [formData, setFormData] = useState<FormData>({
+  // Report Information
+  report_title: '',
+  valuation_purpose: 'to set',
+  value_premise: 'to set',
+  report_type: 'detailed',
+  valuation_date: '',
+  report_issuing_date: '',
+  assumptions: '',
+  special_assumptions: '',
+  final_value: '',
+  valuation_currency: 'Saudi riyal',
 
-  const [clients, setClients] = useState<Client[]>([
-    { id: 1, name: '', phone: '', email: '' }
-  ]);
+  // Client Data
+  clients: [{ client_name: '', telephone_number: '', email_address: '' }],
 
-  const [residents, setResidents] = useState<Resident[]>([
-    { id: 1, name: 'to set', contributionRate: '100%' }
-  ]);
+  // Other Users Report
+  has_other_users: false,
+  report_users: [],
 
-  const [otherUsersReport, setOtherUsersReport] = useState(false);
-  const [reportUsers, setReportUsers] = useState<ReportUser[]>([
-    { id: 1, username: '' }
-  ]);
-  const [uploadedFile, setUploadedFile] = useState('');
-  const [uploadedPDF, setUploadedPDF] = useState('');
-  const [reportCondition, setReportCondition] = useState('new');
+  // Valuer Data
+  valuers: [{ valuer_name: '', contribution_percentage: 100 }]
+});
+
 
   const validateStep1 = () => {
     const newErrors: {[key: string]: string} = {};
 
-    if (!reportData.reportTitle.trim()) {
+    if (!formData.reportTitle.trim()) {
       newErrors.reportTitle = 'Report title is required';
     }
-    if (!reportData.evaluationDate) {
+    if (!formData.evaluationDate) {
       newErrors.evaluationDate = 'Evaluation date is required';
     }
-    if (!reportData.reportReleaseDate) {
+    if (!formData.reportReleaseDate) {
       newErrors.reportReleaseDate = 'Report release date is required';
     }
-    if (!reportData.finalOpinionOnValue.trim()) {
+    if (!formData.finalOpinionOnValue.trim()) {
       newErrors.finalOpinionOnValue = 'Final Opinion on Value is required';
     }
 
-    clients.forEach((client) => {
+    formData.clients.forEach((client) => {
       if (!client.name.trim()) {
         newErrors[`client_${client.id}_name`] = 'Customer name is required';
       }
@@ -95,8 +105,8 @@ const ReportsManagementSystem = () => {
       }
     });
 
-    if (otherUsersReport) {
-      reportUsers.forEach((user) => {
+    if (formData.otherUsersReport) {
+      formData.reportUsers.forEach((user) => {
         if (!user.username.trim()) {
           newErrors[`user_${user.id}_username`] = 'Report username is required';
         }
@@ -107,14 +117,24 @@ const ReportsManagementSystem = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Generic update function for form data
+  const updateFormData = (updates: Partial<FormData>) => {
+    setFormData(prev => ({ ...prev, ...updates }));
+  };
+
+  // Client management functions
   const addClient = () => {
-    const newId = clients.length > 0 ? Math.max(...clients.map(c => c.id)) + 1 : 1;
-    setClients([...clients, { id: newId, name: '', phone: '', email: '' }]);
+    const newId = formData.clients.length > 0 ? Math.max(...formData.clients.map(c => c.id)) + 1 : 1;
+    updateFormData({
+      clients: [...formData.clients, { id: newId, name: '', phone: '', email: '' }]
+    });
   };
 
   const deleteClient = (id: number) => {
-    if (clients.length > 1) {
-      setClients(clients.filter(c => c.id !== id));
+    if (formData.clients.length > 1) {
+      updateFormData({
+        clients: formData.clients.filter(c => c.id !== id)
+      });
       const newErrors = { ...errors };
       delete newErrors[`client_${id}_name`];
       delete newErrors[`client_${id}_phone`];
@@ -123,33 +143,10 @@ const ReportsManagementSystem = () => {
     }
   };
 
-  const addResident = () => {
-    const newId = residents.length > 0 ? Math.max(...residents.map(r => r.id)) + 1 : 1;
-    setResidents([...residents, { id: newId, name: 'to set', contributionRate: '100%' }]);
-  };
-
-  const deleteResident = (id: number) => {
-    if (residents.length > 1) {
-      setResidents(residents.filter(r => r.id !== id));
-    }
-  };
-
-  const addUser = () => {
-    const newId = reportUsers.length > 0 ? Math.max(...reportUsers.map(u => u.id)) + 1 : 1;
-    setReportUsers([...reportUsers, { id: newId, username: '' }]);
-  };
-
-  const deleteUser = (id: number) => {
-    if (reportUsers.length > 1) {
-      setReportUsers(reportUsers.filter(u => u.id !== id));
-      const newErrors = { ...errors };
-      delete newErrors[`user_${id}_username`];
-      setErrors(newErrors);
-    }
-  };
-
   const updateClient = (id: number, field: keyof Client, value: string) => {
-    setClients(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c));
+    updateFormData({
+      clients: formData.clients.map(c => c.id === id ? { ...c, [field]: value } : c)
+    });
     const errorKey = `client_${id}_${field}`;
     if (errors[errorKey]) {
       setErrors(prev => {
@@ -160,12 +157,51 @@ const ReportsManagementSystem = () => {
     }
   };
 
+  // Resident management functions
+  const addResident = () => {
+    const newId = formData.residents.length > 0 ? Math.max(...formData.residents.map(r => r.id)) + 1 : 1;
+    updateFormData({
+      residents: [...formData.residents, { id: newId, name: 'to set', contributionRate: '100%' }]
+    });
+  };
+
+  const deleteResident = (id: number) => {
+    if (formData.residents.length > 1) {
+      updateFormData({
+        residents: formData.residents.filter(r => r.id !== id)
+      });
+    }
+  };
+
   const updateResident = (id: number, field: keyof Resident, value: string) => {
-    setResidents(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r));
+    updateFormData({
+      residents: formData.residents.map(r => r.id === id ? { ...r, [field]: value } : r)
+    });
+  };
+
+  // Report user management functions
+  const addUser = () => {
+    const newId = formData.reportUsers.length > 0 ? Math.max(...formData.reportUsers.map(u => u.id)) + 1 : 1;
+    updateFormData({
+      reportUsers: [...formData.reportUsers, { id: newId, username: '' }]
+    });
+  };
+
+  const deleteUser = (id: number) => {
+    if (formData.reportUsers.length > 1) {
+      updateFormData({
+        reportUsers: formData.reportUsers.filter(u => u.id !== id)
+      });
+      const newErrors = { ...errors };
+      delete newErrors[`user_${id}_username`];
+      setErrors(newErrors);
+    }
   };
 
   const updateUser = (id: number, field: keyof ReportUser, value: string) => {
-    setReportUsers(prev => prev.map(u => u.id === id ? { ...u, [field]: value } : u));
+    updateFormData({
+      reportUsers: formData.reportUsers.map(u => u.id === id ? { ...u, [field]: value } : u)
+    });
     const errorKey = `user_${id}_${field}`;
     if (errors[errorKey]) {
       setErrors(prev => {
@@ -176,8 +212,9 @@ const ReportsManagementSystem = () => {
     }
   };
 
-  const updateReportData = (field: keyof ReportData, value: string) => {
-    setReportData(prev => ({ ...prev, [field]: value }));
+  // Report data update function
+  const updateReportData = (field: keyof FormData, value: string | boolean) => {
+    updateFormData({ [field]: value });
     if (errors[field]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -190,6 +227,7 @@ const ReportsManagementSystem = () => {
   const handleSaveAndContinue = () => {
     if (validateStep1()) {
       setCurrentStep(2);
+      console.log('Consolidated Form Data:', formData);
     } else {
       const firstErrorElement = document.querySelector('.border-red-500');
       if (firstErrorElement) {
@@ -201,14 +239,14 @@ const ReportsManagementSystem = () => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setUploadedFile(file.name);
+      updateFormData({ uploadedExcel: file.name });
     }
   };
 
   const handlePDFUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type === 'application/pdf') {
-      setUploadedPDF(file.name);
+      updateFormData({ uploadedPDF: file.name });
     }
   };
 
@@ -224,6 +262,50 @@ const ReportsManagementSystem = () => {
     if (input) {
       input.click();
     }
+  };
+
+  const handleSendReport = async () => {
+    setIsLoading(true);
+    setSubmitStatus('idle');
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setSubmitStatus('success');
+      setSubmitMessage('Report sent successfully!');
+    } catch (error) {
+      setSubmitStatus('error');
+      setSubmitMessage('Error sending report. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      reportTitle: '',
+      purposeOfAssessment: 'to set',
+      valueHypothesis: 'to set',
+      reportType: 'detailed',
+      evaluationDate: '',
+      reportReleaseDate: '',
+      specialAssumptions: '',
+      finalOpinionOnValue: '',
+      evaluationCurrency: 'Saudi riyal',
+      assumptions: '',
+      clients: [{ id: 1, name: '', phone: '', email: '' }],
+      otherUsersReport: false,
+      reportUsers: [{ id: 1, username: '' }],
+      residents: [{ id: 1, name: 'to set', contributionRate: '100%' }],
+      uploadedPDF: '',
+      uploadedExcel: '',
+      reportCondition: 'new'
+    });
+    setErrors({});
+    setCurrentStep(1);
+    setSubmitStatus('idle');
+    setSubmitMessage('');
+    setIsLoading(false);
   };
 
   const StepIndicator = useMemo(() => (
@@ -272,7 +354,7 @@ const ReportsManagementSystem = () => {
             <input
               type="text"
               className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.reportTitle ? 'border-red-500' : 'border-gray-300'}`}
-              value={reportData.reportTitle}
+              value={formData.reportTitle}
               onChange={(e) => updateReportData('reportTitle', e.target.value)}
             />
             {errors.reportTitle && (
@@ -286,7 +368,7 @@ const ReportsManagementSystem = () => {
             </label>
             <select 
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={reportData.purposeOfAssessment}
+              value={formData.purposeOfAssessment}
               onChange={(e) => updateReportData('purposeOfAssessment', e.target.value)}
             >
               <option>to set</option>
@@ -300,7 +382,7 @@ const ReportsManagementSystem = () => {
             </label>
             <select 
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={reportData.valueHypothesis}
+              value={formData.valueHypothesis}
               onChange={(e) => updateReportData('valueHypothesis', e.target.value)}
             >
               <option>to set</option>
@@ -325,12 +407,12 @@ const ReportsManagementSystem = () => {
                     type="radio" 
                     name="reportType" 
                     value={option.value}
-                    checked={reportData.reportType === option.value} 
+                    checked={formData.reportType === option.value} 
                     onChange={(e) => updateReportData('reportType', e.target.value)} 
                     className="sr-only" 
                   />
-                  <div className={`w-4 h-4 rounded-full border-2 ${reportData.reportType === option.value ? 'border-green-500' : 'border-gray-300'} mr-2`}>
-                    {reportData.reportType === option.value && (
+                  <div className={`w-4 h-4 rounded-full border-2 ${formData.reportType === option.value ? 'border-green-500' : 'border-gray-300'} mr-2`}>
+                    {formData.reportType === option.value && (
                       <div className="w-2 h-2 bg-green-500 rounded-full m-0.5"></div>
                     )}
                   </div>
@@ -349,7 +431,7 @@ const ReportsManagementSystem = () => {
             <input
               type="date"
               className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.evaluationDate ? 'border-red-500' : 'border-gray-300'}`}
-              value={reportData.evaluationDate}
+              value={formData.evaluationDate}
               onChange={(e) => updateReportData('evaluationDate', e.target.value)}
             />
             {errors.evaluationDate && (
@@ -364,7 +446,7 @@ const ReportsManagementSystem = () => {
             <input
               type="date"
               className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.reportReleaseDate ? 'border-red-500' : 'border-gray-300'}`}
-              value={reportData.reportReleaseDate}
+              value={formData.reportReleaseDate}
               onChange={(e) => updateReportData('reportReleaseDate', e.target.value)}
             />
             {errors.reportReleaseDate && (
@@ -379,7 +461,7 @@ const ReportsManagementSystem = () => {
             <textarea
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               rows={1}
-              value={reportData.assumptions}
+              value={formData.assumptions}
               onChange={(e) => updateReportData('assumptions', e.target.value)}
             />
           </div>
@@ -393,7 +475,7 @@ const ReportsManagementSystem = () => {
             <textarea
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               rows={1}
-              value={reportData.specialAssumptions}
+              value={formData.specialAssumptions}
               onChange={(e) => updateReportData('specialAssumptions', e.target.value)}
             />
           </div>
@@ -405,7 +487,7 @@ const ReportsManagementSystem = () => {
             <textarea
               className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.finalOpinionOnValue ? 'border-red-500' : 'border-gray-300'}`}
               rows={1}
-              value={reportData.finalOpinionOnValue}
+              value={formData.finalOpinionOnValue}
               onChange={(e) => updateReportData('finalOpinionOnValue', e.target.value)}
             />
             {errors.finalOpinionOnValue && (
@@ -419,7 +501,7 @@ const ReportsManagementSystem = () => {
             </label>
             <select 
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={reportData.evaluationCurrency}
+              value={formData.evaluationCurrency}
               onChange={(e) => updateReportData('evaluationCurrency', e.target.value)}
             >
               <option>Saudi riyal</option>
@@ -443,8 +525,8 @@ const ReportsManagementSystem = () => {
           >
             Select PDF File
           </button>
-          {uploadedPDF && (
-            <p className="text-green-600 text-sm mt-2">PDF selected: {uploadedPDF}</p>
+          {formData.uploadedPDF && (
+            <p className="text-green-600 text-sm mt-2">PDF selected: {formData.uploadedPDF}</p>
           )}
           <input 
             type="file" 
@@ -460,7 +542,7 @@ const ReportsManagementSystem = () => {
       <div className="bg-white rounded-lg p-6 mb-6">
         <h3 className="text-lg font-semibold text-blue-600 mb-4">Customer data</h3>
         
-        {clients.map((client) => (
+        {formData.clients.map((client) => (
           <div key={client.id} className="grid grid-cols-4 gap-6 mb-4 items-end">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -511,9 +593,9 @@ const ReportsManagementSystem = () => {
               <button 
                 type="button"
                 onClick={() => deleteClient(client.id)}
-                disabled={clients.length === 1}
+                disabled={formData.clients.length === 1}
                 className={`px-4 py-3 rounded-lg border ${
-                  clients.length === 1 
+                  formData.clients.length === 1 
                     ? 'border-gray-300 text-gray-400 cursor-not-allowed' 
                     : 'border-red-500 text-red-500 hover:bg-red-50'
                 }`}
@@ -539,17 +621,17 @@ const ReportsManagementSystem = () => {
           <input 
             type="checkbox" 
             id="otherUsersReport"
-            checked={otherUsersReport}
-            onChange={(e) => setOtherUsersReport(e.target.checked)}
+            checked={formData.otherUsersReport}
+            onChange={(e) => updateReportData('otherUsersReport', e.target.checked)}
             className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
           />
           <label htmlFor="otherUsersReport" className="text-sm text-gray-700">Other users report</label>
         </div>
 
-        {otherUsersReport && (
+        {formData.otherUsersReport && (
           <div className="mt-4">
             <h4 className="text-md font-medium text-blue-600 mb-4">Other users of the report</h4>
-            {reportUsers.map((user) => (
+            {formData.reportUsers.map((user) => (
               <div key={user.id} className="grid grid-cols-2 gap-6 mb-4 items-end">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -569,9 +651,9 @@ const ReportsManagementSystem = () => {
                   <button 
                     type="button"
                     onClick={() => deleteUser(user.id)}
-                    disabled={reportUsers.length === 1}
+                    disabled={formData.reportUsers.length === 1}
                     className={`px-4 py-3 rounded-lg border ${
-                      reportUsers.length === 1 
+                      formData.reportUsers.length === 1 
                         ? 'border-gray-300 text-gray-400 cursor-not-allowed' 
                         : 'border-red-500 text-red-500 hover:bg-red-50'
                     }`}
@@ -596,7 +678,7 @@ const ReportsManagementSystem = () => {
       <div className="bg-white rounded-lg p-6 mb-6">
         <h3 className="text-lg font-semibold text-blue-600 mb-4">Resident data</h3>
         
-        {residents.map((resident) => (
+        {formData.residents.map((resident) => (
           <div key={resident.id} className="grid grid-cols-3 gap-6 mb-4 items-end">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -631,9 +713,9 @@ const ReportsManagementSystem = () => {
               <button 
                 type="button"
                 onClick={() => deleteResident(resident.id)}
-                disabled={residents.length === 1}
+                disabled={formData.residents.length === 1}
                 className={`px-4 py-3 rounded-lg border ${
-                  residents.length === 1 
+                  formData.residents.length === 1 
                     ? 'border-gray-300 text-gray-400 cursor-not-allowed' 
                     : 'border-red-500 text-red-500 hover:bg-red-50'
                 }`}
@@ -671,7 +753,7 @@ const ReportsManagementSystem = () => {
         </button>
       </div>
     </div>
-  ), [reportData, clients, residents, reportUsers, otherUsersReport, errors, uploadedPDF]);
+  ), [formData, errors]);
 
   const renderStep2 = useMemo(() => (
     <div className="max-w-4xl mx-auto p-6">
@@ -702,8 +784,8 @@ const ReportsManagementSystem = () => {
           id="excelFileInput"
         />
         
-        {uploadedFile && (
-          <p className="text-green-600 text-sm">File selected: {uploadedFile}</p>
+        {formData.uploadedExcel && (
+          <p className="text-green-600 text-sm">File selected: {formData.uploadedExcel}</p>
         )}
       </div>
       
@@ -717,14 +799,17 @@ const ReportsManagementSystem = () => {
         </button>
         <button 
           type="button"
-          onClick={() => setCurrentStep(3)}
+          onClick={() => {
+            setCurrentStep(3);
+            console.log('Final Consolidated Form Data:', formData);
+          }}
           className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg"
         >
           Continue
         </button>
       </div>
     </div>
-  ), [uploadedFile]);
+  ), [formData.uploadedExcel, formData]);
 
   const renderStep3 = useMemo(() => (
     <div className="max-w-6xl mx-auto p-6">
@@ -743,13 +828,13 @@ const ReportsManagementSystem = () => {
         
         <div className="grid grid-cols-6 gap-4 items-center">
           <div>---</div>
-          <div>{reportData.reportTitle || '---'}</div>
-          <div>{reportData.evaluationDate || '---'}</div>
+          <div>{formData.reportTitle || '---'}</div>
+          <div>{formData.evaluationDate || '---'}</div>
           <div className="relative">
             <select 
               className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={reportCondition}
-              onChange={(e) => setReportCondition(e.target.value)}
+              value={formData.reportCondition}
+              onChange={(e) => updateReportData('reportCondition', e.target.value)}
             >
               <option value="new">new</option>
               <option value="partially">Partially complete</option>
@@ -759,18 +844,25 @@ const ReportsManagementSystem = () => {
           <div className="flex gap-2">
             <button 
               type="button"
-              className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
+              onClick={handleSendReport}
+              disabled={isLoading}
+              className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
             >
-              send
+              {isLoading ? 'Sending...' : 'send'}
             </button>
             <button 
               type="button"
+              onClick={() => setCurrentStep(1)}
               className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm"
             >
               amendment
             </button>
             <button 
               type="button"
+              onClick={() => {
+                console.log('Rebroadcasting report with data:', formData);
+                alert('Report rebroadcast successfully!');
+              }}
               className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
             >
               rebroadcast
@@ -779,39 +871,101 @@ const ReportsManagementSystem = () => {
           <div></div>
         </div>
       </div>
+
+      {/* Display consolidated form data summary */}
+      <div className="bg-white rounded-lg p-6 mb-6">
+        <h3 className="text-lg font-semibold text-blue-600 mb-4">Form Data Summary</h3>
+        
+        {/* Status Messages */}
+        {submitStatus === 'success' && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium">{submitMessage}</p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {submitStatus === 'error' && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium">{submitMessage}</p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {isLoading && (
+          <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4">
+            <div className="flex items-center">
+              <Loader2 size={16} className="animate-spin mr-2" />
+              <p className="text-sm font-medium">Uploading data to database...</p>
+            </div>
+          </div>
+        )}
+        
+        <div className="grid grid-cols-2 gap-6 text-sm">
+          <div>
+            <h4 className="font-semibold mb-2">Report Information:</h4>
+            <p><strong>Title:</strong> {formData.reportTitle}</p>
+            <p><strong>Type:</strong> {formData.reportType}</p>
+            <p><strong>Evaluation Date:</strong> {formData.evaluationDate}</p>
+            <p><strong>Release Date:</strong> {formData.reportReleaseDate}</p>
+            <p><strong>Currency:</strong> {formData.evaluationCurrency}</p>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold mb-2">Clients ({formData.clients.length}):</h4>
+            {formData.clients.map((client, index) => (
+              <p key={client.id}>{index + 1}. {client.name} - {client.email}</p>
+            ))}
+            
+            {formData.otherUsersReport && (
+              <>
+                <h4 className="font-semibold mb-2 mt-4">Report Users ({formData.reportUsers.length}):</h4>
+                {formData.reportUsers.map((user, index) => (
+                  <p key={user.id}>{index + 1}. {user.username}</p>
+                ))}
+              </>
+            )}
+            
+            <h4 className="font-semibold mb-2 mt-4">Residents ({formData.residents.length}):</h4>
+            {formData.residents.map((resident, index) => (
+              <p key={resident.id}>{index + 1}. {resident.name} - {resident.contributionRate}</p>
+            ))}
+          </div>
+        </div>
+        
+        <div className="mt-4 pt-4 border-t">
+          <h4 className="font-semibold mb-2">Files:</h4>
+          <p><strong>PDF:</strong> {formData.uploadedPDF || 'Not uploaded'}</p>
+          <p><strong>Excel:</strong> {formData.uploadedExcel || 'Not uploaded'}</p>
+        </div>
+      </div>
       
       <div className="flex justify-center mt-8">
         <button 
           type="button"
-          onClick={() => {
-            setCurrentStep(1);
-            setReportData({
-              reportTitle: '',
-              purposeOfAssessment: 'to set',
-              valueHypothesis: 'to set',
-              reportType: 'detailed',
-              evaluationDate: '',
-              reportReleaseDate: '',
-              specialAssumptions: '',
-              finalOpinionOnValue: '',
-              evaluationCurrency: 'Saudi riyal',
-              assumptions: ''
-            });
-            setClients([{ id: 1, name: '', phone: '', email: '' }]);
-            setResidents([{ id: 1, name: 'to set', contributionRate: '100%' }]);
-            setReportUsers([{ id: 1, username: '' }]);
-            setOtherUsersReport(false);
-            setUploadedFile('');
-            setUploadedPDF('');
-            setErrors({});
-          }}
+          onClick={resetForm}
           className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg"
         >
           Upload a new report
         </button>
       </div>
     </div>
-  ), [reportData.reportTitle, reportData.evaluationDate, reportCondition]);
+  ), [formData, submitStatus, submitMessage, isLoading]);
 
   const Header = useMemo(() => (
     <div className="bg-white border-b px-6 py-3 flex justify-between items-center">
@@ -839,6 +993,16 @@ const ReportsManagementSystem = () => {
         {currentStep === 1 && renderStep1}
         {currentStep === 2 && renderStep2}
         {currentStep === 3 && renderStep3}
+      </div>
+      
+      {/* Debug: Show current form data in console */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <button 
+          onClick={() => console.log('Current Consolidated Form Data:', formData)}
+          className="bg-gray-800 text-white px-3 py-2 rounded text-xs hover:bg-gray-700"
+        >
+          Log Form Data
+        </button>
       </div>
     </div>
   );
