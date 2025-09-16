@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Plus, User } from 'lucide-react';
 import UploadBlock from '../components/UploadBlock';
 import { addEquipmentReport } from '../api';
@@ -39,6 +39,38 @@ interface FormData {
   valuers: Valuer[];
 }
 
+// Success Toast Component (copied from EquipmentReport)
+const SuccessToast: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  return (
+    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50 animate-fade-in-out">
+      Report saved successfully
+      <button
+        onClick={onClose}
+        className="ml-3 text-sm underline hover:text-gray-200"
+      >
+        Close
+      </button>
+    </div>
+  );
+};
+
+// Progress Bar Component (copied from EquipmentReport)
+const ProgressBar: React.FC<{ progress: number }> = ({ progress }) => {
+  return (
+    <div className="flex items-center mt-6">
+      <div className="flex-1 bg-gray-200 rounded-full h-3 relative">
+        <div
+          className="bg-blue-600 h-3 rounded-full transition-all duration-300"
+          style={{ width: `${progress}%` }}
+        ></div>
+      </div>
+      {/* Circling loader */}
+      {progress < 100 && (
+        <div className="ml-2 w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      )}
+    </div>
+  );
+};
 
 const ReportsManagementSystem = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -47,11 +79,15 @@ const ReportsManagementSystem = () => {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [submitMessage, setSubmitMessage] = useState('');
   const [loggedIn, setLoggedIn] = useState(false);
-
   
+  // Progress bar and success notification states
+  const [progress, setProgress] = useState(0);
+  const [showSuccess, setShowSuccess] = useState(false);
   
   const [excelFile, setExcelFile] = useState<File | null>(null);
   const [pdfs, setPdfFiles] = useState<File[] | []>([]);
+
+  const requestRef = useRef<Promise<any> | null>(null);
 
   console.log("pdfFiles", pdfs)
 
@@ -79,16 +115,46 @@ const ReportsManagementSystem = () => {
     valuers: [{ valuer_name: '', contribution_percentage: 100 }]
   });
 
+  // Progress simulation function (copied from EquipmentReport)
+  const simulateProgress = () => {
+    let current = 0;
+    const interval = setInterval(() => {
+      current += 2;
+      if (current >= 85) {
+        current = 85;
+        clearInterval(interval);
+      }
+      setProgress(current);
+    }, 100);
+  };
+
   const handleSubmit = async () => {
     if (!excelFile || pdfs.length === 0) {
       alert("Please select both an Excel file and at least one PDF file.");
       return;
     }
+
     try {
-      const response = await addEquipmentReport(formData, excelFile, pdfs);
+      setIsLoading(true);
+      simulateProgress(); // Start progress simulation
+
+      // Send backend request
+      requestRef.current = addEquipmentReport(formData, excelFile, pdfs);
+      const response = await requestRef.current;
       console.log("Upload successful:", response);
+
+      // Wait for animation to finish (align with fake progression)
+      setTimeout(() => {
+        setProgress(100);
+        setShowSuccess(true);
+        setIsLoading(false);
+        setTimeout(() => setShowSuccess(false), 3000);
+      }, 3500);
+
     } catch (error) {
       console.error("Error uploading files:", error);
+      setIsLoading(false);
+      setProgress(0);
       alert("An error occurred while uploading the files. Please try again.");
     }
   };
@@ -114,7 +180,6 @@ const ReportsManagementSystem = () => {
         console.log("Enter Client Name")
       }
     });
-
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -196,7 +261,6 @@ const ReportsManagementSystem = () => {
     }
   };
 
-
   // --- Valuer management ---
   const addValuer = () => {
     updateFormData({
@@ -217,7 +281,6 @@ const ReportsManagementSystem = () => {
     );
     updateFormData({ valuers: newValuers });
   };
-
 
   // Report data update function
   const updateReportData = (field: keyof FormData, value: string | boolean) => {
@@ -304,6 +367,8 @@ const handlePdfUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSubmitStatus('idle');
     setSubmitMessage('');
     setIsLoading(false);
+    setProgress(0);
+    setShowSuccess(false);
   };
 
   const StepIndicator = useMemo(() => (
@@ -518,13 +583,11 @@ const handlePdfUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
           disabled={isLoading}
         />
 
-
         {pdfs.length > 0 && (
           <p className="mt-2 text-sm text-gray-600">
             Selected PDF File: {pdfs[0].name}
           </p>
         )}
-
       </div>
 
       {/* Customer Data Section */}
@@ -670,9 +733,7 @@ const handlePdfUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
             </button>
           </div>
         )}
-
       </div>
-
 
       {/* Resident Data Section */}
       <div className="bg-white rounded-lg p-6 mb-6">
@@ -726,7 +787,6 @@ const handlePdfUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
           </div>
         ))}
 
-
         <div>
           <button
             type="button"
@@ -768,195 +828,32 @@ const handlePdfUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
       />
 
       {excelFile && (
-        <p className="mt-2 text-sm text-gray-600">  Selected Excel File: {excelFile.name}</p>
+        <p className="mt-2 text-sm text-gray-600">Selected Excel File: {excelFile.name}</p>
       )}
+
+      {/* Progress Bar - shown when loading */}
+      {isLoading && <ProgressBar progress={progress} />}
 
       <div className="flex justify-between items-center mt-8">
         <button
           type="button"
           onClick={() => setCurrentStep(1)}
-          className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg"
+          disabled={isLoading}
+          className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg disabled:opacity-50"
         >
           Back
         </button>
         <button
           type="button"
           onClick={() => handleSubmit()}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg"
+          disabled={isLoading}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg disabled:opacity-50"
         >
-          Submit
+          {isLoading ? 'Submitting...' : 'Submit'}
         </button>
       </div>
     </div>
   );
-
-
-  // const renderStep3 = useMemo(() => (
-  //   <div className="max-w-6xl mx-auto p-6">
-  //     <h2 className="text-2xl font-bold text-green-600 mb-4">Report sending result</h2>
-  //     <p className="text-gray-600 mb-6">Summary of the submitted report:</p>
-
-  //     <div className="bg-white rounded-lg p-6 mb-6">
-  //       <div className="grid grid-cols-6 gap-4 mb-4">
-  //         <div className="font-semibold">Report number</div>
-  //         <div className="font-semibold">Report title</div>
-  //         <div className="font-semibold">Evaluation date</div>
-  //         <div className="font-semibold">the condition</div>
-  //         <div className="font-semibold">procedures</div>
-  //         <div></div>
-  //       </div>
-
-  //       <div className="grid grid-cols-6 gap-4 items-center">
-  //         <div>---</div>
-  //         <div>{formData.report_title || '---'}</div>
-  //         <div>{formData.valuation_date || '---'}</div>
-  //         {/* <div className="relative">
-  //           <select
-  //             className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-  //             value={formData.reportCondition}
-  //             onChange={(e) => updateReportData('reportCondition', e.target.value)}
-  //           >
-  //             <option value="new">new</option>
-  //             <option value="partially">Partially complete</option>
-  //             <option value="complete">complete</option>
-  //           </select>
-  //         </div> */}
-  //         <div className="flex gap-2">
-  //           <button
-  //             type="button"
-  //             onClick={handleSendReport}
-  //             disabled={isLoading}
-  //             className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
-  //           >
-  //             {isLoading ? 'Sending...' : 'send'}
-  //           </button>
-  //           <button
-  //             type="button"
-  //             onClick={() => setCurrentStep(1)}
-  //             className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm"
-  //           >
-  //             amendment
-  //           </button>
-  //           <button
-  //             type="button"
-  //             onClick={() => {
-  //               console.log('Rebroadcasting report with data:', formData);
-  //               alert('Report rebroadcast successfully!');
-  //             }}
-  //             className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
-  //           >
-  //             rebroadcast
-  //           </button>
-  //         </div>
-  //         <div></div>
-  //       </div>
-  //     </div>
-
-  //     {/* Display consolidated form data summary */}
-  //     <div className="bg-white rounded-lg p-6 mb-6">
-  //       <h3 className="text-lg font-semibold text-blue-600 mb-4">Form Data Summary</h3>
-
-  //       {/* Status Messages */}
-  //       {submitStatus === 'success' && (
-  //         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-  //           <div className="flex">
-  //             <div className="flex-shrink-0">
-  //               <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-  //                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-  //               </svg>
-  //             </div>
-  //             <div className="ml-3">
-  //               <p className="text-sm font-medium">{submitMessage}</p>
-  //             </div>
-  //           </div>
-  //         </div>
-  //       )}
-
-  //       {submitStatus === 'error' && (
-  //         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-  //           <div className="flex">
-  //             <div className="flex-shrink-0">
-  //               <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-  //                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-  //               </svg>
-  //             </div>
-  //             <div className="ml-3">
-  //               <p className="text-sm font-medium">{submitMessage}</p>
-  //             </div>
-  //           </div>
-  //         </div>
-  //       )}
-
-  //       {isLoading && (
-  //         <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4">
-  //           <div className="flex items-center">
-  //             <Loader2 size={16} className="animate-spin mr-2" />
-  //             <p className="text-sm font-medium">Uploading data to database...</p>
-  //           </div>
-  //         </div>
-  //       )}
-
-  //       <div className="grid grid-cols-2 gap-6 text-sm">
-  //         <div>
-  //           <h4 className="font-semibold mb-2">Report Information:</h4>
-  //           <p><strong>Title:</strong> {formData.report_title}</p>
-  //           <p><strong>Type:</strong> {formData.report_type}</p>
-  //           <p><strong>Evaluation Date:</strong> {formData.valuation_date}</p>
-  //           <p><strong>Release Date:</strong> {formData.reportReleaseDate}</p>
-  //           <p><strong>Currency:</strong> {formData.valuation_currency}</p>
-  //         </div>
-
-  //         <div>
-  //           <h4 className="font-semibold mb-2">Clients ({formData.clients.length}):</h4>
-  //           {formData.clients.map((client, index) => (
-  //             <p key={index}>
-  //               {index + 1}. {client.client_name} - {client.email_address}
-  //             </p>
-  //           ))}
-
-  //           {formData.report_users.length > 0 && (
-  //             <>
-  //               <h4 className="font-semibold mb-2 mt-4">
-  //                 Report Users ({formData.report_users.length}):
-  //               </h4>
-  //               {formData.report_users.map((user, index) => (
-  //                 <p key={index}>
-  //                   {index + 1}. {user || '(empty)'}
-  //                 </p>
-  //               ))}
-  //             </>
-  //           )}
-
-  //           <h4 className="font-semibold mb-2 mt-4">
-  //             Valuers ({formData.valuers.length}):
-  //           </h4>
-  //           {formData.valuers.map((valuer, index) => (
-  //             <p key={index}>
-  //               {index + 1}. {valuer.valuer_name} - {valuer.contribution_percentage}%
-  //             </p>
-  //           ))}
-
-  //         </div>
-  //       </div>
-
-  //       <div className="mt-4 pt-4 border-t">
-  //         <h4 className="font-semibold mb-2">Files:</h4>
-  //         <p><strong>PDF:</strong> {formData.uploadedPDF || 'Not uploaded'}</p>
-  //         <p><strong>Excel:</strong> {formData.uploadedExcel || 'Not uploaded'}</p>
-  //       </div>
-  //     </div>
-
-  //     <div className="flex justify-center mt-8">
-  //       <button
-  //         type="button"
-  //         onClick={resetForm}
-  //         className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg"
-  //       >
-  //         Upload a new report
-  //       </button>
-  //     </div>
-  //   </div>
-  // ), [formData, submitStatus, submitMessage, isLoading]);
 
   const Header = useMemo(() => (
     <div className="bg-white border-b px-6 py-3 flex justify-between items-center">
@@ -986,8 +883,10 @@ const handlePdfUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
 
         {currentStep === 1 && renderStep1}
         {currentStep === 2 && renderStep2()}
-        {/* {currentStep === 3 && renderStep3} */}
       </div>
+
+      {/* Success Toast */}
+      {showSuccess && <SuccessToast onClose={() => setShowSuccess(false)} />}
 
       {/* Debug: Show current form data in console */}
       <div className="fixed bottom-4 right-4 z-50">
