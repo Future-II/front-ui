@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Plus, User } from 'lucide-react';
 import UploadBlock from '../components/UploadBlock';
 import { addEquipmentReport } from '../api';
+import LoginModal from '../components/EquipmentTaqeemLogin';
 
 interface Client {
   client_name: string;
@@ -45,6 +46,7 @@ const ReportsManagementSystem = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [submitMessage, setSubmitMessage] = useState('');
+  const [loggedIn, setLoggedIn] = useState(false);
 
   
   
@@ -972,6 +974,9 @@ const handlePdfUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     </div>
   ), []);
 
+  if (!loggedIn) {
+      return <LoginModal isOpen={true} onClose={() => {}} setIsLoggedIn={setLoggedIn} />;
+    }
   return (
     <div className="min-h-screen bg-gray-50">
       {Header}
