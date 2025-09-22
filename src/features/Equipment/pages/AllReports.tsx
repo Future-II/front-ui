@@ -33,6 +33,7 @@ const AllReports: React.FC = () => {
   useEffect(() => {
     async function fetchAssets() {
       const assets: Asset[] = await getAllAssets();
+      console.log("assets fetched", assets);
 
       // Group assets by report_id
       const grouped = assets.reduce<Record<string, Report>>((acc, asset) => {
