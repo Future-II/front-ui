@@ -1,11 +1,12 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 import StepList from "../components/StepList";
 import UploadBlock from "../components/UploadBlock";
 import LoginModal from "../components/EquipmentTaqeemLogin";
 
-import { addAssetsToReport } from "../api";
+import { uploadAssetsToDB } from "../api";
 
 const SuccessToast: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   return (
@@ -39,9 +40,10 @@ const ProgressBar: React.FC<{ progress: number }> = ({ progress }) => {
 };
 
 
-// -------------------- Main Component --------------------
 const EquipmentReport: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
 
   const [excelFile, setExcelFile] = useState<File | null>(null);
   const [showReportIdForm, setShowReportIdForm] = useState(false);
@@ -52,7 +54,6 @@ const EquipmentReport: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const requestRef = useRef<Promise<any> | null>(null);
 
   const steps = [
     { number: 1, label: `${t("equipment.steps.1.label")}` },
@@ -70,47 +71,20 @@ const EquipmentReport: React.FC = () => {
 
   const handleContinue = () => setShowReportIdForm(true);
 
-  const simulateProgress = () => {
-    // Step progression
-    setCurrentStep(1);
-    setTimeout(() => setCurrentStep(2), 1500);
-    setTimeout(() => setCurrentStep(3), 3000);
-
-    // Step 4 + progress bar animation
-    setTimeout(() => {
-      setCurrentStep(4);
-      let current = 0;
-      const interval = setInterval(() => {
-        current += 2;
-        if (current >= 85) {
-          current = 85;
-          clearInterval(interval);
-        }
-        setProgress(current);
-      }, 100);
-    }, 2500);
-  };
-
   const handleSubmit = async () => {
     if (!excelFile) return;
-
     try {
-      simulateProgress(); // run fake UI
-
-      // Send backend request
-      requestRef.current = addAssetsToReport(reportId, excelFile);
-      const response = await requestRef.current;
-      console.log(response)
-
+      const response = await uploadAssetsToDB(reportId, excelFile);
+      console.log(response);
       if (response.status === "SAVED") {
-        // Wait for animation to finish (align with fake progression)
         setTimeout(() => {
           setProgress(100);
           setShowSuccess(true);
-          setTimeout(() => setShowSuccess(false), 3000);
         }, 3500);
+        navigate('/equipment/allReports');
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error("Error:", error);
     }
   };

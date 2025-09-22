@@ -15,6 +15,7 @@ import EquipmentReport from './features/Equipment/pages/EquipmentReport';
 import ManualPropertyExtraction from './features/Reports/sections/ManualPropertyExtraction';
 import ReportForm from './features/Reports/pages/ReportForm';
 import ManualEquipmentReportUpload from './features/Equipment/pages/ManualEquipReportUpload';
+import AllReports from './features/Equipment/pages/AllReports';
 
 export function App() {
   return (
@@ -47,6 +48,7 @@ export function App() {
             
             <Route path="/equipment/report" element={<EquipmentReport />} />
             <Route path='/equipment/manualEquipReport' element={<ManualEquipmentReportUpload />} />
+            <Route path='/equipment/allReports' element={<AllReports />} />
 
             {/* Mekyas login route (keep separate) */}
             <Route path="/auth/mekyas" element={<MekyasLogin />} />

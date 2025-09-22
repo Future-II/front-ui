@@ -29,17 +29,38 @@ export const addEquipmentReport = async (
   }
 };
 
-export const addAssetsToReport = async (reportId: string, excelFile: File) => {
+export const getAllAssets = async () => {
+  try {
+    const response = await api.get("/scripts/equip/assets");
+    return response.data;
+  } catch (error) {
+    console.error("Error getting assets:", error);
+    throw new Error("Error getting assets");
+  }
+};
+
+export const uploadAssetsToDB = async (reportId: string, excelFile: File) => {
   const formData = new FormData();
   formData.append("reportId", reportId);
   formData.append("excel", excelFile);
 
   try {
-    const response = await api.post("/scripts/equip/addAssets", formData, {
+    const response = await api.post("/scripts/equip/extractData", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     });
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading assets to DB:", error);
+    throw new Error("Error uploading assets to DB");
+  }
+};
+
+export const addAssetsToReport = async (reportId: string) => {
+
+  try {
+    const response = await api.post("/scripts/equip/addAssets", {reportId});
     return response.data;
   } catch (error) {
     console.error("Error adding assets to report:", error);
