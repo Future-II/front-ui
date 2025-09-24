@@ -68,6 +68,16 @@ export const addAssetsToReport = async (reportId: string) => {
   }
 };
 
+export const checkAssets = async (reportId: string) => {
+  try {
+    const response = await api.post("/scripts/equip/check", {reportId});
+    return response.data;
+  } catch (error) {
+    console.error("Error checking assets:", error);
+    throw new Error("Error checking assets");
+  }
+};
+
 export const taqeemLogin = async (email: string, password: string, otp?: string) => {
   try {
     const response = await api.post('/scripts/equip/login', {
