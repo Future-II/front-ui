@@ -3,7 +3,6 @@ import { getAllAssets, addAssetsToReport, checkAssets } from "../api";
 import { RefreshCcw, CheckCircle } from "lucide-react";
 import LoginModal from "../components/EquipmentTaqeemLogin";
 
-// ---- Types ----
 interface Asset {
   _id: string;
   report_id: string;
@@ -12,6 +11,7 @@ interface Asset {
   asset_type: string;
   owner_name: string;
   submitState: number;
+  created_at?: string;
 }
 
 interface Report {
@@ -19,93 +19,113 @@ interface Report {
   assets: Asset[];
   totalValue: number;
   incompleteCount: number;
+  created_at?: string;
 }
 
 const AllReports: React.FC = () => {
   const [reports, setReports] = useState<Report[]>([]);
   const [openReports, setOpenReports] = useState<Record<string, boolean>>({});
   const [loggedIn, setLoggedIn] = useState(false);
-  const [progressMap, setProgressMap] = useState<Record<string, number>>({}); // track progress per report
+  const [progressMap, setProgressMap] = useState<Record<string, number>>({});
   const [activeReportId, setActiveReportId] = useState<string | null>(null);
+  const [newestReportId, setNewestReportId] = useState<string | null>(null);
 
-  async function runWithProgress(
-    reportId: string,
-    action: (id: string) => Promise<any>
-  ) {
-    const report = reports.find((r) => r.report_id === reportId);
-    if (!report) return;
-
-    const incompleteSeconds = report.incompleteCount * 11 * 1000; // 11s per incomplete
-    const minDuration = 15000; // 15 seconds minimum
-    const totalDuration = Math.max(incompleteSeconds, minDuration);
-
-    const intervalTime = 200; // update every 200ms
-    const totalTicks = Math.ceil(totalDuration / intervalTime);
-    let tick = 0;
-
-    setActiveReportId(reportId);
-    setProgressMap((prev) => ({ ...prev, [reportId]: 0 }));
-
-    const interval = setInterval(() => {
-      tick++;
-      const newProgress = Math.min(
-        95,
-        Math.floor((tick / totalTicks) * 100)
-      );
-      setProgressMap((prev) => ({ ...prev, [reportId]: newProgress }));
-    }, intervalTime);
-
-    try {
-      await action(reportId); // wait for backend
-      clearInterval(interval);
-      setProgressMap((prev) => ({ ...prev, [reportId]: 100 }));
-      setTimeout(() => {
-        setProgressMap((prev) => ({ ...prev, [reportId]: 0 }));
-        setActiveReportId(null);
-      }, 500);
-    } catch (error) {
-      clearInterval(interval);
-      setProgressMap((prev) => ({ ...prev, [reportId]: 0 }));
-      setActiveReportId(null);
-      alert("Action failed for report " + reportId);
-    }
+  function getReportStatus(report: Report): "green" | "yellow" | "orange" {
+    if (report.incompleteCount === 0) return "green"; // all submitted
+    if (report.incompleteCount === report.assets.length) return "orange"; // none submitted
+    return "yellow"; // partial
   }
 
+async function fetchAssets() {
+  const assets: Asset[] = await getAllAssets();
 
-  const handleSubmit = (reportId: string) => {
-    runWithProgress(reportId, addAssetsToReport);
-  };
-
-  const handleRetry = (reportId: string) => {
-    runWithProgress(reportId, addAssetsToReport);
-  };
-
-  const handleCheck = (reportId: string) => {
-    runWithProgress(reportId, checkAssets);
-  };
-
-  useEffect(() => {
-    if (!loggedIn) return;
-
-    async function fetchAssets() {
-      const assets: Asset[] = await getAllAssets();
-
-      const grouped = assets.reduce<Record<string, Report>>((acc, asset) => {
-        const { report_id, final_value, submitState } = asset;
-        if (!acc[report_id]) {
-          acc[report_id] = { report_id, assets: [], totalValue: 0, incompleteCount: 0 };
-        }
-        acc[report_id].assets.push(asset);
-        acc[report_id].totalValue += Number(final_value) || 0;
-        if (submitState === 0) acc[report_id].incompleteCount += 1;
-        return acc;
-      }, {});
-
-      setReports(Object.values(grouped));
+  const grouped = assets.reduce<Record<string, Report>>((acc, asset) => {
+    const { report_id, final_value, submitState, created_at } = asset;
+    if (!acc[report_id]) {
+      acc[report_id] = {
+        report_id,
+        assets: [],
+        totalValue: 0,
+        incompleteCount: 0,
+        created_at,
+      };
     }
+    acc[report_id].assets.push(asset);
+    acc[report_id].totalValue += Number(final_value) || 0;
+    if (submitState === 0) acc[report_id].incompleteCount += 1;
+    return acc;
+  }, {});
 
-    fetchAssets();
-  }, [loggedIn]);
+  const reportsArr = Object.values(grouped);
+
+  reportsArr.sort((a, b) => {
+    const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return dateB - dateA;
+  });
+
+  setNewestReportId(reportsArr[0]?.report_id || null);
+  setReports(reportsArr);
+}
+
+// 2. Call it on login
+useEffect(() => {
+  if (!loggedIn) return;
+  fetchAssets();
+}, [loggedIn]);
+
+// 3. Update runWithProgress to refetch after completion
+async function runWithProgress(
+  reportId: string,
+  action: (id: string) => Promise<any>
+) {
+  const report = reports.find((r) => r.report_id === reportId);
+  if (!report) return;
+
+  const incompleteSeconds = report.incompleteCount * 11 * 1000;
+  const minDuration = 15000;
+  const totalDuration = Math.max(incompleteSeconds, minDuration);
+
+  const intervalTime = 200;
+  const totalTicks = Math.ceil(totalDuration / intervalTime);
+  let tick = 0;
+
+  setActiveReportId(reportId);
+  setProgressMap((prev) => ({ ...prev, [reportId]: 0 }));
+
+  const interval = setInterval(() => {
+    tick++;
+    const newProgress = Math.min(
+      95,
+      Math.floor((tick / totalTicks) * 100)
+    );
+    setProgressMap((prev) => ({ ...prev, [reportId]: newProgress }));
+  }, intervalTime);
+
+  try {
+    const response = await action(reportId);
+    console.log("Response: ", response);
+    clearInterval(interval);
+    setProgressMap((prev) => ({ ...prev, [reportId]: 100 }));
+    setTimeout(() => {
+      setProgressMap((prev) => ({ ...prev, [reportId]: 0 }));
+      setActiveReportId(null);
+
+      // ✅ Refetch assets after completion
+      fetchAssets();
+    }, 500);
+  } catch (error) {
+    clearInterval(interval);
+    setProgressMap((prev) => ({ ...prev, [reportId]: 0 }));
+    setActiveReportId(null);
+    alert("Action failed for report " + reportId);
+  }
+}
+
+
+  const handleSubmit = (reportId: string) => runWithProgress(reportId, addAssetsToReport);
+  const handleRetry = (reportId: string) => runWithProgress(reportId, addAssetsToReport);
+  const handleCheck = (reportId: string) => runWithProgress(reportId, checkAssets);
 
   const toggleDropdown = (reportId: string) => {
     setOpenReports((prev) => ({
@@ -115,7 +135,9 @@ const AllReports: React.FC = () => {
   };
 
   if (!loggedIn) {
-    return <LoginModal isOpen={true} onClose={() => { }} setIsLoggedIn={setLoggedIn} />;
+    return (
+      <LoginModal isOpen={true} onClose={() => { }} setIsLoggedIn={setLoggedIn} />
+    );
   }
 
   return (
@@ -125,13 +147,13 @@ const AllReports: React.FC = () => {
       {reports.map((report) => {
         const completeCount = report.assets.length - report.incompleteCount;
         const progress = progressMap[report.report_id] || 0;
+        const statusColor = getReportStatus(report);
 
         return (
           <div
             key={report.report_id}
-            className="bg-white shadow-sm rounded-xl border border-gray-200 hover:shadow-md transition"
+            className="relative bg-white shadow-sm rounded-xl border border-gray-200 hover:shadow-md transition"
           >
-            {/* Report Header */}
             <div
               className="flex flex-col cursor-pointer"
               onClick={() => toggleDropdown(report.report_id)}
@@ -143,7 +165,8 @@ const AllReports: React.FC = () => {
                   </h3>
 
                   {/* Capsules */}
-                  <div className="flex flex-wrap gap-2 mt-1">
+                  {/* Capsules + badges */}
+                  <div className="flex flex-wrap gap-2 mt-1 items-center">
                     <span className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
                       Total Assets: {report.assets.length}
                     </span>
@@ -156,10 +179,40 @@ const AllReports: React.FC = () => {
                     <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
                       Final Value: {report.totalValue.toLocaleString()}
                     </span>
+
+                    {/* New badge */}
+                    {report.report_id === newestReportId && report.incompleteCount === report.assets.length && (
+                      <span className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-500 text-white shadow-sm">
+                        New
+                      </span>
+                    )}
+
+                    {/* Status badge (if not showing New) */}
+                    {!(report.report_id === newestReportId && report.incompleteCount === report.assets.length) && (
+                      <span
+                        className={`px-3 py-1 text-xs font-semibold rounded-full shadow-sm ${statusColor === "green"
+                            ? "bg-green-100 text-green-700"
+                            : statusColor === "yellow"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-orange-100 text-orange-700"
+                          }`}
+                        title={`Status: ${statusColor}`}
+                      >
+                        {statusColor === "green"
+                          ? "Complete"
+                          : statusColor === "yellow"
+                            ? "Partial"
+                            : "Pending"}
+                      </span>
+                    )}
+
+
+                    {/* Status badge */}
+ 
                   </div>
+
                 </div>
 
-                {/* Buttons */}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={(e) => {
@@ -204,11 +257,9 @@ const AllReports: React.FC = () => {
                       style={{ width: `${progress}%` }}
                     ></div>
                   </div>
-                  {/* Circular loader */}
                   <div className="ml-3 w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                 </div>
               )}
-
             </div>
 
             {/* Dropdown: Asset List */}
