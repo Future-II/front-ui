@@ -24,9 +24,9 @@ const AuthSystem = ({ onClose, onSuccess }: AuthSystemProps) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-50 z-50 p-4 overflow-y-auto">
-  <div className="bg-white rounded-xl shadow-xl w-full max-w-full md:max-w-5xl min-h-full md:min-h-[75vh] flex flex-col md:flex-row overflow-hidden relative">
-
+    <div className="fixed inset-0 bg-gray-50 z-50 flex items-center justify-center p-4">
+      {/* Make the entire modal scrollable */}
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl max-h-[90vh] flex flex-col md:flex-row overflow-hidden relative overflow-y-auto">
         
         {/* Language Toggle */}
         <div className="absolute top-3 left-3">
@@ -93,7 +93,7 @@ const AuthSystem = ({ onClose, onSuccess }: AuthSystemProps) => {
         </div>
 
         {/* Right Side - Auth Forms */}
-        <div className="w-full md:w-96 bg-white flex flex-col border-t md:border-t-0 md:border-l border-green-200 h-full">
+        <div className="w-full md:w-96 bg-white flex flex-col border-t md:border-t-0 md:border-l border-green-200">
           {/* Tabs */}
           <div className="flex border-b border-gray-200 px-4 sm:px-6 pt-2 sm:pt-4 sticky top-0 bg-white z-10">
             <button
@@ -118,8 +118,8 @@ const AuthSystem = ({ onClose, onSuccess }: AuthSystemProps) => {
             </button>
           </div>
 
-          {/* Form Content */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          {/* Form Content - Remove individual scrolling */}
+          <div className="p-4 sm:p-6">
             {activeTab === "login" ? (
               <LoginForm onSuccess={handleAuthSuccess} />
             ) : (
