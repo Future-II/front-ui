@@ -10,7 +10,7 @@ type TabId = "contact" | "tickets" | "faq";
 
 const tabs: { id: TabId; labelKey: string }[] = [
   { id: "contact", labelKey: "faq.tabs.contact" },
-  { id: "tickets", labelKey: "faq.tabs.tickets" },
+  { id: "tickets", labelKey: "All Tickets" },
   { id: "faq", labelKey: "faq.tabs.faq" },
 ];
 
