@@ -33,6 +33,14 @@ export default function LoginModal({ isOpen, onClose, setIsLoggedIn }: LoginModa
                 setIsLoggedIn(true);
                 setProgressMessage("🎉 Login successful!");
                 onClose();
+            } else if (response.status === "FAILED") {
+                // Reset everything back to login screen
+                setEmail("");
+                setPassword("");
+                setOtp("");
+                setOtpRequired(false);
+                setProgressMessage("❌ Login failed. Please try again.");
+                alert("Login failed. Please try again.");
             } else {
                 setProgressMessage("❌ Login failed");
                 alert("Login failed");
@@ -43,6 +51,7 @@ export default function LoginModal({ isOpen, onClose, setIsLoggedIn }: LoginModa
             alert("Something went wrong");
         }
     };
+
 
     if (!isOpen) return null;
 

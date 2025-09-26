@@ -245,7 +245,8 @@
   },
   "equipment": {
     "title": "Equipment Reports",
-    "tab1": "Manual Equipment Report Upload",
+    "tab1": "Upload Report",
+    "tab2": "All Reports",
     "steps": {
       "1": {
         "label": "Pull Property Report (Excel/PDF)"

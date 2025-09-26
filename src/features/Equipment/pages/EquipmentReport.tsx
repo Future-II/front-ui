@@ -1,11 +1,11 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 import StepList from "../components/StepList";
 import UploadBlock from "../components/UploadBlock";
-import LoginModal from "../components/EquipmentTaqeemLogin";
 
-import { addAssetsToReport } from "../api";
+import { uploadAssetsToDB } from "../api";
 
 const SuccessToast: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   return (
@@ -30,7 +30,6 @@ const ProgressBar: React.FC<{ progress: number }> = ({ progress }) => {
           style={{ width: `${progress}%` }}
         ></div>
       </div>
-      {/* Circling loader */}
       {progress < 100 && (
         <div className="ml-2 w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
       )}
@@ -38,21 +37,16 @@ const ProgressBar: React.FC<{ progress: number }> = ({ progress }) => {
   );
 };
 
-
-// -------------------- Main Component --------------------
 const EquipmentReport: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const [excelFile, setExcelFile] = useState<File | null>(null);
   const [showReportIdForm, setShowReportIdForm] = useState(false);
   const [reportId, setReportId] = useState("");
-  const [loggedIn, setLoggedIn] = useState(false);
-
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
   const [progress, setProgress] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
-
-  const requestRef = useRef<Promise<any> | null>(null);
 
   const steps = [
     { number: 1, label: `${t("equipment.steps.1.label")}` },
@@ -63,61 +57,27 @@ const EquipmentReport: React.FC = () => {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (files) {
-      setExcelFile(files[0]);
-    }
+    if (files) setExcelFile(files[0]);
   };
 
   const handleContinue = () => setShowReportIdForm(true);
 
-  const simulateProgress = () => {
-    // Step progression
-    setCurrentStep(1);
-    setTimeout(() => setCurrentStep(2), 1500);
-    setTimeout(() => setCurrentStep(3), 3000);
-
-    // Step 4 + progress bar animation
-    setTimeout(() => {
-      setCurrentStep(4);
-      let current = 0;
-      const interval = setInterval(() => {
-        current += 2;
-        if (current >= 85) {
-          current = 85;
-          clearInterval(interval);
-        }
-        setProgress(current);
-      }, 100);
-    }, 2500);
-  };
-
   const handleSubmit = async () => {
     if (!excelFile) return;
-
     try {
-      simulateProgress(); // run fake UI
-
-      // Send backend request
-      requestRef.current = addAssetsToReport(reportId, excelFile);
-      const response = await requestRef.current;
-      console.log(response)
-
+      const response = await uploadAssetsToDB(reportId, excelFile);
+      console.log(response);
       if (response.status === "SAVED") {
-        // Wait for animation to finish (align with fake progression)
         setTimeout(() => {
           setProgress(100);
           setShowSuccess(true);
-          setTimeout(() => setShowSuccess(false), 3000);
         }, 3500);
+        navigate("/equipment/allReports");
       }
     } catch (error) {
       console.error("Error:", error);
     }
   };
-
-  if (!loggedIn) {
-    return <LoginModal isOpen={true} onClose={() => {}} setIsLoggedIn={setLoggedIn} />;
-  }
 
   return (
     <div>
@@ -126,8 +86,10 @@ const EquipmentReport: React.FC = () => {
       <div className="mt-6 max-w-md mx-auto">
         {showReportIdForm ? (
           <>
-          {currentStep === 4 && <ProgressBar progress={progress} />}
-            <label className="block mt-10 mb-2 font-medium text-gray-700">Report ID</label>
+            {currentStep === 4 && <ProgressBar progress={progress} />}
+            <label className="block mt-10 mb-2 font-medium text-gray-700">
+              Report ID
+            </label>
             <input
               type="text"
               value={reportId}
@@ -143,7 +105,6 @@ const EquipmentReport: React.FC = () => {
                 Submit
               </button>
             </div>
-
           </>
         ) : (
           <>
@@ -156,7 +117,8 @@ const EquipmentReport: React.FC = () => {
             />
             {excelFile && (
               <p className="mt-2 text-sm text-gray-600">
-                Selected file: <span className="font-medium">{excelFile.name}</span>
+                Selected file:{" "}
+                <span className="font-medium">{excelFile.name}</span>
               </p>
             )}
             <div className="flex justify-end mt-4">

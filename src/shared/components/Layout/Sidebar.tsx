@@ -28,43 +28,43 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   });
 
   const menuItems: MenuItem[] = [
-    {
-      name: t('home.title') || 'الرئيسية',
-      path: '/',
-      icon: <Home className="h-5 w-5" />
-    },
-    {
-      name: t('reports.title') || 'تقارير المعدات',
-      path: '/reports',
-      icon: <Building2 className="h-5 w-5" />,
-      subItems: [
-        {
-          name: t('reports.mekyas') || 'تقارير مقياس',
-          path: '/reports/mekyas'
-        },
-        {
-          name:  "jadeer reports",
-          path: '/reports/jadeer'
-        },
-        {
-          name: t('reports.manual') || 'تقارير مقياس',
-          path: '/reports/manual'
-        },
+    // {
+    //   name: t('home.title') || 'الرئيسية',
+    //   path: '/',
+    //   icon: <Home className="h-5 w-5" />
+    // },
+    // {
+    //   name: t('reports.title') || 'تقارير المعدات',
+    //   path: '/reports',
+    //   icon: <Building2 className="h-5 w-5" />,
+    //   subItems: [
+    //     {
+    //       name: t('reports.mekyas') || 'تقارير مقياس',
+    //       path: '/reports/mekyas'
+    //     },
+    //     {
+    //       name:  "jadeer reports",
+    //       path: '/reports/jadeer'
+    //     },
+    //     {
+    //       name: t('reports.manual') || 'تقارير مقياس',
+    //       path: '/reports/manual'
+    //     },
         
-        {
-          name: t('reports.view') || 'عرض التقارير',
-          path: '/reports/view'
-        },
-        {
-          name: "Manual Report and Send Upload",
-          path: "/reports/newManual"
-        },
-        {
-          name: t('reports.noqra') || 'تقارير نقرة',
-          path: '/reports/noqra'
-        },
-      ]
-    },
+    //     {
+    //       name: t('reports.view') || 'عرض التقارير',
+    //       path: '/reports/view'
+    //     },
+    //     {
+    //       name: "Manual Report and Send Upload",
+    //       path: "/reports/newManual"
+    //     },
+    //     {
+    //       name: t('reports.noqra') || 'تقارير نقرة',
+    //       path: '/reports/noqra'
+    //     },
+    //   ]
+    // },
     
     {
       name: t('equipment.title') || 'تقارير المعدات',
@@ -75,22 +75,26 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
           name: t('equipment.tab1') || 'تقارير المعدات',
           path: '/equipment/report'
         },
+        // {
+        //   name: 'Manual Equipment Report Upload',
+        //   path: '/equipment/manualEquipReport'
+        // }
         {
-          name: 'Manual Equipment Report Upload',
-          path: '/equipment/manualEquipReport'
+          name: t('equipment.tab2') || 'جميع التقارير',
+          path: '/equipment/allReports'
         }
       ]
     },
-    {
-      name: t('dashboard.title') || 'لوحة الإدارة',
-      path: '/dashboard',
-      icon: <BarChart className="h-5 w-5" />
-    },
-    {
-      name: t('settings.title') || 'إعدادات المستخدم',
-      path: '/settings',
-      icon: <Settings className="h-5 w-5" />
-    },
+    // {
+    //   name: t('dashboard.title') || 'لوحة الإدارة',
+    //   path: '/dashboard',
+    //   icon: <BarChart className="h-5 w-5" />
+    // },
+    // {
+    //   name: t('settings.title') || 'إعدادات المستخدم',
+    //   path: '/settings',
+    //   icon: <Settings className="h-5 w-5" />
+    // },
     {
       name: t('support.title') || 'المساعدة والدعم',
       path: '/support',
