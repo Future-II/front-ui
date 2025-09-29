@@ -68,6 +68,8 @@ export const addAssetsToReport = async (reportId: string) => {
   }
 };
 
+
+
 export const checkAssets = async (reportId: string) => {
   try {
     const response = await api.post("/scripts/equip/check", {reportId});
@@ -75,6 +77,45 @@ export const checkAssets = async (reportId: string) => {
   } catch (error) {
     console.error("Error checking assets:", error);
     throw new Error("Error checking assets");
+  }
+};
+
+export const getReportsData = async () => {
+  try {
+    const response = await api.get("/scripts/equip/reports");
+    return response.data;
+  } catch (error) {
+    console.error("Error getting reports data:", error);
+    throw new Error("Error getting reports data");
+  }
+};
+
+export const extractReportData = async (excel: File, pdfs: File[]) => {
+  const formData = new FormData();
+
+  formData.append("excel", excel);
+  pdfs.forEach((file) => formData.append("pdfs", file));
+
+  try {
+    const response = await api.post("/scripts/equip/reportDataExtract", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error extracting report data:", error);
+    throw new Error("Error extracting report data");
+  }
+};
+
+export const halfReportSubmit = async (id: string, tabsNum: number) => {
+  try {
+    const response = await api.post("/scripts/equip/fillForm2", {id, tabsNum});
+    return response.data;
+  } catch (error) {
+    console.error("Error submitting report:", error);
+    throw new Error("Error submitting report");
   }
 };
 
