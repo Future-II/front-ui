@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getReportsData, addAssetsToReport, checkAssets, halfReportSubmit } from "../api";
+import { getReportsData, halfReportSubmit, checkMacros, retryMacros } from "../api";
 import { RefreshCcw, CheckCircle } from "lucide-react";
 import LoginModal from "../components/EquipmentTaqeemLogin";
 
@@ -19,6 +19,7 @@ interface Report {
     value: string; // total report value
     createdAt?: string;
     owner_name: string;
+    report_id: string;
 }
 
 const ViewEquipmentReports: React.FC = () => {
@@ -48,96 +49,161 @@ const ViewEquipmentReports: React.FC = () => {
             const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
             return dateB - dateA;
         });
+        console.log("Sorted Reports:", sortedReports);
 
         setNewestReportId(sortedReports[0]?._id || null);
         setReports(sortedReports);
     }
+    //1506344
 
     useEffect(() => {
         fetchReports();
     }, []);
 
     const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+    // store timings per report + action
+    interface ActionTiming {
+        start: string;
+        end: string;
+        duration: string;
+    }
 
-async function runWithProgress(reportId: string, action: (id: string) => Promise<any>) {
-    const report = reports.find(r => r._id === reportId);
-    if (!report) return;
+    type ActionType = "submit" | "retry" | "check";
 
-    const assetCount = report.asset_data.length;
-    const incompleteCount = report.asset_data.filter(a => a.submitState === 0).length;
+    const [actionTimings, setActionTimings] = useState<
+        Record<string, Partial<Record<ActionType, ActionTiming>>>
+    >({});
 
-    // Scale duration based on tabsNum
-    const incompleteSeconds = (incompleteCount * 11000) / tabsNum;
-    const minDuration = 20000;
-    const totalDuration = Math.max(incompleteSeconds, minDuration);
+    async function runWithProgress(reportId: string, actionType: ActionType) {
+        const report = reports.find(r => r._id === reportId);
+        if (!report) return;
 
-    const intervalTime = 200;
-    const totalTicks = Math.ceil(totalDuration / intervalTime);
-    let tick = 0;
+        const assetCount = report.asset_data.length;
+        const incompleteAssets = report.asset_data.filter(a => a.submitState === 0).length;
 
-    setActiveReportId(reportId);
-    setProgressMap(prev => ({ ...prev, [reportId]: 0 }));
+        const secondsPerAsset = 11000 / tabsNum;
+        const minDuration = 20000;
 
-    const interval = setInterval(() => {
-        tick++;
-        const newProgress = Math.min(95, Math.floor((tick / totalTicks) * 100));
-        setProgressMap(prev => ({ ...prev, [reportId]: newProgress }));
-    }, intervalTime);
+        let steps: string[] = [];
+        let actionPromise: Promise<any>;
+        let effectiveDuration = minDuration; // fallback
 
-    try {
-        const actionPromise = action(reportId);
+        // record start time
+        const startTime = new Date();
 
-        const steps: string[] = [
-            "Navigating to equipment page...",
-            "🔹 Filling report data...",
-            `🔹 Setting number of macros (${assetCount})...`,
-            "🔹 Navigating to macro page...",
-            ...Array.from({ length: assetCount }, (_, i) => `🔹 Filling ${i + 1}/${assetCount} macro...`)
-        ];
+        if (actionType === "submit") {
+            effectiveDuration = Math.max(minDuration, assetCount * secondsPerAsset);
+            actionPromise = halfReportSubmit(reportId, tabsNum);
 
-        const stepDuration = totalDuration / steps.length;
+            steps = [
+                "Navigating to equipment page...",
+                "🔹 Filling report data...",
+                `🔹 Setting number of macros (${assetCount})...`,
+                "🔹 Navigating to macro page...",
+                ...Array.from({ length: assetCount }, (_, i) => `🔹 Filling ${i + 1}/${assetCount} macro...`),
+                "🔹 Setting up checks...",
+                "🔹 Running checks..."
+            ];
+        } else if (actionType === "retry") {
+            effectiveDuration = Math.max(minDuration / 2, incompleteAssets * secondsPerAsset);
+            actionPromise = retryMacros(reportId, tabsNum);
 
-        for (const step of steps) {
-            setProgressMessages(prev => ({ ...prev, [reportId]: step }));
-            await delay(stepDuration);
+            steps = [
+                "🔹 Navigating to macro page...",
+                ...Array.from({ length: incompleteAssets }, (_, i) => `🔹 Filling ${i + 1}/${incompleteAssets} incomplete macro...`),
+                "🔹 Setting up checks...",
+                "🔹 Running checks..."
+            ];
+        } else if (actionType === "check") {
+            effectiveDuration = minDuration / 2;
+            actionPromise = checkMacros(reportId, tabsNum);
+
+            steps = [
+                "🔹 Setting up checks...",
+                "🔹 Running checks..."
+            ];
+        } else {
+            throw new Error("Unknown actionType");
         }
 
-        const response = await actionPromise;
-        console.log("Response:", response);
+        const intervalTime = 200;
+        const totalTicks = Math.ceil(effectiveDuration / intervalTime);
+        let tick = 0;
 
-        clearInterval(interval);
-        setProgressMap(prev => ({ ...prev, [reportId]: 100 }));
-        setProgressMessages(prev => ({ ...prev, [reportId]: "✅ Complete!" }));
-
-        await delay(1000);
-
+        setActiveReportId(reportId);
         setProgressMap(prev => ({ ...prev, [reportId]: 0 }));
-        setProgressMessages(prev => {
-            const copy = { ...prev };
-            delete copy[reportId];
-            return copy;
-        });
-        setActiveReportId(null);
-        fetchReports();
-    } catch (error) {
-        console.error("Action failed:", error);
-        clearInterval(interval);
-        setProgressMap(prev => ({ ...prev, [reportId]: 0 }));
-        setProgressMessages(prev => {
-            const copy = { ...prev };
-            delete copy[reportId];
-            return copy;
-        });
-        setActiveReportId(null);
-        alert("Action failed for report " + reportId);
+
+        const interval = setInterval(() => {
+            tick++;
+            const newProgress = Math.min(95, Math.floor((tick / totalTicks) * 100));
+            setProgressMap(prev => ({ ...prev, [reportId]: newProgress }));
+        }, intervalTime);
+
+        try {
+            const stepDuration = effectiveDuration / steps.length;
+            for (const step of steps) {
+                setProgressMessages(prev => ({ ...prev, [reportId]: step }));
+                if (step === "🔹 Setting up checks...") {
+                    await delay(5000);
+                } else if (step === "🔹 Running checks...") {
+                    break;
+                } else {
+                    await delay(stepDuration);
+                }
+            }
+
+            const response = await actionPromise;
+            console.log("Response:", response);
+
+            // record end time
+            const endTime = new Date();
+            const durationMs = endTime.getTime() - startTime.getTime();
+            const durationSec = (durationMs / 1000).toFixed(1) + "s";
+
+            setActionTimings(prev => ({
+                ...prev,
+                [reportId]: {
+                    ...prev[reportId],
+                    [actionType]: {
+                        start: startTime.toLocaleTimeString(),
+                        end: endTime.toLocaleTimeString(),
+                        duration: durationSec
+                    }
+                }
+            }));
+
+            clearInterval(interval);
+            setProgressMap(prev => ({ ...prev, [reportId]: 100 }));
+            setProgressMessages(prev => ({ ...prev, [reportId]: "✅ Complete!" }));
+
+            await delay(1000);
+
+            setProgressMap(prev => ({ ...prev, [reportId]: 0 }));
+            setProgressMessages(prev => {
+                const copy = { ...prev };
+                delete copy[reportId];
+                return copy;
+            });
+            setActiveReportId(null);
+            fetchReports();
+        } catch (error) {
+            console.error("Action failed:", error);
+            clearInterval(interval);
+            setProgressMap(prev => ({ ...prev, [reportId]: 0 }));
+            setProgressMessages(prev => {
+                const copy = { ...prev };
+                delete copy[reportId];
+                return copy;
+            });
+            setActiveReportId(null);
+            alert("Action failed for report " + reportId);
+        }
     }
-}
 
+    const handleSubmit = (reportId: string) => runWithProgress(reportId, "submit");
+    const handleRetry = (reportId: string) => runWithProgress(reportId, "retry");
+    const handleCheck = (reportId: string) => runWithProgress(reportId, "check");
 
-
-    const handleSubmit = (reportId: string) => runWithProgress(reportId, (id) => halfReportSubmit(id, tabsNum));
-    const handleRetry = (reportId: string) => runWithProgress(reportId, addAssetsToReport);
-    const handleCheck = (reportId: string) => runWithProgress(reportId, checkAssets);
 
     const toggleDropdown = (reportId: string) => {
         setOpenReports(prev => ({ ...prev, [reportId]: !prev[reportId] }));
@@ -145,7 +211,6 @@ async function runWithProgress(reportId: string, action: (id: string) => Promise
 
     return (
         <div className="p-6 space-y-6">
-            {/* Top header with login button */}
             <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-semibold text-gray-800">View Reports</h2>
                 {!loggedIn && (
@@ -176,7 +241,7 @@ async function runWithProgress(reportId: string, action: (id: string) => Promise
                             <div className="flex justify-between items-center p-4 cursor-pointer" onClick={() => toggleDropdown(report._id)}>
                                 <div>
                                     <h3 className="text-lg font-medium text-gray-900">
-                                        {report.title || `Report ${report._id}`}
+                                        Report {(report.report_id ? report.report_id : report.title)}
                                     </h3>
 
                                     <div className="flex flex-wrap gap-2 mt-1 items-center">
@@ -216,48 +281,69 @@ async function runWithProgress(reportId: string, action: (id: string) => Promise
                                                         : "Pending"}
                                             </span>
                                         )}
+                                        {/* Timings for actions */}
+
                                     </div>
+                                        {actionTimings[report._id] && (
+                                            <div className="mt-2 space-y-1 text-xs text-gray-600">
+                                                {Object.entries(actionTimings[report._id]).map(([action, timing]) => (
+                                                    <div key={action}>
+                                                        <span className="font-semibold capitalize">{action}:</span>{" "}
+                                                        Started at {timing?.start}, Ended at {timing?.end}, Duration {timing?.duration}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                 </div>
 
                                 <div className="flex items-center gap-2">
-  {/* Tabs number input */}
-  <input
-    type="number"
-    min={1}
-    max={10}
-    value={tabsNum} // you need a state for this
-    onChange={(e) => setTabsNum(Number(e.target.value))}
-    disabled={!loggedIn}
-    className="w-16 px-2 py-1 border rounded-md text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
-    title="Number of tabs to use for macro filling"
-  />
+                                    {/* Tabs number input */}
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        max={20}
+                                        value={tabsNum}
+                                        onChange={(e) => setTabsNum(Number(e.target.value))}
+                                        onClick={(e) => e.stopPropagation()}
+                                        disabled={!loggedIn}
+                                        className="w-16 px-2 py-1 border rounded-md text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        title="Number of tabs to use for macro filling"
+                                    />
 
-  <button
-    onClick={e => { e.stopPropagation(); handleSubmit(report._id); }}
-    disabled={!loggedIn}
-    className={`px-4 py-2 font-semibold rounded-lg transition ${loggedIn ? 'bg-blue-500 text-white hover:bg-green-600' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}
-  >
-    Submit
-  </button>
+                                    {/* Submit button */}
+                                    <button
+                                        onClick={e => { e.stopPropagation(); handleSubmit(report._id); }}
+                                        disabled={!loggedIn || !!report.report_id} // disable if logged out OR report_id exists
+                                        className={`px-4 py-2 font-semibold rounded-lg transition ${(!loggedIn || !!report.report_id) ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-blue-400 text-white hover:bg-blue-500'}`}
+                                    >
+                                        Submit
+                                    </button>
 
-  <button
-    onClick={e => { e.stopPropagation(); handleRetry(report._id); }}
-    disabled={!loggedIn}
-    className={`p-2 rounded-lg transition ${loggedIn ? 'bg-gray-200 hover:bg-gray-300' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
-    title="Retry"
-  >
-    <RefreshCcw className="text-gray-700 w-4 h-4" />
-  </button>
+                                    {/* Retry button */}
+                                    <button
+                                        onClick={e => { e.stopPropagation(); handleRetry(report._id); }}
+                                        disabled={!loggedIn || !report.report_id || incompleteCount === 0}
+                                        className={`p-2 rounded-lg transition ${(!loggedIn || !report.report_id || incompleteCount === 0)
+                                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                            : "bg-blue-400 text-white hover:bg-blue-500"
+                                            }`}
+                                        title="Retry"
+                                    >
+                                        <RefreshCcw className="text-gray-700 w-4 h-4" />
+                                    </button>
 
-  <button
-    onClick={e => { e.stopPropagation(); handleCheck(report._id); }}
-    disabled={!loggedIn}
-    className={`p-2 rounded-lg transition ${loggedIn ? 'bg-green-300 hover:bg-green-400' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
-    title="Check Assets"
-  >
-    <CheckCircle className="text-gray-700 w-4 h-4" />
-  </button>
-</div>
+
+                                    {/* Check button */}
+                                    <button
+                                        onClick={e => { e.stopPropagation(); handleCheck(report._id); }}
+                                        disabled={!loggedIn || !report.report_id} // disable if logged out OR no report_id
+                                        className={`p-2 rounded-lg transition ${(!loggedIn || !report.report_id) ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-green-300 hover:bg-green-400'}`}
+                                        title="Check Assets"
+                                    >
+                                        <CheckCircle className="text-gray-700 w-4 h-4" />
+                                    </button>
+                                </div>
+
 
                             </div>
 
@@ -271,7 +357,6 @@ async function runWithProgress(reportId: string, action: (id: string) => Promise
                                         />
                                     </div>
 
-                                    {/* Loader to the right of progress bar */}
                                     <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                                 </div>
                             )}

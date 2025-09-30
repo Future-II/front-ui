@@ -80,6 +80,26 @@ export const checkAssets = async (reportId: string) => {
   }
 };
 
+export const checkMacros = async (id: string, tabsNum: number) => {
+  try {
+    const response = await api.post("/scripts/equip/check", {id, tabsNum});
+    return response.data;
+  } catch (error) {
+    console.error("Error checking assets:", error);
+    throw new Error("Error checking assets");
+  }
+};
+
+export const retryMacros = async (id: string, tabsNum: number) => {
+  try {
+    const response = await api.post("/scripts/equip/retry", {id, tabsNum});
+    return response.data;
+  } catch (error) {
+    console.error("Error retrying assets:", error);
+    throw new Error("Error retrying assets");
+  }
+};
+
 export const getReportsData = async () => {
   try {
     const response = await api.get("/scripts/equip/reports");
