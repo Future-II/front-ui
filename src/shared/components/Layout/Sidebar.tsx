@@ -27,6 +27,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     '/reports': true 
   });
 
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const isAdmin = user?.email === "admin.tickets@gmail.com";
+
   const menuItems: MenuItem[] = [
     // {
     //   name: t('home.title') || 'الرئيسية',
@@ -107,7 +110,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       name: t('support.title') || 'المساعدة والدعم',
       path: '/support',
       icon: <HelpCircle className="h-5 w-5" />
-    }
+    },
+    ...(isAdmin ? [{
+      name: t('All Tickets') || 'جميع التذاكر',
+      path: '/support/tickets',
+      icon: <FileText className="h-5 w-5" />
+    }] : [])
   ];
 
   const isActive = (path: string) => location.pathname === path;

@@ -10,7 +10,7 @@ type TabId = "contact" | "tickets" | "faq";
 
 const tabs: { id: TabId; labelKey: string }[] = [
   { id: "contact", labelKey: "faq.tabs.contact" },
-  { id: "tickets", labelKey: "All Tickets" },
+  { id: "tickets", labelKey: "My Tickets" },
   { id: "faq", labelKey: "faq.tabs.faq" },
 ];
 
@@ -20,7 +20,7 @@ const SupportPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [newTicketForm, setNewTicketForm] = useState({
     subject: "",
-    priority: "low",
+    classification: "low",
     description: "",
   });
   const faqCategories: string[] = [
@@ -65,7 +65,7 @@ const SupportPage: React.FC = () => {
   function handleNewTicketSubmit(e: React.FormEvent) {
     e.preventDefault();
     alert(`${t("support.newTicket.submitButton")}: ${newTicketForm.subject}`);
-    setNewTicketForm({ subject: "", priority: "low", description: "" });
+    setNewTicketForm({ subject: "", classification: "low", description: "" });
   }
 
   return (

@@ -18,6 +18,7 @@ import ManualEquipmentReportUpload from './features/Equipment/pages/ManualEquipR
 import AllReports from './features/Equipment/pages/AllReports';
 import CreateReport from './features/Equipment/pages/CreateReport';
 import ViewEquipmentReports from './features/Equipment/pages/ViewReports';
+import AllTicketsPage from "./features/Support/pages/AllTicketsPage";
 
 export function App() {
   return (
@@ -47,6 +48,7 @@ export function App() {
             <Route path="/dashboard" element={<ManagementDashboard />} />
             <Route path="/settings" element={<UserSettings />} />
             <Route path="/support" element={<SupportPage />} />
+            <Route path="/support/tickets" element={<AllTicketsPage />} />
             
             <Route path="/equipment/report" element={<EquipmentReport />} />
             <Route path='/equipment/createReport' element={<CreateReport />} />
