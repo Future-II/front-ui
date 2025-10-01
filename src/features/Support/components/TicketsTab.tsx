@@ -20,6 +20,7 @@ interface Ticket {
   }>;
   createdAt: string;
   updatedAt: string;
+  createdBy: string; // Added createdBy field
 }
 
 interface TicketsTabProps {
@@ -67,12 +68,18 @@ const TicketsTab: React.FC<TicketsTabProps> = ({
     fetchTickets();
   };
 
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const isAdmin = user?.email === "admin.tickets@gmail.com";
+
   const filteredTickets = tickets.filter(
     (ticket) =>
-      ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.classification.toLowerCase().includes(searchTerm.toLowerCase())
+      (isAdmin || ticket.createdBy === user?._id) &&
+      (
+        ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ticket.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ticket.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ticket.classification.toLowerCase().includes(searchTerm.toLowerCase())
+      )
   );
 
   const formatDate = (dateString: string) => {
@@ -168,7 +175,7 @@ const TicketsTab: React.FC<TicketsTabProps> = ({
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900">All Tickets</h2>
+          <h2 className="text-xl font-bold text-gray-900">My Tickets</h2>
           <p className="text-gray-600 mt-1">View and manage your tickets</p>
         </div>
         <div className="p-12 text-center">
@@ -182,7 +189,7 @@ const TicketsTab: React.FC<TicketsTabProps> = ({
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
       <div className="p-6 border-b border-gray-200">
-        <h2 className="text-xl font-bold text-gray-900">All Tickets</h2>
+        <h2 className="text-xl font-bold text-gray-900">My Tickets</h2>
         <p className="text-gray-600 mt-1">View and manage your tickets</p>
       </div>
 
