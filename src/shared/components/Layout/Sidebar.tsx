@@ -71,18 +71,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       path: '/equipment',
       icon: <FileText className="h-5 w-5" />,
       subItems: [
-        {
-          name: t('equipment.tab1') || 'تقارير المعدات',
-          path: '/equipment/report'
-        },
-        {
-          name: 'Manual Equipment Report Upload',
-          path: '/equipment/manualEquipReport'
-        },
-        {
-          name: t('equipment.tab2') || 'جميع التقارير',
-          path: '/equipment/allReports'
-        },
+        // {
+        //   name: t('equipment.tab1') || 'تقارير المعدات',
+        //   path: '/equipment/report'
+        // },
+        // {
+        //   name: 'Manual Equipment Report Upload',
+        //   path: '/equipment/manualEquipReport'
+        // },
+        // {
+        //   name: t('equipment.tab2') || 'جميع التقارير',
+        //   path: '/equipment/allReports'
+        // },
         {
           name: "Create Report",
           path: "/equipment/createReport"
