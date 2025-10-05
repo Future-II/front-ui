@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { taqeemLogin } from "../api";
+import { useTaqeemAuth } from "../../../shared/context/TaqeemAuthContext";
 
 interface LoginModalProps {
     isOpen: boolean;
     onClose: () => void;
-    setIsLoggedIn: (isLoggedIn: boolean) => void;
 }
 
-export default function LoginModal({ isOpen, onClose, setIsLoggedIn }: LoginModalProps) {
+export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
+    const { setIsLoggedIn } = useTaqeemAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [otpRequired, setOtpRequired] = useState(false);
@@ -50,7 +51,6 @@ export default function LoginModal({ isOpen, onClose, setIsLoggedIn }: LoginModa
             alert("Something went wrong");
         }
     };
-
 
     if (!isOpen) return null;
 
@@ -133,7 +133,6 @@ export default function LoginModal({ isOpen, onClose, setIsLoggedIn }: LoginModa
                     </button>
                 </form>
 
-                {/* Progress message at bottom */}
                 {progressMessage && (
                     <div className="mt-4 text-sm text-indigo-600 text-center">
                         {progressMessage}

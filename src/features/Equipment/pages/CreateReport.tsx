@@ -215,7 +215,6 @@ const CreateReport: React.FC = () => {
     return errors;
   };
 
-  // حساب مجموع final_value في شيتات 1 و 2 (index 1 و 2)
   function getFinalValueSum(sheets: any[][][]) {
     let sum = 0;
     for (let sheetIdx = 1; sheetIdx <= 2; sheetIdx++) {

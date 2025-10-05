@@ -19,9 +19,11 @@ import AllReports from './features/Equipment/pages/AllReports';
 import CreateReport from './features/Equipment/pages/CreateReport';
 import ViewEquipmentReports from './features/Equipment/pages/ViewReports';
 import AllTicketsPage from "./features/Support/pages/AllTicketsPage";
+import { TaqeemAuthProvider } from './shared/context/TaqeemAuthContext';
 
 export function App() {
   return (
+    <TaqeemAuthProvider>
     <Router>
       <GlobalAuthGuard>
         <Layout>
@@ -62,5 +64,6 @@ export function App() {
         </Layout>
       </GlobalAuthGuard>
     </Router>
+    </TaqeemAuthProvider>
   );
 }

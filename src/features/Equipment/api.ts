@@ -100,6 +100,37 @@ export const retryMacros = async (id: string, tabsNum: number) => {
   }
 };
 
+export const stop = async (id: string) => {
+  try {
+    const response = await api.post("/scripts/equip/stop", {id} );
+    return response.data;
+  } catch (error) {
+    console.error("Error stopping assets:", error);
+    throw new Error("Error stopping assets");
+  }
+};
+
+export const pause = async (id: string) => {
+  try {
+    const response = await api.post("/scripts/equip/pause", {id} );
+    return response.data;
+  } catch (error) {
+    console.error("Error pausing assets:", error);
+    throw new Error("Error pausing assets");
+  }
+};
+
+export const resume = async (id: string) => {
+  try {
+    const response = await api.post("/scripts/equip/resume", {id});
+    return response.data;
+  } catch (error) {
+    console.error("Error resuming assets:", error);
+    throw new Error("Error resuming assets");
+  }
+};
+
+
 export const getReportsData = async () => {
   try {
     const response = await api.get("/scripts/equip/reports");
