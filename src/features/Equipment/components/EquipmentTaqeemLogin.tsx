@@ -27,9 +27,15 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             const response = await taqeemLogin(email, password, otpRequired ? otp : undefined);
             console.log(response);
 
-            if (response.status === "OTP_REQUIRED") {
+            if (response.status === "NOT_FOUND") {
+                setProgressMessage("❌ User not found. Please try again.");
+            }
+            
+            else if (response.status === "OTP_REQUIRED") {
                 setOtpRequired(true);
                 setProgressMessage("✅ Email and Password accepted. Please enter OTP.");
+            } else if (response.status === "OTP_FAILED") {
+                setProgressMessage("❌ OTP failed. Please try again.");
             } else if (response.status === "SUCCESS") {
                 setIsLoggedIn(true);
                 setProgressMessage("🎉 Login successful!");
