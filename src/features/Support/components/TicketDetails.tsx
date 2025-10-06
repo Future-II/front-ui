@@ -1,59 +1,32 @@
-import React, { useState } from "react";
-import { ArrowLeft, Calendar, Clock, User, Paperclip, MessageCircle, Send, X } from "lucide-react";
-
-interface Ticket {
-  _id: string;
-  subject: string;
-  classification: "low" | "medium" | "high";
-  description: string;
-  status: "open" | "in-progress" | "resolved" | "closed";
-  priority: number;
-  attachments?: Array<{
-    filename: string;
-    originalName: string;
-    path: string;
-    mimetype: string;
-    size: number;
-  }>;
-  createdAt: string;
-  updatedAt: string;
-}
+import React, { useState, useEffect } from "react";
+import { ArrowLeft, Calendar, Clock, User, Paperclip, MessageCircle, Star } from "lucide-react";
+import { api } from "../../../shared/utils/api";
+import { useUnreadMessages } from "../context/UnreadMessagesContext";
+import TicketChatModal from "./TicketChatModal";
+import RatingModal from "./RatingModal";
+import { Ticket } from "../types";
 
 interface TicketDetailsViewProps {
   ticket: Ticket;
   onBack: () => void;
 }
 
-interface ChatMessage {
-  id: number;
-  sender: "support" | "customer";
-  message: string;
-  timestamp: string;
-}
+
 
 const TicketDetails: React.FC<TicketDetailsViewProps> = ({ ticket, onBack }) => {
+  const [localTicket, setLocalTicket] = useState<Ticket>(ticket);
   const [showChat, setShowChat] = useState(false);
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      id: 1,
-      sender: "support",
-      message: "Thank you for reporting this issue. We're currently investigating the login problems.",
-      timestamp: "2024-09-20T11:00:00Z"
-    },
-    {
-      id: 2,
-      sender: "customer", 
-      message: "Any updates on the fix? This is affecting our daily operations.",
-      timestamp: "2024-09-25T09:15:00Z"
-    },
-    {
-      id: 3,
-      sender: "support",
-      message: "We've identified the issue and deployed a fix. Please try logging in now and let us know if you still experience problems.",
-      timestamp: "2024-09-25T14:20:00Z"
-    }
-  ]);
-  const [newMessage, setNewMessage] = useState("");
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const { unreadMessages, incrementUnread, clearUnread, setOpenChatTicketId, openChatTicketId } = useUnreadMessages();
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const isAdmin = user?.email === "admin.tickets@gmail.com";
+
+  useEffect(() => {
+    setOpenChatTicketId(showChat ? localTicket._id : null);
+  }, [showChat, localTicket._id, setOpenChatTicketId]);
+
+
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -104,18 +77,28 @@ const TicketDetails: React.FC<TicketDetailsViewProps> = ({ ticket, onBack }) => 
     return priorityTexts[classification] || classification;
   };
 
-  const handleSendMessage = (): void => {
-    if (newMessage.trim()) {
-      const message: ChatMessage = {
-        id: chatMessages.length + 1,
-        sender: "customer",
-        message: newMessage.trim(),
-        timestamp: new Date().toISOString()
-      };
-      setChatMessages([...chatMessages, message]);
-      setNewMessage("");
+  const getStatusClasses = (status: Ticket["status"]): string => {
+    const base = "px-3 py-1 text-sm font-medium rounded-full ";
+    switch (status) {
+      case "open": return base + "bg-blue-100 text-blue-800";
+      case "in-progress": return base + "bg-amber-100 text-amber-800";
+      case "resolved": return base + "bg-green-100 text-green-800";
+      case "closed": return base + "bg-gray-100 text-gray-800";
+      default: return base + "bg-gray-100 text-gray-800";
     }
   };
+
+  const getPriorityClasses = (classification: Ticket["classification"]): string => {
+    const base = "px-3 py-1 text-sm font-medium rounded-full ";
+    switch (classification) {
+      case "low": return base + "bg-green-100 text-green-800";
+      case "medium": return base + "bg-amber-100 text-amber-800";
+      case "high": return base + "bg-red-100 text-red-800";
+      default: return base + "bg-gray-100 text-gray-800";
+    }
+  };
+
+
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes";
@@ -125,9 +108,69 @@ const TicketDetails: React.FC<TicketDetailsViewProps> = ({ ticket, onBack }) => 
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>): void => {
-    if (e.key === 'Enter') {
-      handleSendMessage();
+
+
+  const handleUpdateStatus = async (status: Ticket["status"], priority?: number, classification?: Ticket["classification"]) => {
+    // If customer is closing the ticket, show rating modal instead
+    if (status === "closed" && localTicket.status !== "closed" && !isAdmin) {
+      setShowRatingModal(true);
+      return;
+    }
+
+    setUpdatingStatus(true);
+    try {
+      const { data } = await api.put(`/tickets/${localTicket._id}/status`, {
+        status,
+        priority,
+        classification,
+      });
+      if (data.success) {
+        // Update local ticket state
+        setLocalTicket(data.ticket);
+        alert(`Ticket ${status} successfully`);
+      } else {
+        alert('Failed to update ticket');
+      }
+    } catch (error) {
+      console.error('Failed to update ticket:', error);
+      alert('Failed to update ticket');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handleRatingSubmitted = async (rating: number, comment: string) => {
+    // First close the ticket, then rate
+    setUpdatingStatus(true);
+    try {
+      // Close the ticket
+      const closeResponse = await api.put(`/tickets/${localTicket._id}/status`, {
+        status: "closed",
+      });
+      if (!closeResponse.data.success) {
+        throw new Error('Failed to close ticket');
+      }
+
+      // Update local state
+      setLocalTicket(closeResponse.data.ticket);
+
+      // Then rate the ticket
+      const rateResponse = await api.post(`/tickets/${localTicket._id}/rate`, {
+        rating,
+        comment: comment || undefined,
+      });
+      if (!rateResponse.data.success) {
+        throw new Error(rateResponse.data.message || 'Failed to submit rating');
+      }
+
+      alert('Ticket closed and rated successfully');
+      // Refresh the page or update state
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Failed to close and rate ticket:', error);
+      alert(error.message || 'Failed to close and rate ticket');
+    } finally {
+      setUpdatingStatus(false);
     }
   };
 
@@ -146,15 +189,15 @@ const TicketDetails: React.FC<TicketDetailsViewProps> = ({ ticket, onBack }) => 
               </button>
               <div>
                 <h1 className="text-xl font-semibold text-gray-900">Ticket Details</h1>
-                <p className="text-sm text-gray-500">#{ticket._id.slice(-6)}</p>
+                <p className="text-sm text-gray-500">#{localTicket._id.slice(-6)}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <span className={`px-3 py-1 text-sm font-medium rounded-full bg-${getStatusColor(ticket.status)}-100 text-${getStatusColor(ticket.status)}-800`}>
-                {getStatusText(ticket.status)}
+              <span className={getStatusClasses(localTicket.status)}>
+                {getStatusText(localTicket.status)}
               </span>
-              <span className={`px-3 py-1 text-sm font-medium rounded-full bg-${getPriorityColor(ticket.classification)}-100 text-${getPriorityColor(ticket.classification)}-800`}>
-                {getPriorityText(ticket.classification)} Priority
+              <span className={getPriorityClasses(localTicket.classification)}>
+                {getPriorityText(localTicket.classification)} Priority
               </span>
             </div>
           </div>
@@ -167,21 +210,21 @@ const TicketDetails: React.FC<TicketDetailsViewProps> = ({ ticket, onBack }) => 
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">{ticket.subject}</h2>
-                
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">{localTicket.subject}</h2>
+
                 <div className="prose max-w-none">
-                  <p className="text-gray-700 leading-relaxed">{ticket.description}</p>
+                  <p className="text-gray-700 leading-relaxed">{localTicket.description}</p>
                 </div>
 
                 {/* Attachments */}
-                {ticket.attachments && ticket.attachments.length > 0 && (
+                {localTicket.attachments && localTicket.attachments.length > 0 && (
                   <div className="mt-6 pt-6 border-t border-gray-200">
                     <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
                       <Paperclip className="h-5 w-5 mr-2" />
-                      Attachments ({ticket.attachments.length})
+                      Attachments ({localTicket.attachments.length})
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {ticket.attachments.map((file, index) => (
+                      {localTicket.attachments.map((file, index) => (
                         <div
                           key={index}
                           className="flex items-center p-3 border border-gray-200 rounded-lg hover:border-blue-300 cursor-pointer transition-colors"
@@ -208,119 +251,150 @@ const TicketDetails: React.FC<TicketDetailsViewProps> = ({ ticket, onBack }) => 
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Ticket Information */}
+          {/* Ticket Information */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Ticket Information</h3>
+            <dl className="space-y-4">
+              <div>
+                <dt className="text-sm font-medium text-gray-500 flex items-center">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Created
+                </dt>
+                <dd className="text-sm text-gray-900 mt-1">{formatDate(localTicket.createdAt)}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500 flex items-center">
+                  <Clock className="h-4 w-4 mr-2" />
+                  Last Updated
+                </dt>
+                <dd className="text-sm text-gray-900 mt-1">{formatDate(localTicket.updatedAt)}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500 flex items-center">
+                  <User className="h-4 w-4 mr-2" />
+                  User
+                </dt>
+                <dd className="text-sm text-gray-900 mt-1">{localTicket.createdBy?.firstName} {localTicket.createdBy?.lastName}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500 flex items-center">
+                  <User className="h-4 w-4 mr-2" />
+                  Priority
+                </dt>
+                <dd className="text-sm text-gray-900 mt-1">{getPriorityText(localTicket.classification)}</dd>
+              </div>
+              {(localTicket.rating || localTicket.rating === 0) && (
+                <div>
+                  <dt className="text-sm font-medium text-gray-500 flex items-center">
+                    <Star className="h-4 w-4 mr-2 text-yellow-400" />
+                    Customer Rating
+                  </dt>
+                  <dd className="text-sm text-gray-900 mt-1 flex items-center space-x-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`h-4 w-4 ${
+                          star <= (localTicket.rating || 0)
+                            ? "text-yellow-400 fill-current"
+                            : "text-gray-300"
+                        }`}
+                      />
+                    ))}
+                    {localTicket.ratingComment && (
+                      <span className="ml-2 text-gray-600 italic text-xs">
+                        "{localTicket.ratingComment}"
+                      </span>
+                    )}
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </div>
+
+            {/* Ticket Actions */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Ticket Information</h3>
-              <dl className="space-y-4">
-                <div>
-                  <dt className="text-sm font-medium text-gray-500 flex items-center">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Created
-                  </dt>
-                  <dd className="text-sm text-gray-900 mt-1">{formatDate(ticket.createdAt)}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-medium text-gray-500 flex items-center">
-                    <Clock className="h-4 w-4 mr-2" />
-                    Last Updated
-                  </dt>
-                  <dd className="text-sm text-gray-900 mt-1">{formatDate(ticket.updatedAt)}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-medium text-gray-500 flex items-center">
-                    <User className="h-4 w-4 mr-2" />
-                    Priority
-                  </dt>
-                  <dd className="text-sm text-gray-900 mt-1">{getPriorityText(ticket.classification)}</dd>
-                </div>
-              </dl>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Actions</h3>
+              <div className="space-y-3">
+                {!isAdmin && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Change Status</label>
+                      <select
+                        onChange={(e) => handleUpdateStatus(e.target.value as Ticket["status"], localTicket.priority, localTicket.classification)}
+                        disabled={updatingStatus}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                        value={localTicket.status}
+                      >
+  <option value="open">Open</option>
+  <option value="in-progress">In Progress</option>
+  <option value="resolved">Resolved</option>
+  <option value="closed">Closed</option>
+</select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Change Priority</label>
+                      <select
+                        onChange={(e) => handleUpdateStatus(localTicket.status, undefined, e.target.value as Ticket["classification"])}
+                        disabled={updatingStatus}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                        defaultValue={localTicket.classification}
+                      >
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+                {isAdmin && localTicket.status === "closed" && (
+                  <button
+                    onClick={() => handleUpdateStatus("open")}
+                    disabled={updatingStatus}
+                    className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                  >
+                    {updatingStatus ? "Reopening..." : "Reopen Ticket"}
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Chat Button */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Communication</h3>
-              <button
-                onClick={() => setShowChat(true)}
-                className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
-              >
-                <MessageCircle className="h-5 w-5 mr-2" />
-                Open Chat
-              </button>
-              <p className="text-sm text-gray-600 mt-2">
-                Chat with our support team for real-time assistance
-              </p>
-            </div>
+      {/* Chat Button */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
+      <h3 className="text-lg font-medium text-gray-900 mb-4">Communication</h3>
+      <button
+        onClick={() => setShowChat(true)}
+        className="relative w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+      >
+        <MessageCircle className="h-5 w-5 mr-2" />
+        Open Chat
+        {(unreadMessages[localTicket._id] || 0) > 0 && (
+          <span className="absolute top-1 right-3 inline-flex items-center justify-center px-3 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full animate-pulse">
+            {unreadMessages[localTicket._id] || 0}
+          </span>
+        )}
+      </button>
+      <p className="text-sm text-gray-600 mt-2">
+        Chat with our support team for real-time assistance
+      </p>
+    </div>
           </div>
         </div>
       </div>
 
-      {/* Chat Modal */}
-      {showChat && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
-            {/* Chat Header */}
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-medium text-gray-900">Support Chat</h3>
-                <p className="text-sm text-gray-600">Ticket #{ticket._id.slice(-6)}</p>
-              </div>
-              <button
-                onClick={() => setShowChat(false)}
-                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+      <TicketChatModal
+        isOpen={showChat}
+        onClose={() => setShowChat(false)}
+        ticketId={localTicket._id}
+        ticketSubject={localTicket.subject}
+      />
 
-            {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {chatMessages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex ${msg.sender === 'customer' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                      msg.sender === 'customer'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-900'
-                    }`}
-                  >
-                    <p className="text-sm">{msg.message}</p>
-                    <p
-                      className={`text-xs mt-1 ${
-                        msg.sender === 'customer' ? 'text-blue-100' : 'text-gray-500'
-                      }`}
-                    >
-                      {formatDate(msg.timestamp)}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Chat Input */}
-            <div className="px-6 py-4 border-t border-gray-200">
-              <div className="flex space-x-3">
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type your message..."
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  onKeyPress={handleKeyPress}
-                />
-                <button
-                  onClick={handleSendMessage}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  <Send className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <RatingModal
+        isOpen={showRatingModal}
+        onClose={() => setShowRatingModal(false)}
+        ticketId={localTicket._id}
+        ticketSubject={localTicket.subject}
+        onRatingSubmitted={handleRatingSubmitted}
+      />
     </div>
   );
 };
