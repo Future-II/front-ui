@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
-import { getReportsData, halfReportSubmit, checkMacros, retryMacros, pause, resume, stop } from "../api";
+import { useEffect, useState, useRef } from "react";
+import { getReportsData } from "../api";
 import { RefreshCcw, CheckCircle, Pause, Play, StopCircle } from "lucide-react";
 import LoginModal from "../components/EquipmentTaqeemLogin";
 import { useTaqeemAuth } from "../../../shared/context/TaqeemAuthContext";
+import io, { Socket } from 'socket.io-client';
 
 interface Asset {
     _id: string;
@@ -23,13 +24,25 @@ interface Report {
     report_id: string;
 }
 
+interface ProgressData {
+    step?: number;
+    total_steps?: number;
+    total?: number;
+    current?: number;
+    percentage?: number;
+    macro_id?: number;
+    form_id?: string;
+    error?: string;
+}
+
 interface ProgressState {
-    phase: 1 | 2 | 3;
-    progress: number;
+    status: string;
     message: string;
+    progress: number;
     paused: boolean;
     stopped: boolean;
     actionType?: "submit" | "retry" | "check";
+    data?: ProgressData;
 }
 
 const ViewEquipmentReports: React.FC = () => {
@@ -38,11 +51,85 @@ const ViewEquipmentReports: React.FC = () => {
     const [openReports, setOpenReports] = useState<Record<string, boolean>>({});
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [progressStates, setProgressStates] = useState<Record<string, ProgressState>>({});
-    const [activeReportId, setActiveReportId] = useState<string | null>(null);
     const [newestReportId, setNewestReportId] = useState<string | null>(null);
     const [tabsNum, setTabsNum] = useState(3);
-    const [actionDropdownOpen, setActionDropdownOpen] = useState<Record<string, boolean>>({});
     const [dropdownOpen, setDropdownOpen] = useState<Record<string, boolean>>({});
+    
+    const socketRef = useRef<Socket | null>(null);
+    const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+    // Initialize Socket.IO connection
+    useEffect(() => {
+        socketRef.current = io(SOCKET_URL, {
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionAttempts: 5
+        });
+
+        const socket = socketRef.current;
+
+        socket.on('connect', () => {
+            console.log('[SOCKET] Connected:', socket.id);
+        });
+
+        socket.on('disconnect', () => {
+            console.log('[SOCKET] Disconnected');
+        });
+
+        socket.on('connect_error', (error) => {
+            console.error('[SOCKET] Connection error:', error);
+        });
+
+        // Listen for form fill events
+        socket.on('form_fill_started', (data) => {
+            console.log('[SOCKET] Form fill started:', data);
+        });
+
+        socket.on('form_fill_progress', (data) => {
+            console.log('[SOCKET] Progress update:', data);
+            updateProgressFromSocket(data);
+        });
+
+        socket.on('form_fill_complete', (data) => {
+            console.log('[SOCKET] Form fill complete:', data);
+            handleCompletion(data.reportId);
+        });
+
+        socket.on('form_fill_error', (data) => {
+            console.error('[SOCKET] Form fill error:', data);
+            handleError(data.reportId, data.error);
+        });
+
+        socket.on('form_fill_paused', (data) => {
+            console.log('[SOCKET] Form fill paused:', data);
+            updateProgress(data.reportId, { paused: true });
+        });
+
+        socket.on('form_fill_resumed', (data) => {
+            console.log('[SOCKET] Form fill resumed:', data);
+            updateProgress(data.reportId, { paused: false });
+        });
+
+        socket.on('form_fill_stopped', (data) => {
+            console.log('[SOCKET] Form fill stopped:', data);
+            clearProgress(data.reportId);
+        });
+
+        return () => {
+            socket.off('connect');
+            socket.off('disconnect');
+            socket.off('connect_error');
+            socket.off('form_fill_started');
+            socket.off('form_fill_progress');
+            socket.off('form_fill_complete');
+            socket.off('form_fill_error');
+            socket.off('form_fill_paused');
+            socket.off('form_fill_resumed');
+            socket.off('form_fill_stopped');
+            socket.disconnect();
+        };
+    }, []);
 
     function getReportStatus(report: Report): "green" | "yellow" | "orange" {
         const incompleteCount = report.asset_data.filter(a => a.submitState === 0).length;
@@ -81,383 +168,208 @@ const ViewEquipmentReports: React.FC = () => {
             delete copy[reportId];
             return copy;
         });
-        setActiveReportId(null);
     };
 
-    async function animateProgress(
-        reportId: string,
-        duration: number,
-        message: string
-    ): Promise<boolean> {
-        const startTime = Date.now();
-        const intervalTime = 100;
-
-        return new Promise((resolve) => {
-            const interval = setInterval(() => {
-                setProgressStates(prev => {
-                    const state = prev[reportId];
-
-                    if (!state || state.stopped) {
-                        clearInterval(interval);
-                        resolve(false);
-                        return prev;
+    const updateProgressFromSocket = (data: any) => {
+        const { reportId, status, message, data: progressData } = data;
+        
+        let progress = 0;
+        
+        // Calculate progress based on status and data
+        if (progressData?.percentage !== undefined) {
+            progress = progressData.percentage;
+        } else if (progressData?.current && progressData?.total) {
+            progress = Math.round((progressData.current / progressData.total) * 100);
+        } else {
+            // Estimate progress based on status
+            switch (status) {
+                case 'INITIALIZING':
+                case 'FETCHING_RECORD':
+                    progress = 5;
+                    break;
+                case 'NAVIGATING':
+                    progress = 10;
+                    break;
+                case 'STEP_STARTED':
+                    if (progressData?.step && progressData?.total_steps) {
+                        progress = Math.round((progressData.step / progressData.total_steps) * 60);
                     }
-
-                    if (state.paused) {
-                        clearInterval(interval);
-                        resolve(false);
-                        return prev;
+                    break;
+                case 'STEP_COMPLETE':
+                    if (progressData?.step && progressData?.total_steps) {
+                        progress = Math.round(((progressData.step + 1) / progressData.total_steps) * 60);
                     }
+                    break;
+                case 'MACRO_PROCESSING':
+                case 'MACRO_EDIT':
+                case 'RETRY_PROGRESS':
+                    progress = progressData?.percentage || 70;
+                    break;
+                case 'MACRO_COMPLETE':
+                case 'MACRO_EDIT_COMPLETE':
+                    progress = 85;
+                    break;
+                case 'CHECKING':
+                case 'CHECK_STARTED':
+                    progress = 90;
+                    break;
+                case 'RETRYING':
+                case 'RETRY_STARTED':
+                    progress = 50;
+                    break;
+                case 'RETRY_COMPLETE':
+                case 'CHECK_COMPLETE':
+                    progress = 95;
+                    break;
+                case 'COMPLETE':
+                    progress = 100;
+                    break;
+                case 'REPORT_SAVED':
+                    progress = 80;
+                    break;
+            }
+        }
 
-                    const elapsed = Date.now() - startTime;
-                    const progress = Math.min(100, Math.floor((elapsed / duration) * 100));
-
-                    if (progress >= 100) {
-                        clearInterval(interval);
-                        resolve(true);
-                        return {
-                            ...prev,
-                            [reportId]: { ...state, progress: 100, message }
-                        };
-                    }
-
-                    return {
-                        ...prev,
-                        [reportId]: { ...state, progress, message }
-                    };
-                });
-            }, intervalTime);
+        updateProgress(reportId, {
+            status,
+            message,
+            progress,
+            data: progressData
         });
-    }
+    };
 
-    async function runPhase1(reportId: string, assetCount: number, currentTabsNum: number) {
-        updateProgress(reportId, { phase: 1, progress: 0 });
-
-        const batches = Math.ceil(assetCount / 10);
-        const baseTime = batches <= 1 ? 3000 : 6000;
-        const scaledTime = (baseTime / currentTabsNum) + 2000;
-
-        const steps = [
-            { duration: 3000, message: "Navigating to report page..." },
-            { duration: 2500, message: "Filling report data..." },
-            { duration: scaledTime, message: `Setting number of macros (${assetCount})...` },
-            { duration: 1500, message: "Setting up macros for filling..." }
-        ];
-
-        const totalDuration = steps.reduce((sum, step) => sum + step.duration, 0);
-        const startTime = Date.now();
-
-        return new Promise((resolve) => {
-            const interval = setInterval(() => {
-                setProgressStates(prev => {
-                    const state = prev[reportId];
-
-                    if (!state || state.stopped) {
-                        clearInterval(interval);
-                        resolve(false);
-                        return prev;
-                    }
-
-                    if (state.paused) {
-                        clearInterval(interval);
-                        resolve(false);
-                        return prev;
-                    }
-
-                    const elapsed = Date.now() - startTime;
-                    const progress = Math.min(100, Math.floor((elapsed / totalDuration) * 100));
-
-                    let accumulatedTime = 0;
-                    let currentMessage = steps[0].message;
-                    for (const step of steps) {
-                        if (elapsed < accumulatedTime + step.duration) {
-                            currentMessage = step.message;
-                            break;
-                        }
-                        accumulatedTime += step.duration;
-                    }
-
-                    if (progress >= 100) {
-                        clearInterval(interval);
-                        resolve(true);
-                        return {
-                            ...prev,
-                            [reportId]: { ...state, progress: 100, message: steps[steps.length - 1].message }
-                        };
-                    }
-
-                    return {
-                        ...prev,
-                        [reportId]: { ...state, progress, message: currentMessage }
-                    };
-                });
-            }, 100);
+    const handleCompletion = async (reportId: string) => {
+        updateProgress(reportId, { 
+            progress: 100, 
+            message: 'Complete!',
+            status: 'COMPLETE'
         });
-    }
+        await delay(2000);
+        clearProgress(reportId);
+        fetchReports();
+    };
 
-    async function runPhase2(reportId: string, macroCount: number, currentTabsNum: number) {
-        updateProgress(reportId, { phase: 2, progress: 0 });
-
-        const baseTimePerMacro = 9000;
-        const scaledTimePerMacro = baseTimePerMacro / currentTabsNum;
-        const totalDuration = macroCount * scaledTimePerMacro;
-        const startTime = Date.now();
-
-        return new Promise((resolve) => {
-            const interval = setInterval(() => {
-                setProgressStates(prev => {
-                    const state = prev[reportId];
-
-                    if (!state || state.stopped) {
-                        clearInterval(interval);
-                        resolve(false);
-                        return prev;
-                    }
-
-                    if (state.paused) {
-                        clearInterval(interval);
-                        resolve(false);
-                        return prev;
-                    }
-
-                    const elapsed = Date.now() - startTime;
-                    const progress = Math.min(100, Math.floor((elapsed / totalDuration) * 100));
-                    const currentMacro = Math.min(macroCount, Math.ceil((elapsed / totalDuration) * macroCount));
-
-                    if (progress >= 100) {
-                        clearInterval(interval);
-                        resolve(true);
-                        return {
-                            ...prev,
-                            [reportId]: {
-                                ...state,
-                                progress: 100,
-                                message: `Filling macros (${macroCount}/${macroCount})...`
-                            }
-                        };
-                    }
-
-                    return {
-                        ...prev,
-                        [reportId]: {
-                            ...state,
-                            progress,
-                            message: `Filling macros (${currentMacro}/${macroCount})...`
-                        }
-                    };
-                });
-            }, 100);
+    const handleError = async (reportId: string, error: string) => {
+        updateProgress(reportId, { 
+            message: `Error: ${error}`,
+            progress: 0,
+            status: 'FAILED'
         });
-    }
+        await delay(3000);
+        clearProgress(reportId);
+    };
 
-    async function runPhase3(reportId: string, assetCount: number) {
-        updateProgress(reportId, { phase: 3, progress: 0 });
+const handleSubmit = (reportId: string) => {
+        if (!socketRef.current || !socketRef.current.connected) {
+            console.error('[SOCKET] Socket not connected');
+            alert('Connection lost. Please refresh the page.');
+            return;
+        }
 
-        const setupDuration = 2000;
-        const checkDuration = assetCount * 400;
-        const totalDuration = setupDuration + checkDuration;
-        const startTime = Date.now();
-
-        return new Promise((resolve) => {
-            const interval = setInterval(() => {
-                setProgressStates(prev => {
-                    const state = prev[reportId];
-
-                    if (!state || state.stopped) {
-                        clearInterval(interval);
-                        resolve(false);
-                        return prev;
-                    }
-
-                    if (state.paused) {
-                        clearInterval(interval);
-                        resolve(false);
-                        return prev;
-                    }
-
-                    const elapsed = Date.now() - startTime;
-                    const progress = Math.min(100, Math.floor((elapsed / totalDuration) * 100));
-
-                    let message: string;
-                    if (elapsed < setupDuration) {
-                        message = "Setting up checks...";
-                    } else {
-                        const checkElapsed = elapsed - setupDuration;
-                        const currentCheck = Math.min(assetCount, Math.ceil((checkElapsed / checkDuration) * assetCount));
-                        message = `Checking (${currentCheck}/${assetCount})...`;
-                    }
-
-                    if (progress >= 100) {
-                        clearInterval(interval);
-                        resolve(true);
-                        return {
-                            ...prev,
-                            [reportId]: {
-                                ...state,
-                                progress: 100,
-                                message: `Checking (${assetCount}/${assetCount})...`
-                            }
-                        };
-                    }
-
-                    return {
-                        ...prev,
-                        [reportId]: {
-                            ...state,
-                            progress,
-                            message
-                        }
-                    };
-                });
-            }, 100);
+        // Join the report-specific room and start form fill
+        socketRef.current.emit('join_ticket', `report_${reportId}`);
+        socketRef.current.emit('start_form_fill', {
+            reportId,
+            tabsNum,
+            userId: 'current_user', // Replace with actual user ID
+            actionType: 'submit'
         });
-    }
 
-    async function runWithPhases(reportId: string, actionType: "submit" | "retry" | "check") {
-        const report = reports.find(r => r._id === reportId);
-        if (!report) return;
-
-        const assetCount = report.asset_data.length;
-        const incompleteCount = report.asset_data.filter(a => a.submitState === 0).length;
-
-        setActiveReportId(reportId);
+        // Initialize progress state
         setProgressStates(prev => ({
             ...prev,
             [reportId]: {
-                phase: actionType === "retry" ? 2 : actionType === "check" ? 3 : 1,
+                status: 'INITIALIZING',
                 progress: 0,
-                message: "Starting...",
+                message: 'Starting form submission...',
                 paused: false,
                 stopped: false,
-                actionType: actionType
+                actionType: 'submit'
             }
         }));
+    };
 
-        let actionPromise: Promise<any>;
-        let macroCount = assetCount;
-
-        if (actionType === "submit") {
-            actionPromise = halfReportSubmit(reportId, tabsNum);
-        } else if (actionType === "retry") {
-            macroCount = incompleteCount;
-            actionPromise = retryMacros(reportId, tabsNum);
-        } else {
-            actionPromise = checkMacros(reportId, tabsNum);
+    const handleRetry = (reportId: string) => {
+        if (!socketRef.current || !socketRef.current.connected) {
+            console.error('[SOCKET] Socket not connected');
+            alert('Connection lost. Please refresh the page.');
+            return;
         }
 
-        try {
-            const apiCall = actionPromise.catch(err => {
-                console.error("API error:", err);
-                updateProgress(reportId, { message: "Error: " + (err.message || "Unknown error") });
-                throw err;
-            });
+        // Join the report-specific room and start retry
+        socketRef.current.emit('join_ticket', `report_${reportId}`);
+        socketRef.current.emit('start_form_fill', {
+            reportId,
+            tabsNum,
+            userId: 'current_user', // Replace with actual user ID
+            actionType: 'retry'
+        });
 
-            // Phase 1: Setup (skip for retry and check)
-            if (actionType !== "check" && actionType !== "retry") {
-                const phase1Success = await runPhase1(reportId, macroCount, tabsNum);
-                if (!phase1Success) {
-                    if (progressStates[reportId]?.stopped) {
-                        clearProgress(reportId);
-                    }
-                    return;
-                }
+        // Initialize progress state
+        setProgressStates(prev => ({
+            ...prev,
+            [reportId]: {
+                status: 'INITIALIZING',
+                progress: 0,
+                message: 'Starting retry for incomplete macros...',
+                paused: false,
+                stopped: false,
+                actionType: 'retry'
             }
+        }));
+    };
 
-            // Phase 2: Filling (skip for check)
-            if (actionType !== "check") {
-                const phase2Success = await runPhase2(reportId, macroCount, tabsNum);
-                if (!phase2Success) {
-                    if (progressStates[reportId]?.stopped) {
-                        clearProgress(reportId);
-                    }
-                    return;
-                }
-            }
-
-            // Phase 3: Checking
-            const phase3Success = await runPhase3(reportId, assetCount);
-            if (!phase3Success) {
-                if (progressStates[reportId]?.stopped) {
-                    clearProgress(reportId);
-                }
-                return;
-            }
-
-            const response = await apiCall;
-            console.log("Response:", response);
-
-            updateProgress(reportId, { progress: 100, message: "Complete!" });
-            await delay(1500);
-            clearProgress(reportId);
-            fetchReports();
-
-        } catch (error) {
-            console.error("Action failed:", error);
-            updateProgress(reportId, { message: "Failed: " + (error as Error).message, progress: 0 });
-            await delay(3000);
-            clearProgress(reportId);
+    const handleCheck = (reportId: string) => {
+        if (!socketRef.current || !socketRef.current.connected) {
+            console.error('[SOCKET] Socket not connected');
+            alert('Connection lost. Please refresh the page.');
+            return;
         }
-    }
 
-    const handleSubmit = (reportId: string) => runWithPhases(reportId, "submit");
-    const handleRetry = (reportId: string) => runWithPhases(reportId, "retry");
-    const handleCheck = (reportId: string) => runWithPhases(reportId, "check");
+        // Join the report-specific room and start check
+        socketRef.current.emit('join_ticket', `report_${reportId}`);
+        socketRef.current.emit('start_form_fill', {
+            reportId,
+            tabsNum,
+            userId: 'current_user', // Replace with actual user ID
+            actionType: 'check'
+        });
+
+        // Initialize progress state
+        setProgressStates(prev => ({
+            ...prev,
+            [reportId]: {
+                status: 'INITIALIZING',
+                progress: 0,
+                message: 'Checking asset statuses...',
+                paused: false,
+                stopped: false,
+                actionType: 'check'
+            }
+        }));
+    };
 
     const handlePause = async (reportId: string) => {
-        try {
-            updateProgress(reportId, { paused: true });
-            const response = await pause(reportId);
-            console.log("Pause response:", response);
-        } catch (err) {
-            console.error(err);
-            updateProgress(reportId, { paused: false });
-        }
+        if (!socketRef.current || !socketRef.current.connected) return;
+        
+        socketRef.current.emit('pause_form_fill', { reportId });
+        updateProgress(reportId, { paused: true, message: 'Paused' });
     };
 
     const handleResume = async (reportId: string) => {
-        try {
-            const response = await resume(reportId);
-            console.log("Resume response:", response);
-
-            updateProgress(reportId, { paused: false });
-
-            const state = progressStates[reportId];
-            if (!state) return;
-
-            const report = reports.find(r => r._id === reportId);
-            if (!report) return;
-
-            const assetCount = report.asset_data.length;
-            const incompleteCount = report.asset_data.filter(a => a.submitState === 0).length;
-
-            if (state.phase === 1) {
-                if (await runPhase1(reportId, assetCount, tabsNum)) {
-                    if (await runPhase2(reportId, incompleteCount, tabsNum)) {
-                        await runPhase3(reportId, assetCount);
-                    }
-                }
-            } else if (state.phase === 2) {
-                if (await runPhase2(reportId, incompleteCount, tabsNum)) {
-                    await runPhase3(reportId, assetCount);
-                }
-            } else if (state.phase === 3) {
-                await runPhase3(reportId, assetCount);
-            }
-        } catch (err) {
-            console.error(err);
-        }
+        if (!socketRef.current || !socketRef.current.connected) return;
+        
+        socketRef.current.emit('resume_form_fill', { reportId });
+        updateProgress(reportId, { paused: false, message: 'Resumed' });
     };
 
     const handleStop = async (reportId: string) => {
-        try {
-            updateProgress(reportId, { stopped: true });
-            const response = await stop(reportId);
-            console.log("Stop response:", response);
-            await delay(500);
-            clearProgress(reportId);
-        } catch (err) {
-            console.error(err);
-        }
+        if (!socketRef.current || !socketRef.current.connected) return;
+        
+        socketRef.current.emit('stop_form_fill', { reportId });
+        updateProgress(reportId, { stopped: true, message: 'Stopping...' });
+        await delay(500);
+        clearProgress(reportId);
     };
 
     const toggleDropdown = (reportId: string) => {
@@ -465,14 +377,10 @@ const ViewEquipmentReports: React.FC = () => {
         setDropdownOpen(prev => ({ ...prev, [reportId]: !prev[reportId] }));
     };
 
-    const toggleActionDropdown = (reportId: string) => {
-        setActionDropdownOpen(prev => ({ ...prev, [reportId]: !prev[reportId] }));
-    };
-
-    // Check if controls should be shown
+    // Check if controls should be shown (not during checking phase)
     const shouldShowControls = (state: ProgressState) => {
-        // Hide controls if in phase 3 OR if action type is "check"
-        return state.phase !== 3 && state.actionType !== "check";
+        const checkingStatuses = ['CHECKING', 'CHECK_STARTED', 'CHECK_COMPLETE'];
+        return !checkingStatuses.includes(state.status) && state.actionType !== "check";
     };
 
     return (
@@ -528,18 +436,19 @@ const ViewEquipmentReports: React.FC = () => {
 
                                         {!(report._id === newestReportId && incompleteCount === report.asset_data.length) && (
                                             <span
-                                                className={`px-3 py-1 text-xs font-semibold rounded-full shadow-sm ${statusColor === "green"
-                                                    ? "bg-green-100 text-green-700"
-                                                    : statusColor === "yellow"
+                                                className={`px-3 py-1 text-xs font-semibold rounded-full shadow-sm ${
+                                                    statusColor === "green"
+                                                        ? "bg-green-100 text-green-700"
+                                                        : statusColor === "yellow"
                                                         ? "bg-yellow-100 text-yellow-800"
                                                         : "bg-orange-100 text-orange-700"
-                                                    }`}
+                                                }`}
                                             >
                                                 {statusColor === "green"
                                                     ? "Complete"
                                                     : statusColor === "yellow"
-                                                        ? "Partial"
-                                                        : "Pending"}
+                                                    ? "Partial"
+                                                    : "Pending"}
                                             </span>
                                         )}
                                     </div>
@@ -561,10 +470,11 @@ const ViewEquipmentReports: React.FC = () => {
                                     <button
                                         onClick={e => { e.stopPropagation(); handleSubmit(report._id); }}
                                         disabled={!loggedIn || !!report.report_id || !!progressState}
-                                        className={`px-4 py-2 font-semibold rounded-lg transition ${(!loggedIn || !!report.report_id || !!progressState)
-                                            ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                                            : 'bg-blue-400 text-white hover:bg-blue-500'
-                                            }`}
+                                        className={`px-4 py-2 font-semibold rounded-lg transition ${
+                                            (!loggedIn || !!report.report_id || !!progressState)
+                                                ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                                                : 'bg-blue-400 text-white hover:bg-blue-500'
+                                        }`}
                                     >
                                         Submit
                                     </button>
@@ -572,10 +482,11 @@ const ViewEquipmentReports: React.FC = () => {
                                     <button
                                         onClick={e => { e.stopPropagation(); handleRetry(report._id); }}
                                         disabled={!loggedIn || !report.report_id || incompleteCount === 0 || !!progressState}
-                                        className={`p-2 rounded-lg transition ${(!loggedIn || !report.report_id || incompleteCount === 0 || !!progressState)
-                                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                            : "bg-blue-400 text-white hover:bg-blue-500"
-                                            }`}
+                                        className={`p-2 rounded-lg transition ${
+                                            (!loggedIn || !report.report_id || incompleteCount === 0 || !!progressState)
+                                                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                                : "bg-blue-400 text-white hover:bg-blue-500"
+                                        }`}
                                         title="Retry"
                                     >
                                         <RefreshCcw className="w-4 h-4" />
@@ -584,10 +495,11 @@ const ViewEquipmentReports: React.FC = () => {
                                     <button
                                         onClick={e => { e.stopPropagation(); handleCheck(report._id); }}
                                         disabled={!loggedIn || !report.report_id || !!progressState}
-                                        className={`p-2 rounded-lg transition ${(!loggedIn || !report.report_id || !!progressState)
-                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                            : 'bg-green-300 hover:bg-green-400'
-                                            }`}
+                                        className={`p-2 rounded-lg transition ${
+                                            (!loggedIn || !report.report_id || !!progressState)
+                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                : 'bg-green-300 hover:bg-green-400'
+                                        }`}
                                         title="Check Assets"
                                     >
                                         <CheckCircle className="w-4 h-4" />
@@ -629,14 +541,17 @@ const ViewEquipmentReports: React.FC = () => {
                                     <div className="flex items-center gap-3">
                                         <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                                             <div
-                                                className={`h-2 transition-all duration-200 ${progressState.phase === 3
-                                                    ? 'bg-green-500'
-                                                    : 'bg-blue-500'
-                                                    }`}
+                                                className={`h-2 transition-all duration-300 ${
+                                                    progressState.status === 'COMPLETE'
+                                                        ? 'bg-green-500'
+                                                        : progressState.status === 'FAILED'
+                                                        ? 'bg-red-500'
+                                                        : 'bg-blue-500'
+                                                }`}
                                                 style={{ width: `${progressState.progress}%` }}
                                             />
                                         </div>
-                                        {!progressState.paused && (
+                                        {!progressState.paused && progressState.status !== 'COMPLETE' && progressState.status !== 'FAILED' && (
                                             <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                                         )}
                                     </div>
@@ -646,9 +561,14 @@ const ViewEquipmentReports: React.FC = () => {
                                             {progressState.message}
                                         </span>
                                         <span className="text-xs text-gray-500">
-                                            Phase {progressState.phase}/3
+                                            {progressState.progress}%
                                         </span>
                                     </div>
+                                    {progressState.data?.current !== undefined && progressState.data?.total !== undefined && (
+                                        <div className="text-xs text-gray-500">
+                                            {progressState.data.current} / {progressState.data.total}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -663,10 +583,11 @@ const ViewEquipmentReports: React.FC = () => {
                                                 {asset.final_value} • {report.owner_name}
                                             </p>
                                         </div>
-                                        <span className={`px-2 py-1 text-xs rounded-full ${asset.submitState === 1
-                                            ? "bg-green-100 text-green-700"
-                                            : "bg-red-100 text-red-700"
-                                            }`}>
+                                        <span className={`px-2 py-1 text-xs rounded-full ${
+                                            asset.submitState === 1
+                                                ? "bg-green-100 text-green-700"
+                                                : "bg-red-100 text-red-700"
+                                        }`}>
                                             {asset.submitState === 1 ? "Complete" : "Incomplete"}
                                         </span>
                                     </div>
