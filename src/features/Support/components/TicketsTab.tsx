@@ -1,27 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Search, Plus, RefreshCw, AlertCircle } from "lucide-react";
+import { Search, Plus, RefreshCw, AlertCircle, Bell, Star } from "lucide-react";
 import { api } from "../../../shared/utils/api";
-import TicketDetailsView from "../components/TicketDetails"; 
-
-interface Ticket {
-  _id: string;
-  subject: string;
-  classification: "low" | "medium" | "high";
-  description: string;
-  status: "open" | "in-progress" | "resolved" | "closed";
-  priority: number;
-  attachments?: Array<{
-    filename: string;
-    originalName: string;
-    path: string;
-    mimetype: string;
-    size: number;
-  }>;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string; // Added createdBy field
-}
+import TicketDetails from "../components/TicketDetails";
+import TicketChatModal from "./TicketChatModal";
+import { useUnreadMessages } from "../context/UnreadMessagesContext";
+import { Ticket } from "../types";
 
 interface TicketsTabProps {
   searchTerm: string;
@@ -40,135 +24,147 @@ const TicketsTab: React.FC<TicketsTabProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null); // Add state for selected ticket
+  const [chatModalTicketId, setChatModalTicketId] = useState<string | null>(null);
+  const [chatModalTicketSubject, setChatModalTicketSubject] = useState<string>("");
 
-  const fetchTickets = async () => {
-    try {
-      setError(null);
-      const { data } = await api.get("/tickets");
-      if (data.success) {
-        setTickets(data.tickets || []);
-      } else {
-        setError(data.message || "Failed to fetch tickets");
-      }
-    } catch (error: any) {
-      console.error("Error fetching tickets:", error);
-      setError(error?.response?.data?.message || "Failed to fetch tickets");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+  const { unreadMessages, clearUnread, joinTickets, checkForNewMessages } = useUnreadMessages();
 
+  // Debug: Log unread messages state
+  useEffect(() => {
+    console.log("Unread messages state:", unreadMessages);
+  }, [unreadMessages]);
+
+  // Fetch tickets on component mount
   useEffect(() => {
     fetchTickets();
   }, []);
 
-  const handleRefresh = () => {
-    setRefreshing(true);
-    fetchTickets();
+  // Clear unread count when ticket is opened
+  useEffect(() => {
+    if (selectedTicket) {
+      clearUnread(selectedTicket._id);
+    }
+  }, [selectedTicket, clearUnread]);
+
+  // Clear unread count when chat modal is opened
+  useEffect(() => {
+    if (chatModalTicketId) {
+      clearUnread(chatModalTicketId);
+    }
+  }, [chatModalTicketId, clearUnread]);
+
+  // Fetch tickets function
+  const fetchTickets = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const { data } = await api.get('/tickets');
+      if (data.success) {
+        setTickets(data.tickets);
+        // Check for new messages to update unread counts
+        checkForNewMessages(data.tickets);
+        // Join tickets for socket
+        joinTickets(data.tickets.map((t: Ticket) => t._id));
+      } else {
+        setError('Failed to load tickets');
+      }
+    } catch (err) {
+      console.error('Error fetching tickets:', err);
+      setError('Failed to load tickets. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const user = JSON.parse(localStorage.getItem("user") || "null");
-  const isAdmin = user?.email === "admin.tickets@gmail.com";
+  // Handle refresh
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchTickets();
+    setRefreshing(false);
+  };
 
-  const filteredTickets = tickets.filter(
-    (ticket) =>
-      (isAdmin || ticket.createdBy === user?._id) &&
-      (
-        ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ticket.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ticket.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ticket.classification.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+  // Filtered tickets based on search
+  const filteredTickets = tickets.filter(ticket =>
+    ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ticket.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ticket._id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const formatDate = (dateString: string) => {
+  // Utility functions
+  const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "2-digit",
-      year: "numeric",
+      year: "numeric"
     });
   };
 
-  const formatLastUpdate = (dateString: string) => {
+  const formatLastUpdate = (dateString: string): string => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
-    );
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInHours = diffInMs / (1000 * 60 * 60);
 
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours < 24) return `${diffInHours} hours ago`;
-    if (diffInHours < 48) return "Yesterday";
-    return formatDate(dateString);
+    if (diffInHours < 1) {
+      const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+      return `${diffInMinutes} minutes ago`;
+    } else if (diffInHours < 24) {
+      return `${Math.floor(diffInHours)} hours ago`;
+    } else {
+      return formatDate(dateString);
+    }
   };
 
-  const getStatusColor = (status: Ticket["status"]) => {
-    const colors: Record<Ticket["status"], string> = {
-      open: "blue",
-      "in-progress": "amber",
-      resolved: "green",
-      closed: "gray",
-    };
-    return colors[status] || "gray";
+  // Static class mappings for Tailwind colors to avoid dynamic class names
+  const statusColorClasses: Record<Ticket["status"], { bg: string; text: string }> = {
+    open: { bg: "bg-blue-100", text: "text-blue-800" },
+    "in-progress": { bg: "bg-amber-100", text: "text-amber-800" },
+    resolved: { bg: "bg-green-100", text: "text-green-800" },
+    closed: { bg: "bg-gray-100", text: "text-gray-800" },
   };
 
-  const getPriorityColor = (classification: Ticket["classification"]) => {
-    const colors: Record<Ticket["classification"], string> = {
-      low: "green",
-      medium: "amber",
-      high: "red",
-    };
-    return colors[classification] || "gray";
+  const statusTextMap: Record<Ticket["status"], string> = {
+    open: "Open",
+    "in-progress": "In Progress",
+    resolved: "Resolved",
+    closed: "Closed",
   };
 
-  const getStatusText = (status: Ticket["status"]) => {
-    const statusTexts: Record<Ticket["status"], string> = {
-      open: "Open",
-      "in-progress": "In Progress",
-      resolved: "Resolved",
-      closed: "Closed",
-    };
-    return statusTexts[status] || status;
+  const priorityColorClasses: Record<Ticket["classification"], { bg: string; text: string }> = {
+    low: { bg: "bg-green-100", text: "text-green-800" },
+    medium: { bg: "bg-amber-100", text: "text-amber-800" },
+    high: { bg: "bg-red-100", text: "text-red-800" },
   };
 
-  const getPriorityText = (classification: Ticket["classification"]) => {
-    const priorityTexts: Record<Ticket["classification"], string> = {
-      low: "Low",
-      medium: "Medium",
-      high: "High",
-    };
-    return priorityTexts[classification] || classification;
+  const priorityTextMap: Record<Ticket["classification"], string> = {
+    low: "Low",
+    medium: "Medium",
+    high: "High",
   };
 
-  // 🔹 Open file in browser
-  const handleOpenFile = (
-    ticketId: string,
-    file: NonNullable<Ticket["attachments"]>[number] // ✅ safer type
-  ) => {
+  const handleOpenFile = (ticketId: string, file: any) => {
+    // Open file in new tab or download
     const fileUrl = `${api.defaults.baseURL}/tickets/${ticketId}/attachments/${file.filename}`;
-    window.open(fileUrl, "_blank");
+    window.open(fileUrl, '_blank');
   };
 
-  // Handle view details click
   const handleViewDetails = (ticket: Ticket) => {
     setSelectedTicket(ticket);
   };
 
-  // Handle back navigation from ticket details
-  const handleBackToList = () => {
-    setSelectedTicket(null);
+  const handleOpenChat = (ticket: Ticket) => {
+    setChatModalTicketId(ticket._id);
+    setChatModalTicketSubject(ticket.subject);
   };
 
-  // If a ticket is selected, show the details view
+  const handleCloseChatModal = () => {
+    setChatModalTicketId(null);
+    setChatModalTicketSubject("");
+  };
+
   if (selectedTicket) {
-    return (
-      <TicketDetailsView 
-        ticket={selectedTicket} 
-        onBack={handleBackToList} 
-      />
-    );
+    return <TicketDetails ticket={selectedTicket} onBack={() => setSelectedTicket(null)} />;
   }
 
   if (loading) {
@@ -266,7 +262,7 @@ const TicketsTab: React.FC<TicketsTabProps> = ({
           {filteredTickets.map((ticket) => (
             <div
               key={ticket._id}
-              className="bg-white p-4 rounded-lg border border-gray-200 hover:border-blue-300 transition-colors cursor-pointer"
+              className="bg-white p-6 rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:scale-[1.02]"
             >
               <div className="flex justify-between">
                 <div className="flex-1">
@@ -279,10 +275,29 @@ const TicketsTab: React.FC<TicketsTabProps> = ({
                     <span>•</span>
                     <span>{formatDate(ticket.createdAt)}</span>
                     <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full bg-${getStatusColor(ticket.status)}-100 text-${getStatusColor(ticket.status)}-800`}
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${statusColorClasses[ticket.status]?.bg} ${statusColorClasses[ticket.status]?.text}`}
                     >
-                      {getStatusText(ticket.status)}
+                      {statusTextMap[ticket.status]}
                     </span>
+
+                    {/* Customer Rating */}
+                    {typeof ticket.rating === 'number' && (
+                      <div className="flex items-center space-x-1">
+                        {[1, 2, 3, 4, 5].map((star) => {
+                          const rating = ticket.rating as number;
+                          return (
+                            <Star
+                              key={star}
+                              className={`h-3 w-3 ${
+                                star <= rating
+                                  ? "text-yellow-400 fill-current"
+                                  : "text-gray-300"
+                              }`}
+                            />
+                          );
+                        })}
+                      </div>
+                    )}
 
                     {/* 🔹 Files inline with better styling */}
                     {ticket.attachments && ticket.attachments.length > 0 && (
@@ -304,28 +319,49 @@ const TicketsTab: React.FC<TicketsTabProps> = ({
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-2">
+                  <div className="relative">
+                    <div className={`p-2 rounded-full transition-all duration-300 ${unreadMessages[ticket._id] > 0 ? 'bg-red-100 animate-pulse' : 'bg-gray-100'}`}>
+                      <Bell className={`h-5 w-5 transition-colors duration-300 ${unreadMessages[ticket._id] > 0 ? 'text-red-500' : 'text-gray-500'}`} />
+                    </div>
+                    {unreadMessages[ticket._id] > 0 && (
+                      <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full min-w-[20px] h-[20px] animate-bounce">
+                        {unreadMessages[ticket._id]}
+                      </span>
+                    )}
+                  </div>
                   <span
-                    className={`px-2 py-1 text-xs font-medium rounded-full bg-${getPriorityColor(ticket.classification)}-100 text-${getPriorityColor(ticket.classification)}-800`}
+                    className={`px-2 py-1 text-xs font-medium rounded-full ${priorityColorClasses[ticket.classification]?.bg} ${priorityColorClasses[ticket.classification]?.text}`}
                   >
-                    {getPriorityText(ticket.classification)}
+                    {priorityTextMap[ticket.classification]}
                   </span>
                 </div>
               </div>
 
-              {/* 🔹 Bottom only View Details */}
+              {/* 🔹 Bottom actions */}
               <div className="mt-4 flex justify-between items-center pt-3 border-t border-gray-100">
                 <div className="text-sm text-gray-600">
                   Last updated: {formatLastUpdate(ticket.updatedAt)}
                 </div>
-                <button 
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent event bubbling
-                    handleViewDetails(ticket);
-                  }}
-                >
-                  View Details
-                </button>
+                <div className="flex gap-4">
+                  <button
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent event bubbling
+                      handleOpenChat(ticket);
+                    }}
+                  >
+                    Open Chat
+                  </button>
+                  <button
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent event bubbling
+                      handleViewDetails(ticket);
+                    }}
+                  >
+                    View Details
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -340,6 +376,16 @@ const TicketsTab: React.FC<TicketsTabProps> = ({
           </div>
         )}
       </div>
+
+      {/* Chat Modal */}
+      {chatModalTicketId && (
+        <TicketChatModal
+          isOpen={!!chatModalTicketId}
+          onClose={handleCloseChatModal}
+          ticketId={chatModalTicketId as string}
+          ticketSubject={chatModalTicketSubject}
+        />
+      )}
     </div>
   );
 };

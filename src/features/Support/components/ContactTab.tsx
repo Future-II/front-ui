@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { MessageSquare, Phone, Mail, Paperclip, HelpCircle, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { api } from "../../../shared/utils/api";
+import ChatModal from "./ChatModal";
 
 interface NewTicketForm {
   subject: string;
@@ -48,6 +49,7 @@ const ContactTab: React.FC<ContactTabProps> = ({
 }) => {
   const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -115,7 +117,10 @@ const ContactTab: React.FC<ContactTabProps> = ({
           title={t("support.liveChat.title")}
           description={t("support.liveChat.description")}
           button={
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full">
+            <button
+              onClick={() => setIsChatModalOpen(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full"
+            >
               {t("support.liveChat.button")}
             </button>
           }
@@ -307,6 +312,12 @@ const ContactTab: React.FC<ContactTabProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Chat Modal */}
+      <ChatModal
+        isOpen={isChatModalOpen}
+        onClose={() => setIsChatModalOpen(false)}
+      />
     </div>
   );
 };
