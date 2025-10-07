@@ -78,10 +78,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         //   name: t('equipment.tab1') || 'تقارير المعدات',
         //   path: '/equipment/report'
         // },
-        // {
-        //   name: 'Manual Equipment Report Upload',
-        //   path: '/equipment/manualEquipReport'
-        // },
+        {
+          name: 'Manual Equipment Report Upload',
+          path: '/equipment/manualEquipReport'
+        },
         // {
         //   name: t('equipment.tab2') || 'جميع التقارير',
         //   path: '/equipment/allReports'

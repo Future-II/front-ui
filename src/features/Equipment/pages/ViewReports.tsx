@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { getReportsData } from "../api";
-import { RefreshCcw, CheckCircle, Pause, Play, StopCircle } from "lucide-react";
+import { RefreshCcw, CheckCircle, Pause, Play } from "lucide-react";
 import LoginModal from "../components/EquipmentTaqeemLogin";
 import { useTaqeemAuth } from "../../../shared/context/TaqeemAuthContext";
 import io, { Socket } from 'socket.io-client';
@@ -14,6 +14,35 @@ interface Asset {
     submitState: number;
 }
 
+function formatRelativeTime(dateString: string) {
+    const date = new Date(dateString);
+    const now = new Date();
+
+    // Strip time (set to midnight for comparison)
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+    const diffDays = Math.floor(
+        (startOfToday.getTime() - startOfDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    // Format static time
+const timeString = date.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+});
+
+
+    if (diffDays === 0) return `Today, ${timeString}`;
+    if (diffDays === 1) return `Yesterday, ${timeString}`;
+    return `${diffDays} days ago, ${timeString}`;
+}
+
+
+
+
+
 interface Report {
     _id: string;
     title: string;
@@ -22,6 +51,8 @@ interface Report {
     createdAt?: string;
     owner_name: string;
     report_id: string;
+    startSubmitTime?: string;
+    endSubmitTime?: string;
 }
 
 interface ProgressData {
@@ -54,7 +85,7 @@ const ViewEquipmentReports: React.FC = () => {
     const [newestReportId, setNewestReportId] = useState<string | null>(null);
     const [tabsNum, setTabsNum] = useState(3);
     const [dropdownOpen, setDropdownOpen] = useState<Record<string, boolean>>({});
-    
+
     const socketRef = useRef<Socket | null>(null);
     const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -172,9 +203,9 @@ const ViewEquipmentReports: React.FC = () => {
 
     const updateProgressFromSocket = (data: any) => {
         const { reportId, status, message, data: progressData } = data;
-        
+
         let progress = 0;
-        
+
         // Calculate progress based on status and data
         if (progressData?.percentage !== undefined) {
             progress = progressData.percentage;
@@ -239,8 +270,8 @@ const ViewEquipmentReports: React.FC = () => {
     };
 
     const handleCompletion = async (reportId: string) => {
-        updateProgress(reportId, { 
-            progress: 100, 
+        updateProgress(reportId, {
+            progress: 100,
             message: 'Complete!',
             status: 'COMPLETE'
         });
@@ -250,7 +281,7 @@ const ViewEquipmentReports: React.FC = () => {
     };
 
     const handleError = async (reportId: string, error: string) => {
-        updateProgress(reportId, { 
+        updateProgress(reportId, {
             message: `Error: ${error}`,
             progress: 0,
             status: 'FAILED'
@@ -259,7 +290,7 @@ const ViewEquipmentReports: React.FC = () => {
         clearProgress(reportId);
     };
 
-const handleSubmit = (reportId: string) => {
+    const handleSubmit = (reportId: string) => {
         if (!socketRef.current || !socketRef.current.connected) {
             console.error('[SOCKET] Socket not connected');
             alert('Connection lost. Please refresh the page.');
@@ -351,21 +382,21 @@ const handleSubmit = (reportId: string) => {
 
     const handlePause = async (reportId: string) => {
         if (!socketRef.current || !socketRef.current.connected) return;
-        
+
         socketRef.current.emit('pause_form_fill', { reportId });
         updateProgress(reportId, { paused: true, message: 'Paused' });
     };
 
     const handleResume = async (reportId: string) => {
         if (!socketRef.current || !socketRef.current.connected) return;
-        
+
         socketRef.current.emit('resume_form_fill', { reportId });
         updateProgress(reportId, { paused: false, message: 'Resumed' });
     };
 
     const handleStop = async (reportId: string) => {
         if (!socketRef.current || !socketRef.current.connected) return;
-        
+
         socketRef.current.emit('stop_form_fill', { reportId });
         updateProgress(reportId, { stopped: true, message: 'Stopping...' });
         await delay(500);
@@ -414,6 +445,7 @@ const handleSubmit = (reportId: string) => {
                                     <h3 className="text-lg font-medium text-gray-900">
                                         Report {report.report_id ? report.report_id : report.title}
                                     </h3>
+
                                     <div className="flex flex-wrap gap-2 mt-1 items-center">
                                         <span className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
                                             Total Assets: {report.asset_data.length}
@@ -428,6 +460,8 @@ const handleSubmit = (reportId: string) => {
                                             Final Value: {Number(report.value).toLocaleString()}
                                         </span>
 
+                                        {/* 👇 Add start/end submit time capsules here */}
+
                                         {report._id === newestReportId && incompleteCount === report.asset_data.length && (
                                             <span className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-500 text-white shadow-sm">
                                                 New
@@ -436,19 +470,30 @@ const handleSubmit = (reportId: string) => {
 
                                         {!(report._id === newestReportId && incompleteCount === report.asset_data.length) && (
                                             <span
-                                                className={`px-3 py-1 text-xs font-semibold rounded-full shadow-sm ${
-                                                    statusColor === "green"
-                                                        ? "bg-green-100 text-green-700"
-                                                        : statusColor === "yellow"
-                                                        ? "bg-yellow-100 text-yellow-800"
-                                                        : "bg-orange-100 text-orange-700"
+                                            className={`px-3 py-1 text-xs font-semibold rounded-full shadow-sm ${statusColor === "green"
+                                                ? "bg-green-100 text-green-700"
+                                                : statusColor === "yellow"
+                                                ? "bg-yellow-100 text-yellow-800"
+                                                : "bg-orange-100 text-orange-700"
                                                 }`}
-                                            >
+                                                >
                                                 {statusColor === "green"
                                                     ? "Complete"
                                                     : statusColor === "yellow"
                                                     ? "Partial"
                                                     : "Pending"}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div  className="mt-3 gap-2 flex flex-wrap">
+                                        {report.startSubmitTime && (
+                                            <span className="px-3 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700">
+                                                Started: {formatRelativeTime(report.startSubmitTime)}
+                                            </span>
+                                        )}
+                                        {report.endSubmitTime && (
+                                            <span className="px-3 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-700">
+                                                Ended: {formatRelativeTime(report.endSubmitTime)}
                                             </span>
                                         )}
                                     </div>
@@ -470,11 +515,10 @@ const handleSubmit = (reportId: string) => {
                                     <button
                                         onClick={e => { e.stopPropagation(); handleSubmit(report._id); }}
                                         disabled={!loggedIn || !!report.report_id || !!progressState}
-                                        className={`px-4 py-2 font-semibold rounded-lg transition ${
-                                            (!loggedIn || !!report.report_id || !!progressState)
+                                        className={`px-4 py-2 font-semibold rounded-lg transition ${(!loggedIn || !!report.report_id || !!progressState)
                                                 ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
                                                 : 'bg-blue-400 text-white hover:bg-blue-500'
-                                        }`}
+                                            }`}
                                     >
                                         Submit
                                     </button>
@@ -482,11 +526,10 @@ const handleSubmit = (reportId: string) => {
                                     <button
                                         onClick={e => { e.stopPropagation(); handleRetry(report._id); }}
                                         disabled={!loggedIn || !report.report_id || incompleteCount === 0 || !!progressState}
-                                        className={`p-2 rounded-lg transition ${
-                                            (!loggedIn || !report.report_id || incompleteCount === 0 || !!progressState)
+                                        className={`p-2 rounded-lg transition ${(!loggedIn || !report.report_id || incompleteCount === 0 || !!progressState)
                                                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                                                 : "bg-blue-400 text-white hover:bg-blue-500"
-                                        }`}
+                                            }`}
                                         title="Retry"
                                     >
                                         <RefreshCcw className="w-4 h-4" />
@@ -495,11 +538,10 @@ const handleSubmit = (reportId: string) => {
                                     <button
                                         onClick={e => { e.stopPropagation(); handleCheck(report._id); }}
                                         disabled={!loggedIn || !report.report_id || !!progressState}
-                                        className={`p-2 rounded-lg transition ${
-                                            (!loggedIn || !report.report_id || !!progressState)
+                                        className={`p-2 rounded-lg transition ${(!loggedIn || !report.report_id || !!progressState)
                                                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                                 : 'bg-green-300 hover:bg-green-400'
-                                        }`}
+                                            }`}
                                         title="Check Assets"
                                     >
                                         <CheckCircle className="w-4 h-4" />
@@ -541,13 +583,12 @@ const handleSubmit = (reportId: string) => {
                                     <div className="flex items-center gap-3">
                                         <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                                             <div
-                                                className={`h-2 transition-all duration-300 ${
-                                                    progressState.status === 'COMPLETE'
+                                                className={`h-2 transition-all duration-300 ${progressState.status === 'COMPLETE'
                                                         ? 'bg-green-500'
                                                         : progressState.status === 'FAILED'
-                                                        ? 'bg-red-500'
-                                                        : 'bg-blue-500'
-                                                }`}
+                                                            ? 'bg-red-500'
+                                                            : 'bg-blue-500'
+                                                    }`}
                                                 style={{ width: `${progressState.progress}%` }}
                                             />
                                         </div>
@@ -583,11 +624,10 @@ const handleSubmit = (reportId: string) => {
                                                 {asset.final_value} • {report.owner_name}
                                             </p>
                                         </div>
-                                        <span className={`px-2 py-1 text-xs rounded-full ${
-                                            asset.submitState === 1
+                                        <span className={`px-2 py-1 text-xs rounded-full ${asset.submitState === 1
                                                 ? "bg-green-100 text-green-700"
                                                 : "bg-red-100 text-red-700"
-                                        }`}>
+                                            }`}>
                                             {asset.submitState === 1 ? "Complete" : "Incomplete"}
                                         </span>
                                     </div>
