@@ -220,8 +220,12 @@ const ReportForm: React.FC<ReportFormProps> = ({
               onChange={(e: any) => onFieldChange('valuation_purpose', e.target.value)}
               options={[
                 { value: '', label: 'Select' },
-                { value: 'Selling', label: 'Selling' }
+                { value: 'Selling', label: 'Selling' },
+                { value: 'Purchase', label: 'Purchase' },
+                { value: 'Investment', label: 'Investment' },
+                { value: 'Mortgage', label: 'Mortgage' }
               ]}
+              error={errors.valuation_purpose}
             />
             
             <SelectField
@@ -231,8 +235,11 @@ const ReportForm: React.FC<ReportFormProps> = ({
               onChange={(e: any) => onFieldChange('value_premise', e.target.value)}
               options={[
                 { value: '', label: 'Select' },
-                { value: 'Current Use', label: 'Current Use' }
+                { value: 'Current Use', label: 'Current Use' },
+                { value: 'Highest and Best Use', label: 'Highest and Best Use' },
+                { value: 'Liquidation Value', label: 'Liquidation Value' }
               ]}
+              error={errors.value_premise}
             />
           </div>
 
@@ -300,7 +307,9 @@ const ReportForm: React.FC<ReportFormProps> = ({
               value={formData.valuation_currency}
               onChange={(e: any) => onFieldChange('valuation_currency', e.target.value)}
               options={[
-                { value: 'Saudi Riyal', label: 'Saudi Riyal' }
+                { value: 'Saudi Riyal', label: 'Saudi Riyal' },
+                { value: 'USD', label: 'US Dollar' },
+                { value: 'EUR', label: 'Euro' }
               ]}
             />
           </div>
@@ -316,15 +325,17 @@ const ReportForm: React.FC<ReportFormProps> = ({
                 value={client.client_name}
                 onChange={(e: any) => onClientUpdate(index, 'client_name', e.target.value)}
                 error={errors[`client_${index}_client_name`]}
+                placeholder="Enter full name (min. 9 characters)"
               />
               
               <InputField
                 label="Phone Number"
                 required
-                type="text"
+                type="tel"
                 value={client.telephone_number}
                 onChange={(e: any) => onClientUpdate(index, 'telephone_number', e.target.value)}
                 error={errors[`client_${index}_telephone_number`]}
+                placeholder="e.g. +966500000000"
               />
               
               <InputField
@@ -334,6 +345,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
                 value={client.email_address}
                 onChange={(e: any) => onClientUpdate(index, 'email_address', e.target.value)}
                 error={errors[`client_${index}_email_address`]}
+                placeholder="e.g. example@domain.com"
               />
               
               <div className="flex items-end h-[72px]">
@@ -382,6 +394,8 @@ const ReportForm: React.FC<ReportFormProps> = ({
                     type="text"
                     value={user}
                     onChange={(e: any) => onUserUpdate(index, e.target.value)}
+                    error={errors[`user_${index}_username`]}
+                    placeholder="Enter username"
                   />
                   
                   <div className="flex items-end h-[72px]">
@@ -410,8 +424,8 @@ const ReportForm: React.FC<ReportFormProps> = ({
           )}
         </Section>
 
-        {/* Resident Data */}
-        <Section title="Resident Data">
+        {/* Valuer Data */}
+        <Section title="Valuer Data">
           {formData.valuers.map((valuer, index) => (
             <div key={index} className="grid grid-cols-3 gap-4 mb-6 items-start">
               <SelectField
@@ -420,9 +434,12 @@ const ReportForm: React.FC<ReportFormProps> = ({
                 value={valuer.valuer_name}
                 onChange={(e: any) => onValuerUpdate(index, 'valuer_name', e.target.value)}
                 options={[
-                  { value: '', label: 'Select' },
-                  { value: '4210000271', label: '4210000271 - عبدالعزيز سليمان عبدالله الزيد' }
+                  { value: '', label: 'Select Valuer' },
+                  { value: '4210000271', label: '4210000271 - عبدالعزيز سليمان عبدالله الزيد' },
+                  { value: '4210000272', label: '4210000272 - محمد أحمد علي' },
+                  { value: '4210000273', label: '4210000273 - سارة خالد الحربي' }
                 ]}
+                error={errors[`valuer_${index}_valuer_name`]}
               />
               
               <SelectField
@@ -458,7 +475,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
             onClick={onValuerAdd}
             className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-all text-sm"
           >
-            Add Resident
+            Add Valuer
           </button>
         </Section>
 
