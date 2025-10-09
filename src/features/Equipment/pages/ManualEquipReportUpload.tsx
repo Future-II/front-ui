@@ -2,6 +2,8 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import UploadBlock from '../components/UploadBlock';
 import ReportForm from '../components/ReportForm';
 import * as XLSX from "xlsx-js-style";
+import LoginModal from '../components/EquipmentTaqeemLogin';
+import { User } from "lucide-react";
 
 interface Client {
   client_name: string;
