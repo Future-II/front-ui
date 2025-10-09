@@ -5,6 +5,8 @@ import axios from "axios";
 
 const ProfileTab: React.FC = () => {
   const { t } = useTranslation();
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const isIndividual = user?.type === 'individual';
   const [formData, setFormData] = useState<any>({
     firstName: "",
     lastName: "",
@@ -172,57 +174,65 @@ const ProfileTab: React.FC = () => {
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {t("common.company", "الشركة")}
-          </label>
-          <input
-            type="text"
-            name="companyName"
-            value={formData.companyName || ""}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {t("profile.role", "نوع الشركة")}
-          </label>
-          <input
-            type="text"
-            name="companyType"
-            value={formData.companyType || ""}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        {!isIndividual && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t("common.company", "الشركة")}
+              </label>
+              <input
+                type="text"
+                name="companyName"
+                value={formData.companyName || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t("profile.role", "نوع الشركة")}
+              </label>
+              <input
+                type="text"
+                name="companyType"
+                value={formData.companyType || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </>
+        )}
       </div>
 
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {t("profile.licenseNumber", "رقم الترخيص")}
-        </label>
-        <input
-          type="text"
-          name="licenseNumber"
-          value={formData.licenseNumber || ""}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
+      {!isIndividual && (
+        <>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t("profile.licenseNumber", "رقم الترخيص")}
+            </label>
+            <input
+              type="text"
+              name="licenseNumber"
+              value={formData.licenseNumber || ""}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {t("profile.city", "المدينة")}
-        </label>
-        <input
-          type="text"
-          name="city"
-          value={formData.city || ""}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t("profile.city", "المدينة")}
+            </label>
+            <input
+              type="text"
+              name="city"
+              value={formData.city || ""}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </>
+      )}
 
       <div className="flex justify-end">
         <button

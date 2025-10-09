@@ -1,5 +1,5 @@
 interface TicketNotFoundProps {
-  setViewingTicket: (ticketId: number | null) => void;
+  setViewingTicket: (ticketId: string | null) => void;
 }
 
 const TicketNotFound: React.FC<TicketNotFoundProps> = ({ setViewingTicket }) => {

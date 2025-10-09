@@ -872,7 +872,7 @@ const handlePdfUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
   ), []);
 
   if (!loggedIn) {
-      return <LoginModal isOpen={true} onClose={() => {}} setIsLoggedIn={setLoggedIn} />;
+      return <LoginModal isOpen={true} onClose={() => { /* do nothing */ }} setIsLoggedIn={setLoggedIn} />;
     }
   return (
     <div className="min-h-screen bg-gray-50">

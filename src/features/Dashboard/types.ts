@@ -1,5 +1,5 @@
-interface Company {
-  id: number;
+export interface Company {
+  id: string;
   name: string;
   users: number;
   package: string;
@@ -11,8 +11,8 @@ interface Company {
   contactPhone?: string;
 }
 
-interface User {
-  id: number;
+export interface User {
+  id: string;
   name: string;
   email: string;
   role: string;
@@ -21,7 +21,7 @@ interface User {
   lastActive: string;
   avatar?: string;
 }
-interface PackageType {
+export interface PackageType {
   id: number;
   name: string;
   price: number;
@@ -33,8 +33,8 @@ interface PackageType {
   status: string;
   popularChoice?: boolean;
 }
-interface SupportTicket {
-  id: number;
+export interface SupportTicket {
+  id: string;
   subject: string;
   status: string;
   priority: string;
@@ -43,8 +43,13 @@ interface SupportTicket {
   company: string;
   assignedTo?: string;
   messages?: TicketMessage[];
+  createdBy?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
 }
-interface TicketMessage {
+export interface TicketMessage {
   id: number;
   ticketId: number;
   sender: string;

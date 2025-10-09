@@ -14,6 +14,7 @@ import TicketsPagination from "../support/TicketsPagination";
 import SupportStatsCard from "../support/SupportStatsCard";
 import { useTranslation } from "react-i18next";
 import ChatList from "../support/ChatList";
+import { SupportTicket } from "../../types";
 
 interface SupportTabProps {
   supportTickets: SupportTicket[];
@@ -25,12 +26,13 @@ const SupportTab: React.FC<SupportTabProps> = ({ supportTickets, formatDateTime 
   const [searchTerm, setSearchTerm] = useState("");
   const [showTicketFilter, setShowTicketFilter] = useState(false);
   const [showModal, setShowModal] = useState<string | null>(null);
-  const [viewingTicket, setViewingTicket] = useState<number | null>(null);
+  const [viewingTicket, setViewingTicket] = useState<string | null>(null);
 
   const filteredTickets = supportTickets.filter(
     (ticket) =>
-      ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.company.toLowerCase().includes(searchTerm.toLowerCase())
+      ticket.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ticket.createdBy?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ticket.createdBy?.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   console.log(showModal);
@@ -43,7 +45,7 @@ const SupportTab: React.FC<SupportTabProps> = ({ supportTickets, formatDateTime 
     return (
       <div className="flex flex-col w-full h-full">
         <ChatHeader ticket={ticket} onBack={() => setViewingTicket(null)} />
-        <ChatList />
+        <ChatList ticketId={ticket.id} assignedTo="admin.tickets@gmail.com" />
       </div>);
   }
 
@@ -62,7 +64,7 @@ const SupportTab: React.FC<SupportTabProps> = ({ supportTickets, formatDateTime 
     },
     {
       title: t("support.ticketStatus.pending"),
-      count: supportTickets.filter((t) => t.status === "pending").length,
+      count: supportTickets.filter((t) => t.status === "open").length,
       type: "pending",
       icon: <Check size={18} />,
     },
@@ -80,7 +82,7 @@ const SupportTab: React.FC<SupportTabProps> = ({ supportTickets, formatDateTime 
     },
     {
       title: t("support.ticketStatus.unassigned"),
-      count: supportTickets.filter((t) => t.assignedTo === null).length,
+      count: supportTickets.filter((t) => !t.assignedTo).length,
       type: "unassigned",
       icon: <UserX size={20} />,
     },
@@ -121,20 +123,12 @@ const SupportTab: React.FC<SupportTabProps> = ({ supportTickets, formatDateTime 
           title="أداء فريق الدعم"
           members={[
             {
-              name: "أحمد",
-              role: "فني دعم",
-              avatarLetter: "أ",
-              tickets: 25,
-              avgResponseHours: 1.5,
+              name: "Admin",
+              role: "مدير النظام",
+              avatarLetter: "A",
+              tickets: supportTickets.length,
+              avgResponseHours: 1.0,
               avatarColor: "bg-blue-500",
-            },
-            {
-              name: "ليلى",
-              role: "مسؤولة دعم",
-              avatarLetter: "ل",
-              tickets: 30,
-              avgResponseHours: 2.0,
-              avatarColor: "bg-pink-500",
             },
           ]}
           className="flex-1 w-full"

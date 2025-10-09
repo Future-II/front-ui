@@ -5,9 +5,10 @@ import { useTaqeemAuth } from "../../../shared/context/TaqeemAuthContext";
 interface LoginModalProps {
     isOpen: boolean;
     onClose: () => void;
+    setIsLoggedIn?: (loggedIn: boolean) => void;
 }
 
-export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
+export default function LoginModal({ isOpen, onClose, setIsLoggedIn: setLoggedInProp }: LoginModalProps) {
     const { setIsLoggedIn } = useTaqeemAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -38,6 +39,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 setProgressMessage("❌ OTP failed. Please try again.");
             } else if (response.status === "SUCCESS") {
                 setIsLoggedIn(true);
+                if (setLoggedInProp) setLoggedInProp(true);
                 setProgressMessage("🎉 Login successful!");
                 onClose();
             } else if (response.status === "FAILED") {

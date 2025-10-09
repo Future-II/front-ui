@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { ArrowDownLeft, Check, Edit3, MoreHorizontal } from "lucide-react";
+import { SupportTicket } from "../../types";
 
 interface ChatHeaderProps {
     ticket: SupportTicket;

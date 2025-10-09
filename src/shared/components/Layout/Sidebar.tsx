@@ -29,6 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const isAdmin = user?.email === "admin.tickets@gmail.com";
+  const isSuperAdmin = user?.email === "super.admin@gmail.com";
 
   const menuItems: MenuItem[] = [
     // {
@@ -96,11 +97,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         }
       ]
     },
-    // {
-    //   name: t('dashboard.title') || 'لوحة الإدارة',
-    //   path: '/dashboard',
-    //   icon: <BarChart className="h-5 w-5" />
-    // },
+    ...(isSuperAdmin ? [{
+      name: t('dashboard.title') || 'لوحة الإدارة',
+      path: '/dashboard',
+      icon: <BarChart className="h-5 w-5" />
+    }] : []),
     // {
     //   name: t('settings.title') || 'إعدادات المستخدم',
     //   path: '/settings',
@@ -110,6 +111,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       name: t('support.title') || 'المساعدة والدعم',
       path: '/support',
       icon: <HelpCircle className="h-5 w-5" />
+    },
+    {
+      name: t('navbar.userSettings') || t('settings.title') || 'User Settings',
+      path: '/settings',
+      icon: <Settings className="h-5 w-5" />
     },
     ...(isAdmin ? [{
       name: t('All Tickets') || 'جميع التذاكر',
