@@ -15,9 +15,11 @@ export default function LoginModal({ isOpen, onClose, setIsLoggedIn: setLoggedIn
     const [otpRequired, setOtpRequired] = useState(false);
     const [otp, setOtp] = useState("");
     const [progressMessage, setProgressMessage] = useState("");
+    const [loading, setLoading] = useState(false); // New state to track loading
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true); // Disable the button and show loading state
         try {
             if (!otpRequired) {
                 setProgressMessage("🔑 Entering Email and Password...");
@@ -30,9 +32,7 @@ export default function LoginModal({ isOpen, onClose, setIsLoggedIn: setLoggedIn
 
             if (response.status === "NOT_FOUND") {
                 setProgressMessage("❌ User not found. Please try again.");
-            }
-            
-            else if (response.status === "OTP_REQUIRED") {
+            } else if (response.status === "OTP_REQUIRED") {
                 setOtpRequired(true);
                 setProgressMessage("✅ Email and Password accepted. Please enter OTP.");
             } else if (response.status === "OTP_FAILED") {
@@ -57,6 +57,8 @@ export default function LoginModal({ isOpen, onClose, setIsLoggedIn: setLoggedIn
             console.error(error);
             setProgressMessage("⚠️ Something went wrong");
             alert("Something went wrong");
+        } finally {
+            setLoading(false); // Re-enable the button after the request completes
         }
     };
 
@@ -136,8 +138,9 @@ export default function LoginModal({ isOpen, onClose, setIsLoggedIn: setLoggedIn
                         type="submit"
                         className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition"
                         onClick={handleSubmit}
+                        disabled={loading} // Disable button during API call
                     >
-                        {otpRequired ? "Verify OTP" : "Sign In"}
+                        {loading ? "Please wait..." : otpRequired ? "Verify OTP" : "Sign In"}
                     </button>
                 </form>
 

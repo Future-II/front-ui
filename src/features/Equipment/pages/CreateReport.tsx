@@ -6,15 +6,6 @@ import UploadBlock from "../components/UploadBlock";
 import { extractReportData } from "../api";
 import { Search, RefreshCw, Plus, AlertCircle, Bell, Star } from "lucide-react";
 
-/**
- * CreateReport - updated UI
- *
- * - Tailwind styling retained and enhanced
- * - Errors collected into modal (auto-open on validation errors + manual open button)
- * - Tables hidden by default; toggled by "إظهار الجداول" button
- * - All previous validation & corrected-download logic preserved
- */
-
 const CreateReport: React.FC = () => {
   const navigate = useNavigate();
 
