@@ -136,7 +136,7 @@ async function runWithProgress(
 
   if (!loggedIn) {
     return (
-      <LoginModal isOpen={true} onClose={() => { }} setIsLoggedIn={setLoggedIn} />
+      <LoginModal isOpen={true} onClose={() => { /* do nothing */ }} setIsLoggedIn={setLoggedIn} />
     );
   }
 

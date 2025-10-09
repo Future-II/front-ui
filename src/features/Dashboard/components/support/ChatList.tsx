@@ -1,62 +1,102 @@
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "../../../../hooks/useLanguage";
+import { api } from "../../../../shared/utils/api";
 
 import ChatItem from "./ChatItem";
 import { formatDateTime } from "../../../../shared/utils/formatTime";
 import ChatInput from "./ChatInput";
 
-const ChatList = () => {
+interface ChatListProps {
+  ticketId: string;
+  assignedTo?: string;
+}
+
+interface Msg {
+  sender: "customer" | "support";
+  message: string;
+  timestamp: string | Date;
+}
+
+const ChatList = ({ ticketId, assignedTo }: ChatListProps) => {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const [messages, setMessages] = useState<Msg[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const dummyChats = [
-    {
-      sender: "سارة سارة الأحمد",
-      role: "الأحد",
-      message:
-        "نواجه مشكلة في سحب التقارير بشكل تلقائي منذ الصباح. هل يمكن المساعدة في حل المشكلة؟",
-      timestamp: new Date("2023-11-23T10:30:00"),
-      isSupport: false,
-    },
-    {
-      sender: "محمد الدعم",
-      role: "الدعم",
-      message:
-        "شكرًا للتواصل معنا. هل يمكن مشاركة رسائل الخطأ التي تظهر لديكم أثناء محاولة سحب التقارير؟",
-      timestamp: new Date("2023-11-23T10:45:00"),
-      isSupport: true,
-    },
-    {
-      sender: "سارة سارة الأحمد",
-      role: "الأحد",
-      message:
-        "نعم، تظهر رسالة 'فشل في الاتصال بالخادم' عند محاولة سحب التقارير. سأرفق لكم لقطة.",
-      timestamp: new Date("2023-11-23T11:00:00"),
-      isSupport: false,
-    },
-  ];
+  useEffect(() => {
+    const fetchMessages = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data } = await api.get(`/messages/${ticketId}`);
+        if (data.success) {
+          setMessages(data.messages || []);
+        } else {
+          setError("Failed to load messages");
+        }
+      } catch (e: any) {
+        setError(e?.message || "Failed to load messages");
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (ticketId) fetchMessages();
+  }, [ticketId]);
 
-  const supportName = "محمد الدعم"; // Example: first support user in the chat
+  const createdTime = useMemo(() => {
+    return messages.length > 0 ? messages[0].timestamp : null;
+  }, [messages]);
+
+  const handleSend = async (text: string) => {
+    if (!text.trim()) return;
+    // optimistic update
+    const optimistic: Msg = {
+      sender: "support",
+      message: text.trim(),
+      timestamp: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, optimistic]);
+    try {
+      await api.post(`/messages/${ticketId}`, { message: text.trim() });
+    } catch (e) {
+      // revert if failed
+      setMessages((prev) => prev.filter((m) => m !== optimistic));
+    }
+  };
 
   return (
     <div className="p-4 space-y-6">
       {/* Header */}
       <div className="flex justify-between text-sm text-gray-500 mb-6">
         <div>
-          {t('chat.ticketCreated')}: {formatDateTime(dummyChats[0].timestamp, isRTL)}
+          {t("chat.ticketCreated")}: {createdTime ? formatDateTime(createdTime, isRTL) : "-"}
         </div>
         <div>
-          {t('chat.assignedTo')}: <span className="text-black">{supportName}</span>
+          {t("chat.assignedTo")}: <span className="text-black">{assignedTo || "admin.tickets@gmail.com"}</span>
         </div>
       </div>
 
       {/* Chat messages */}
-      <div className="space-y-4">
-        {dummyChats.map((chat, idx) => (
-          <ChatItem key={idx} {...chat} />
-        ))}
+      <div className="space-y-4 min-h-[200px]">
+        {loading && <div className="text-gray-500">{t("common.loading")}</div>}
+        {error && <div className="text-red-600">{error}</div>}
+        {!loading && !error && messages.length === 0 && (
+          <div className="text-gray-500">{t("common.noData")}</div>
+        )}
+        {!loading && !error &&
+          messages.map((msg, idx) => (
+            <ChatItem
+              key={idx}
+              sender={msg.sender === "support" ? "Support" : "Customer"}
+              message={msg.message}
+              timestamp={new Date(msg.timestamp)}
+              isSupport={msg.sender === "support"}
+            />
+          ))}
       </div>
-      <ChatInput />
+      <ChatInput onSend={handleSend} />
     </div>
   );
 };

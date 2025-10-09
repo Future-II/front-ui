@@ -1,10 +1,11 @@
 import { Dispatch, SetStateAction } from "react";
 import { Edit, CheckSquare } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { SupportTicket } from "../../types";
 
 interface TicketsTableProps {
   filteredTickets: SupportTicket[];
-  setViewingTicket: Dispatch<SetStateAction<number | null>>;
+  setViewingTicket: Dispatch<SetStateAction<string | null>>;
   setShowModal: Dispatch<SetStateAction<string | null>>;
   formatDateTime: (date: string) => string;
 }
@@ -17,8 +18,8 @@ export default function TicketsTable({
 }: TicketsTableProps) {
   const { t } = useTranslation();
 
-  const getPriorityClass = (priority: string) => {
-    switch (priority) {
+  const getPriorityClass = (classification: string) => {
+    switch (classification) {
       case "high":
         return "bg-red-100 text-red-800";
       case "medium":
@@ -37,6 +38,8 @@ export default function TicketsTable({
         return "bg-amber-100 text-amber-800";
       case "resolved":
         return "bg-green-100 text-green-800";
+      case "closed":
+        return "bg-gray-100 text-gray-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -73,16 +76,14 @@ export default function TicketsTable({
           {filteredTickets.map((ticket) => (
             <tr key={ticket.id} className="hover:bg-gray-50">
               {/* Ticket ID */}
-              <td className="px-6 py-4 text-sm text-gray-500">#{ticket.id}</td>
+              <td className="px-6 py-4 text-sm text-gray-500">#{ticket.id.slice(-6)}</td>
 
               {/* Subject & First Message */}
               <td className="px-6 py-4">
                 <div className="flex flex-col">
                   <div className="text-sm font-medium text-gray-900">{ticket.subject}</div>
                   <div className="text-xs text-gray-400 mt-1 truncate max-w-sm">
-                    {ticket.messages?.length
-                      ? ticket.messages[0].message
-                      : t("common.noData", "لا يوجد وصف")}
+                    {ticket.description || t("common.noData", "لا يوجد وصف")}
                   </div>
                 </div>
               </td>
@@ -91,12 +92,10 @@ export default function TicketsTable({
               <td className="px-6 py-4">
                 <div className="flex flex-col">
                   <div className="text-sm font-medium text-gray-900">
-                    {ticket.company ?? t("common.companyUnknown", "غير معروف")}
+                    {ticket.createdBy?.firstName} {ticket.createdBy?.lastName}
                   </div>
                   <div className="text-xs text-gray-400 mt-1">
-                    {ticket.messages?.length
-                      ? ticket.messages[0].sender
-                      : t("common.notAssigned", "غير محدد")}
+                    {ticket.createdBy?.email}
                   </div>
                 </div>
               </td>
@@ -105,10 +104,10 @@ export default function TicketsTable({
               <td className="px-6 py-4">
                 <span
                   className={`inline-flex justify-center whitespace-nowrap px-3 py-0.5 text-xs rounded-full ${getPriorityClass(
-                    ticket.priority
+                    (ticket as any).priority || (ticket as any).classification
                   )}`}
                 >
-                  {t(`ticket.priority.${ticket.priority}`)}
+                  {t(`ticket.priority.${(ticket as any).priority || (ticket as any).classification || 'low'}`)}
                 </span>
               </td>
 
@@ -119,13 +118,13 @@ export default function TicketsTable({
                     ticket.status
                   )}`}
                 >
-                  {t(`ticket.status.${ticket.status.replace("-p", "P")}`)}
+                  {ticket.status === 'in-progress' ? t('ticket.status.inProgress') : ticket.status === 'resolved' ? t('ticket.status.resolved') : ticket.status === 'closed' ? t('support.ticketStatus.closed') : t('ticket.status.open')}
                 </span>
               </td>
 
               {/* Assigned To */}
               <td className="px-6 py-4 text-sm text-gray-500">
-                {ticket.assignedTo || t("common.notAssigned", "غير معين")}
+                {ticket.assignedTo || 'admin.tickets@gmail.com'}
               </td>
 
               {/* Created At */}
@@ -150,9 +149,9 @@ export default function TicketsTable({
                     className="flex items-center text-blue-700 hover:text-blue-900 transition-colors"
                     onClick={() => setViewingTicket(ticket.id)}
                   >
-                    {t("support.recentTickets.viewDetails", "عرض التفاصيل")}
+                    {t("support.ticketsTab.viewChat", "View Chat")}
                   </button>
-                  {ticket.status === "resolved" && (
+                  {ticket.status === "closed" && (
                     <CheckSquare size={20} className="mr-1 text-green-600" />
                   )}
                   <button

@@ -131,7 +131,7 @@ const ManualPropertyExtraction: React.FC = () => {
     return (
       <LoginModal
         isOpen={true}
-        onClose={() => {}}
+        onClose={() => { /* do nothing */ }}
         setIsLoggedIn={setLoggedIn}
       />
     );

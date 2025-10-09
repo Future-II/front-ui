@@ -150,7 +150,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin 
           </h3>
         </div>
 
-        <div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <label
               htmlFor="firstName"
               className="block text-sm font-medium text-gray-700 mb-2"
@@ -185,6 +185,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin 
               className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
           </div>
+        </div>
 
         <div className="mb-4">
           <label
@@ -285,7 +286,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin 
               </h3>
             </div>
             <div className="space-y-4">
-              <div>
                 <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-2">
                   {t("logintranslator.register.company.name")}
                 </label>
@@ -300,7 +300,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin 
                   className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div>
                 <label htmlFor="companyType" className="block text-sm font-medium text-gray-700 mb-2">
                   {t("logintranslator.register.company.type.title")}
                 </label>
@@ -313,12 +312,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin 
                   className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
                 >
                   <option value="">{t("logintranslator.register.company.type.a")}</option>
-                  <option value="real-estate">{t("logintranslator.register.company.type.b")}</option>
+                  <option value="real_estate">{t("logintranslator.register.company.type.b")}</option>
                   <option value="construction">{t("logintranslator.register.company.type.c")}</option>
-                  <option value="property-management">{t("logintranslator.register.company.type.d")}</option>
+                  <option value="management">{t("logintranslator.register.company.type.d")}</option>
                 </select>
               </div>
-              <div>
                 <label htmlFor="licenseNumber" className="block text-sm font-medium text-gray-700 mb-2">
                   {t("logintranslator.register.company.license")}
                 </label>
@@ -333,7 +331,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin 
                   className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div>
                 <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
                   {t("logintranslator.register.company.city.title")}
                 </label>
@@ -356,6 +353,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin 
             </div>
           </div>
         )}
+      </div>
 
       {/* Account Information */}
       <div className="mb-6">

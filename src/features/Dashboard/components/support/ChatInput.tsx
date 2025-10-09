@@ -2,7 +2,11 @@ import { t } from 'i18next';
 import { useState } from 'react';
 import { useLanguage } from '../../../../hooks/useLanguage';
 
-const ChatInput = () => {
+interface ChatInputProps {
+  onSend: (text: string) => void;
+}
+
+const ChatInput = ({ onSend }: ChatInputProps) => {
     const { isRTL } = useLanguage();
     const [inputValue, setInputValue] = useState('');
 
@@ -11,9 +15,9 @@ const ChatInput = () => {
     };
 
     const handleSubmit = () => {
-        console.log('Sending message:', inputValue);
-        console.log(`تم إرسال الرسالة: ${inputValue}`);
-
+        const text = inputValue.trim();
+        if (!text) return;
+        onSend(text);
         setInputValue('');
     };
 

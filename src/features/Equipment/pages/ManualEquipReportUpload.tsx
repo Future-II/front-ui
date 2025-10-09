@@ -1044,6 +1044,25 @@ const downloadCorrectedExcel = () => {
     </div>
   );
 
+  const Header = useMemo(() => (
+    <div className="bg-white border-b px-6 py-3 flex justify-between items-center">
+      <div className="flex items-center gap-4">
+        <h1 className="text-xl font-semibold text-blue-600">Reports Management System</h1>
+      </div>
+      <div className="flex items-center gap-4">
+        <button type="button" className="text-gray-600">AR</button>
+        <button type="button" className="bg-blue-500 text-white px-2 py-1 rounded text-sm">EN</button>
+        <div className="flex items-center gap-2">
+          <User size={20} className="text-gray-600" />
+          <span className="text-sm text-gray-600">Reports Company</span>
+        </div>
+      </div>
+    </div>
+  ), []);
+
+  if (!loggedIn) {
+      return <LoginModal isOpen={true} onClose={() => { /* do nothing */ }} setIsLoggedIn={setLoggedIn} />;
+    }
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="p-6">

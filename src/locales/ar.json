@@ -413,7 +413,7 @@
     "subscription": "الاشتراك",
     "notifications": "الإشعارات",
     "security": "الأمان",
-    "users": "إدارة المستخدمين",
+    "users": "إدارة المستخدمين والشركات",
     "notificationsTab": {
       "title": "الإشعارات",
       "email": {
@@ -457,7 +457,8 @@
       "lastUpdate": "آخر تحديث",
       "viewDetails": "عرض التفاصيل",
       "viewMore": "عرض المزيد",
-      "subjectDescription": "الموضوع والوصف"
+      "subjectDescription": "الموضوع والوصف",
+      "viewChat": "عرض المحادثة"
     },
     "phone": {
       "title": "الهاتف",
@@ -604,7 +605,9 @@
     "select": "اختر",
     "contact": "التواصل",
     "phoneNumber": "رقم الهاتف",
-    "features": "الميزات"
+    "features": "الميزات",
+    "show": "عرض",
+    "hide": "إخفاء"
   },
   "modals": {
     "addNewUser": "إضافة مستخدم جديد",
@@ -713,7 +716,27 @@
     "actions": "الإجراءات",
     "active": "نشط",
     "edit": "تعديل",
-    "delete": "حذف"
+    "delete": "حذف",
+    "companyUsers": "مستخدمي الشركة",
+    "individualUsers": "المستخدمون الفرديون",
+    "noUsersInCompany": "لا يوجد مستخدمون في هذه الشركة",
+    "confirmDelete": "هل أنت متأكد من حذف هذا المستخدم؟",
+    "deletedSuccessfully": "تم حذف المستخدم بنجاح",
+    "deleteFailed": "فشل في حذف المستخدم",
+    "noUsersFound": "لم يتم العثور على مستخدمين"
+  },
+  "companies": {
+    "companyUsers": "مستخدمي الشركة",
+    "individualUsers": "المستخدمون الفرديون",
+    "addUserToCompany": "إضافة مستخدم إلى الشركة",
+    "addManagerUser": "إضافة مستخدم مدير",
+    "noUsersInCompany": "لا يوجد مستخدمون في هذه الشركة",
+    "confirmDelete": "هل أنت متأكد من حذف هذا المستخدم؟",
+    "deletedSuccessfully": "تم حذف المستخدم بنجاح",
+    "deleteFailed": "فشل في حذف المستخدم",
+    "companyAddedSuccessfully": "تم إضافة الشركة بنجاح",
+    "errorAddingCompany": "خطأ في إضافة الشركة",
+    "deleteCompany": "حذف الشركة"
   },
   "permissions": {
     "title": "الأذونات",

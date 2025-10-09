@@ -1,8 +1,9 @@
 import UserCompanyItem from "./UserCompanyItem";
+import { Company } from "../../types";
 
 interface CompaniesTableProps {
   companies: Company[];
-  formatDateTime: (dateString: string) => string|null; 
+  formatDateTime: (dateString: string) => string|null;
 }
 
 export default function CompaniesTable({ companies, formatDateTime }: CompaniesTableProps) {

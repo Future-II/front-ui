@@ -31,7 +31,7 @@ const AllTicketsPage: React.FC = () => {
         <TicketsTab
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
-          setActiveTab={() => {}}
+          setActiveTab={() => { /* do nothing */ }}
         />
       </div>
     </div>
