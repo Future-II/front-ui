@@ -370,7 +370,7 @@ const ReportsManagementSystem = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [submitMessage, setSubmitMessage] = useState('');
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(true);
 
   const [progress, setProgress] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
