@@ -21,52 +21,56 @@ import ViewEquipmentReports from './features/Equipment/pages/ViewReports';
 import AllTicketsPage from "./features/Support/pages/AllTicketsPage";
 import { UnreadMessagesProvider } from "./features/Support/context/UnreadMessagesContext";
 import { TaqeemAuthProvider } from "./shared/context/TaqeemAuthContext";
+import { SocketProvider } from './shared/context/SocketContext';
+import { ProgressProvider } from './shared/context/ProgressContext';
 
 export function App() {
   return (
     <TaqeemAuthProvider>
-      <UnreadMessagesProvider>
-      <Router>
-        <GlobalAuthGuard>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Home />} />
+      <SocketProvider>
+        <ProgressProvider>
+          <UnreadMessagesProvider>
+            <Router>
+              <GlobalAuthGuard>
+                <Layout>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
 
-              {/* Protect Mekyas Reports with its own auth (keep separate) */}
-              <Route
-                path="/reports/mekyas"
-                element={
-                  <AuthGuard>
-                    <MekyasReports />
-                  </AuthGuard>
-                }
-              />
+                    {/* Protect Mekyas Reports with its own auth (keep separate) */}
+                    <Route
+                      path="/reports/mekyas"
+                      element={
+                        <AuthGuard>
+                          <MekyasReports />
+                        </AuthGuard>
+                      }
+                    />
 
-              {/* All other routes are now protected by GlobalAuthGuard */}
-              <Route path="/reports/jadeer" element={<JadeerReports />} />
-              <Route path="/reports/manual" element={<ManualPropertyExtraction />} />
-              <Route path="/reports/view" element={<ViewReports />} />
-              <Route path="/reports/noqra" element={<NoqraReports />} />
-              <Route path="/reports/newManual" element={<ReportForm />} />
+                    <Route path="/reports/jadeer" element={<JadeerReports />} />
+                    <Route path="/reports/manual" element={<ManualPropertyExtraction />} />
+                    <Route path="/reports/view" element={<ViewReports />} />
+                    <Route path="/reports/noqra" element={<NoqraReports />} />
+                    <Route path="/reports/newManual" element={<ReportForm />} />
 
-              <Route path="/dashboard" element={<ManagementDashboard />} />
-              <Route path="/settings" element={<UserSettings />} />
-              <Route path="/support" element={<SupportPage />} />
-              <Route path="/support/tickets" element={<AllTicketsPage />} />
+                    <Route path="/dashboard" element={<ManagementDashboard />} />
+                    <Route path="/settings" element={<UserSettings />} />
+                    <Route path="/support" element={<SupportPage />} />
+                    <Route path="/support/tickets" element={<AllTicketsPage />} />
 
-              <Route path="/equipment/report" element={<EquipmentReport />} />
-              <Route path='/equipment/createReport' element={<CreateReport />} />
-              <Route path='/equipment/manualEquipReport' element={<ManualEquipmentReportUpload />} />
-              <Route path='/equipment/allReports' element={<AllReports />} />
-              <Route path='/equipment/viewReports' element={<ViewEquipmentReports />} />
+                    <Route path="/equipment/reportID" element={<EquipmentReport />} />
+                    <Route path='/equipment/createReport' element={<CreateReport />} />
+                    <Route path='/equipment/manualEquipReport' element={<ManualEquipmentReportUpload />} />
+                    <Route path='/equipment/allReports' element={<AllReports />} />
+                    <Route path='/equipment/viewReports' element={<ViewEquipmentReports />} />
 
-              {/* Mekyas login route (keep separate) */}
-              <Route path="/auth/mekyas" element={<MekyasLogin />} />
-            </Routes>
-          </Layout>
-        </GlobalAuthGuard>
-      </Router>
-      </UnreadMessagesProvider>
+                    <Route path="/auth/mekyas" element={<MekyasLogin />} />
+                  </Routes>
+                </Layout>
+              </GlobalAuthGuard>
+            </Router>
+          </UnreadMessagesProvider>
+        </ProgressProvider>
+      </SocketProvider>
     </TaqeemAuthProvider>
   );
 }

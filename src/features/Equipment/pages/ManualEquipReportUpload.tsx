@@ -17,15 +17,22 @@ interface Valuer {
 }
 
 interface FormData {
-  report_title: string;
-  valuation_purpose: string;
-  value_premise: string;
+  title: string;
+  purpose_id: string;
+  value_premise_id: string;
   report_type: string;
-  valuation_date: string;
-  report_issuing_date: string;
+  valued_at: string;
+  submitted_at: string;
+  inspection_date: string;
   assumptions: string;
   special_assumptions: string;
-  final_value: string;
+  value: string;
+  client_name: string;
+  owner_name: string;
+  telephone: string;
+  email: string;
+  region: string;
+  city: string;
   valuation_currency: string;
   clients: Client[];
   has_other_users: boolean;
@@ -77,7 +84,6 @@ const validateDate = (date: string, fieldName: string): string | null => {
   return null;
 };
 
-// Excel Validation Functions
 // Excel Validation Functions
 const allowedPurposeIds = [1, 2, 5, 6, 8, 9, 10, 12, 14];
 const allowedValuePremiseIds = [1, 2, 3, 4, 5];
@@ -368,11 +374,13 @@ const ReportsManagementSystem = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
+<<<<<<< HEAD
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [submitMessage, setSubmitMessage] = useState('');
   const [loggedIn, setLoggedIn] = useState(true);
+=======
+>>>>>>> b819deb (Added Global Sockets, Upload Based on Report ID, Handled Refreshes in CreateReport.tsx, ViewReports.tsx and in shared/context)
 
-  const [progress, setProgress] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
 
   const [excelFile, setExcelFile] = useState<File | null>(null);
@@ -384,18 +392,24 @@ const ReportsManagementSystem = () => {
   const [showTables, setShowTables] = useState(false);
   const [errorsModalOpen, setErrorsModalOpen] = useState(false);
 
-  const requestRef = useRef<Promise<any> | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
-    report_title: '',
-    valuation_purpose: 'to set',
-    value_premise: 'to set',
+    title: '',
+    purpose_id: 'to set',
+    value_premise_id: 'to set',
     report_type: 'detailed',
-    valuation_date: '',
-    report_issuing_date: '',
+    valued_at: '',
+    submitted_at: '',
+    inspection_date: '',
     assumptions: '',
     special_assumptions: '',
-    final_value: '',
+    value: '',
+    client_name: '',
+    owner_name: '',
+    telephone: '',
+    email: '',
+    region: '',
+    city: '',
     valuation_currency: 'Saudi riyal',
     clients: [{ client_name: '', telephone_number: '', email_address: '' }],
     has_other_users: false,
@@ -445,86 +459,84 @@ const ReportsManagementSystem = () => {
     !hasFractionInFinalValue(excelDataSheets) &&
     !hasInvalidPurposeId(excelDataSheets) &&
     !hasInvalidValuePremiseId(excelDataSheets) &&
-    !hasMismatchedFinalValue(excelDataSheets, formData.final_value);
+    !hasMismatchedFinalValue(excelDataSheets, formData.value);
 
-  // Update excel errors when data changes
   // Update excel errors when data changes
   useEffect(() => {
     if (!excelDataSheets || excelDataSheets.length === 0) {
       setExcelErrors([]);
       return;
     }
-    const exErrors = getExcelErrors(excelDataSheets, formData.final_value);
+    const exErrors = getExcelErrors(excelDataSheets, formData.value);
     setExcelErrors(exErrors);
     setShowValidationSuccess(exErrors.length === 0 && excelDataSheets.length > 0);
 
     if (exErrors.length > 0) {
       setErrorsModalOpen(true);
     }
-  }, [excelDataSheets, formData.final_value]); // Add formData.final_value as dependency
+  }, [excelDataSheets, formData.value]);
 
   // Download corrected Excel
-// Add this helper function
-const hasOnlyFinalValueMismatch = useMemo(() => {
-  if (excelErrors.length === 0) return false;
-  
-  // Check if all errors are final value mismatch errors
-  return excelErrors.every(error => 
-    error.sheetIdx === 0 && error.row === 0 && error.col === 0
-  );
-}, [excelErrors]);
+  const hasOnlyFinalValueMismatch = useMemo(() => {
+    if (excelErrors.length === 0) return false;
 
-// Download corrected Excel - exclude final value mismatch errors
-const downloadCorrectedExcel = () => {
-  if (isExcelValid) return;
-  if (!excelDataSheets.length) return;
+    // Check if all errors are final value mismatch errors
+    return excelErrors.every(error =>
+      error.sheetIdx === 0 && error.row === 0 && error.col === 0
+    );
+  }, [excelErrors]);
 
-  const workbook = XLSX.utils.book_new();
-  
-  // Filter out final value mismatch errors (sheetIdx: 0, row: 0, col: 0)
-  const correctableErrors = excelErrors.filter(error => 
-    !(error.sheetIdx === 0 && error.row === 0 && error.col === 0)
-  );
+  // Download corrected Excel - exclude final value mismatch errors
+  const downloadCorrectedExcel = () => {
+    if (isExcelValid) return;
+    if (!excelDataSheets.length) return;
 
-  // If there are no correctable errors (only final value mismatch), don't download
-  if (correctableErrors.length === 0) {
-    setExcelError("Cannot download corrected file - please fix the final value in step 1");
-    return;
-  }
+    const workbook = XLSX.utils.book_new();
 
-  excelDataSheets.forEach((sheet, sheetIdx) => {
-    if (!sheet || sheet.length === 0) return;
+    // Filter out final value mismatch errors (sheetIdx: 0, row: 0, col: 0)
+    const correctableErrors = excelErrors.filter(error =>
+      !(error.sheetIdx === 0 && error.row === 0 && error.col === 0)
+    );
 
-    const newSheetData = sheet.map((r) => (Array.isArray(r) ? [...r] : r));
-    const errorsForThisSheet = correctableErrors.filter((e) => e.sheetIdx === sheetIdx);
+    // If there are no correctable errors (only final value mismatch), don't download
+    if (correctableErrors.length === 0) {
+      setExcelError("Cannot download corrected file - please fix the final value in step 1");
+      return;
+    }
 
-    errorsForThisSheet.forEach((err) => {
-      const r = err.row;
-      const c = err.col;
-      if (!newSheetData[r]) newSheetData[r] = [];
-      const oldVal = newSheetData[r][c] === undefined || newSheetData[r][c] === null ? "" : newSheetData[r][c];
-      newSheetData[r][c] = `${oldVal} ⚠ ${err.message}`;
+    excelDataSheets.forEach((sheet, sheetIdx) => {
+      if (!sheet || sheet.length === 0) return;
+
+      const newSheetData = sheet.map((r) => (Array.isArray(r) ? [...r] : r));
+      const errorsForThisSheet = correctableErrors.filter((e) => e.sheetIdx === sheetIdx);
+
+      errorsForThisSheet.forEach((err) => {
+        const r = err.row;
+        const c = err.col;
+        if (!newSheetData[r]) newSheetData[r] = [];
+        const oldVal = newSheetData[r][c] === undefined || newSheetData[r][c] === null ? "" : newSheetData[r][c];
+        newSheetData[r][c] = `${oldVal} ⚠ ${err.message}`;
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(newSheetData);
+
+      Object.keys(ws).forEach((cellRef) => {
+        if (cellRef[0] === "!") return;
+        const cell = ws[cellRef];
+        const v = (cell && cell.v) ? cell.v.toString() : "";
+        if (v.includes("⚠")) {
+          cell.s = {
+            fill: { fgColor: { rgb: "FFFF00" } },
+            font: { color: { rgb: "FF0000" }, bold: true }
+          };
+        }
+      });
+
+      XLSX.utils.book_append_sheet(workbook, ws, `Sheet${sheetIdx + 1}`);
     });
 
-    const ws = XLSX.utils.aoa_to_sheet(newSheetData);
-
-    Object.keys(ws).forEach((cellRef) => {
-      if (cellRef[0] === "!") return;
-      const cell = ws[cellRef];
-      const v = (cell && cell.v) ? cell.v.toString() : "";
-      if (v.includes("⚠")) {
-        cell.s = {
-          fill: { fgColor: { rgb: "FFFF00" } },
-          font: { color: { rgb: "FF0000" }, bold: true }
-        };
-      }
-    });
-
-    XLSX.utils.book_append_sheet(workbook, ws, `Sheet${sheetIdx + 1}`);
-  });
-
-  XLSX.writeFile(workbook, "corrected_report.xlsx", { bookType: "xlsx" });
-};
+    XLSX.writeFile(workbook, "corrected_report.xlsx", { bookType: "xlsx" });
+  };
 
   const copyErrorToClipboard = async (err: { sheetIdx: number; row: number; col: number; message: string }) => {
     try {
@@ -541,39 +553,61 @@ const downloadCorrectedExcel = () => {
     const errors: { [key: string]: string } = {};
 
     // Report Information validations
-    if (!formData.report_title.trim()) {
-      errors.report_title = 'Report title is required';
+    if (!formData.title.trim()) {
+      errors.title = 'Report title is required';
     }
 
-    if (!formData.valuation_purpose.trim() || formData.valuation_purpose === 'to set') {
-      errors.valuation_purpose = 'Purpose of assessment is required';
+    if (!formData.purpose_id.trim() || formData.purpose_id === 'to set') {
+      errors.purpose_id = 'Purpose of assessment is required';
     }
 
-    if (!formData.value_premise.trim() || formData.value_premise === 'to set') {
-      errors.value_premise = 'Value hypothesis is required';
+    if (!formData.value_premise_id.trim() || formData.value_premise_id === 'to set') {
+      errors.value_premise_id = 'Value hypothesis is required';
     }
 
-    if (!formData.final_value.trim()) {
-      errors.final_value = 'Final opinion on value is required';
+    if (!formData.value.trim()) {
+      errors.value = 'Final opinion on value is required';
     }
 
     // Date validations
-    const dateErrors = validateDate(formData.valuation_date, 'Evaluation date');
-    if (dateErrors) errors.valuation_date = dateErrors;
+    const valuedAtErrors = validateDate(formData.valued_at, 'Valuation date');
+    if (valuedAtErrors) errors.valued_at = valuedAtErrors;
 
-    const releaseDateErrors = validateDate(formData.report_issuing_date, 'Report release date');
-    if (releaseDateErrors) errors.report_issuing_date = releaseDateErrors;
+    const submittedAtErrors = validateDate(formData.submitted_at, 'Submission date');
+    if (submittedAtErrors) errors.submitted_at = submittedAtErrors;
 
-    // Validate report dates order
-    if (formData.valuation_date && formData.report_issuing_date && !errors.valuation_date && !errors.report_issuing_date) {
-      const evalDate = new Date(formData.valuation_date);
-      const relDate = new Date(formData.report_issuing_date);
-      if (relDate < evalDate) {
-        errors.report_issuing_date = 'Report release date must be on or after evaluation date';
-      }
+    const inspectionDateErrors = validateDate(formData.inspection_date, 'Inspection date');
+    if (inspectionDateErrors) errors.inspection_date = inspectionDateErrors;
+
+    // Location validations
+    if (!formData.region.trim()) {
+      errors.region = 'Region is required';
     }
 
-    // Client validations
+    if (!formData.city.trim()) {
+      errors.city = 'City is required';
+    }
+
+    // Contact validations
+    if (!formData.client_name.trim()) {
+      errors.client_name = 'Client name is required';
+    }
+
+    if (!formData.owner_name.trim()) {
+      errors.owner_name = 'Owner name is required';
+    }
+
+    const phoneError = validatePhone(formData.telephone);
+    if (phoneError) {
+      errors.telephone = phoneError;
+    }
+
+    const emailError = validateEmail(formData.email);
+    if (emailError) {
+      errors.email = emailError;
+    }
+
+    // Additional clients validations
     formData.clients.forEach((client, index) => {
       const nameError = validateClientName(client.client_name);
       if (nameError) {
@@ -786,7 +820,7 @@ const downloadCorrectedExcel = () => {
       onValuerUpdate={updateValuer}
       onSaveAndContinue={handleSaveAndContinue}
     />
-  ), [formData, errors]);
+  ), [formData, errors, handleSaveAndContinue]);
 
   const renderStep2 = () => (
     <div className="max-w-6xl mx-auto p-6">
@@ -869,7 +903,6 @@ const downloadCorrectedExcel = () => {
                 )}
               </div>
 
-              {/* Tables Display */}
               {/* Tables Display */}
               {showTables && (
                 <div className="mt-6 space-y-6">
@@ -956,17 +989,16 @@ const downloadCorrectedExcel = () => {
             </button>
 
             <div className="flex gap-3">
-<button
-  onClick={downloadCorrectedExcel}
-  disabled={!excelFile || isExcelValid || hasOnlyFinalValueMismatch}
-  className={`px-5 py-3 rounded-lg font-semibold transition-colors ${
-    excelFile && !isExcelValid && !hasOnlyFinalValueMismatch
-      ? "bg-yellow-500 hover:bg-yellow-600 text-white"
-      : "bg-gray-100 text-gray-400 cursor-not-allowed"
-  }`}
->
-  Download Corrected File
-</button>
+              <button
+                onClick={downloadCorrectedExcel}
+                disabled={!excelFile || isExcelValid || hasOnlyFinalValueMismatch}
+                className={`px-5 py-3 rounded-lg font-semibold transition-colors ${excelFile && !isExcelValid && !hasOnlyFinalValueMismatch
+                    ? "bg-yellow-500 hover:bg-yellow-600 text-white"
+                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  }`}
+              >
+                Download Corrected File
+              </button>
 
               <button
                 type="button"
@@ -999,17 +1031,16 @@ const downloadCorrectedExcel = () => {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-<button
-  onClick={downloadCorrectedExcel}
-  disabled={!excelFile || isExcelValid || hasOnlyFinalValueMismatch}
-  className={`px-5 py-3 rounded-lg font-semibold transition-colors ${
-    excelFile && !isExcelValid && !hasOnlyFinalValueMismatch
-      ? "bg-yellow-500 hover:bg-yellow-600 text-white"
-      : "bg-gray-100 text-gray-400 cursor-not-allowed"
-  }`}
->
-  Download Corrected File
-</button>
+                <button
+                  onClick={downloadCorrectedExcel}
+                  disabled={!excelFile || isExcelValid || hasOnlyFinalValueMismatch}
+                  className={`px-5 py-3 rounded-lg font-semibold transition-colors ${excelFile && !isExcelValid && !hasOnlyFinalValueMismatch
+                      ? "bg-yellow-500 hover:bg-yellow-600 text-white"
+                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    }`}
+                >
+                  Download Corrected File
+                </button>
                 <button
                   onClick={() => setErrorsModalOpen(false)}
                   className="px-3 py-1 rounded-lg bg-gray-100 border border-gray-300 text-gray-700 text-sm"

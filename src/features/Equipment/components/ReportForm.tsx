@@ -13,15 +13,19 @@ interface Valuer {
 }
 
 interface FormData {
-  report_title: string;
-  valuation_purpose: string;
-  value_premise: string;
+  title: string;
+  purpose_id: string;
+  value_premise_id: string;
   report_type: string;
-  valuation_date: string;
-  report_issuing_date: string;
+  valued_at: string;
+  submitted_at: string;
+  inspection_date: string;
   assumptions: string;
   special_assumptions: string;
-  final_value: string;
+  value: string;
+  owner_name: string;
+  region: string;
+  city: string;
   valuation_currency: string;
   clients: Client[];
   has_other_users: boolean;
@@ -50,24 +54,26 @@ const InputField = ({
   label, 
   required = false, 
   error, 
+  className = '',
   ...props 
 }: { 
   label: string; 
   required?: boolean; 
   error?: string; 
+  className?: string;
   [key: string]: any 
 }) => (
-  <div className="mb-1">
+  <div className={`mb-5 ${className}`}>
     <label className="block text-sm font-medium text-gray-700 mb-2">
       {label} {required && <span className="text-red-500">*</span>}
     </label>
     <input
       {...props}
-      className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all ${
+      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
         error ? 'border-red-400 bg-red-50' : 'border-gray-300'
       }`}
     />
-    {error && <p className="text-red-500 text-xs mt-1 h-4">{error}</p>}
+    {error && <p className="text-red-500 text-sm mt-1.5">{error}</p>}
   </div>
 );
 
@@ -76,21 +82,23 @@ const SelectField = ({
   required = false, 
   options, 
   error,
+  className = '',
   ...props 
 }: { 
   label: string; 
   required?: boolean; 
   options: { value: string; label: string }[];
   error?: string;
+  className?: string;
   [key: string]: any 
 }) => (
-  <div className="mb-1">
+  <div className={`mb-5 ${className}`}>
     <label className="block text-sm font-medium text-gray-700 mb-2">
       {label} {required && <span className="text-red-500">*</span>}
     </label>
     <select
       {...props}
-      className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all ${
+      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
         error ? 'border-red-400 bg-red-50' : 'border-gray-300'
       }`}
     >
@@ -98,7 +106,7 @@ const SelectField = ({
         <option key={opt.value} value={opt.value}>{opt.label}</option>
       ))}
     </select>
-    {error && <p className="text-red-500 text-xs mt-1 h-4">{error}</p>}
+    {error && <p className="text-red-500 text-sm mt-1.5">{error}</p>}
   </div>
 );
 
@@ -106,24 +114,26 @@ const TextAreaField = ({
   label, 
   required = false, 
   error,
+  className = '',
   ...props 
 }: { 
   label: string; 
   required?: boolean; 
   error?: string;
+  className?: string;
   [key: string]: any 
 }) => (
-  <div className="mb-1">
+  <div className={`mb-5 ${className}`}>
     <label className="block text-sm font-medium text-gray-700 mb-2">
       {label} {required && <span className="text-red-500">*</span>}
     </label>
     <textarea
       {...props}
-      className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all resize-none ${
+      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none ${
         error ? 'border-red-400 bg-red-50' : 'border-gray-300'
       }`}
     />
-    {error && <p className="text-red-500 text-xs mt-1 h-4">{error}</p>}
+    {error && <p className="text-red-500 text-sm mt-1.5">{error}</p>}
   </div>
 );
 
@@ -138,11 +148,11 @@ const RadioGroup = ({
   value: string;
   onChange: (value: string) => void;
 }) => (
-  <div className="mb-1">
+  <div className="mb-5">
     <label className="block text-sm font-medium text-gray-700 mb-3">
       {label} <span className="text-red-500">*</span>
     </label>
-    <div className="flex flex-wrap gap-4">
+    <div className="flex flex-wrap gap-3">
       {options.map(option => (
         <label key={option.value} className="flex items-center cursor-pointer group">
           <input
@@ -152,7 +162,7 @@ const RadioGroup = ({
             onChange={(e) => onChange(e.target.value)}
             className="sr-only"
           />
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+          <div className={`flex items-center gap-2 px-5 py-3 rounded-lg border-2 transition-all ${
             value === option.value 
               ? 'border-blue-500 bg-blue-50' 
               : 'border-gray-300 hover:border-gray-400'
@@ -175,8 +185,8 @@ const RadioGroup = ({
 );
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-    <h3 className="text-lg font-semibold text-gray-800 mb-6 pb-3 border-b border-gray-200">
+  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+    <h3 className="text-xl font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-200">
       {title}
     </h3>
     {children}
@@ -187,59 +197,68 @@ const ReportForm: React.FC<ReportFormProps> = ({
   formData,
   errors,
   onFieldChange,
-  onClientAdd,
-  onClientDelete,
-  onClientUpdate,
-  onUserAdd,
-  onUserDelete,
-  onUserUpdate,
   onValuerAdd,
   onValuerDelete,
+  onClientUpdate,
   onValuerUpdate,
   onSaveAndContinue
 }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* Report Information */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Property Valuation Report</h1>
+          <p className="text-gray-600">Complete all required fields to generate your report</p>
+        </div>
+
         <Section title="Report Information">
-          <div className="grid grid-cols-3 gap-6 mb-6">
-            <InputField
-              label="Report Title"
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div className="lg:col-span-2">
+              <InputField
+                label="Report Title"
+                required
+                type="text"
+                value={formData.title}
+                onChange={(e: any) => onFieldChange('title', e.target.value)}
+                error={errors.title}
+                placeholder="Enter a descriptive title for this report"
+              />
+            </div>
+            
+            <SelectField
+              label="Purpose ID"
               required
-              type="text"
-              value={formData.report_title}
-              onChange={(e: any) => onFieldChange('report_title', e.target.value)}
-              error={errors.report_title}
+              value={formData.purpose_id}
+              onChange={(e: any) => onFieldChange('purpose_id', e.target.value)}
+              options={[
+                { value: 'to set', label: 'Select Purpose' },
+                { value: '1', label: '1 - Selling' },
+                { value: '2', label: '2 - Purchase' },
+                { value: '5', label: '5 - Investment' },
+                { value: '6', label: '6 - Mortgage' },
+                { value: '8', label: '8 - Financial Reporting' },
+                { value: '9', label: '9 - Tax' },
+                { value: '10', label: '10 - Insurance' },
+                { value: '12', label: '12 - Legal' },
+                { value: '14', label: '14 - Other' }
+              ]}
+              error={errors.purpose_id}
             />
             
             <SelectField
-              label="Purpose of Assessment"
+              label="Value Premise ID"
               required
-              value={formData.valuation_purpose}
-              onChange={(e: any) => onFieldChange('valuation_purpose', e.target.value)}
+              value={formData.value_premise_id}
+              onChange={(e: any) => onFieldChange('value_premise_id', e.target.value)}
               options={[
-                { value: '', label: 'Select' },
-                { value: 'Selling', label: 'Selling' },
-                { value: 'Purchase', label: 'Purchase' },
-                { value: 'Investment', label: 'Investment' },
-                { value: 'Mortgage', label: 'Mortgage' }
+                { value: 'to set', label: 'Select Value Premise' },
+                { value: '1', label: '1 - Market Value' },
+                { value: '2', label: '2 - Investment Value' },
+                { value: '3', label: '3 - Value in Use' },
+                { value: '4', label: '4 - Liquidation Value' },
+                { value: '5', label: '5 - Fair Value' }
               ]}
-              error={errors.valuation_purpose}
-            />
-            
-            <SelectField
-              label="Value Hypothesis"
-              required
-              value={formData.value_premise}
-              onChange={(e: any) => onFieldChange('value_premise', e.target.value)}
-              options={[
-                { value: '', label: 'Select' },
-                { value: 'Current Use', label: 'Current Use' },
-                { value: 'Highest and Best Use', label: 'Highest and Best Use' },
-                { value: 'Liquidation Value', label: 'Liquidation Value' }
-              ]}
-              error={errors.value_premise}
+              error={errors.value_premise_id}
             />
           </div>
 
@@ -257,57 +276,71 @@ const ReportForm: React.FC<ReportFormProps> = ({
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <InputField
-              label="Evaluation Date"
+              label="Valued At"
               required
               type="date"
-              value={formData.valuation_date}
-              onChange={(e: any) => onFieldChange('valuation_date', e.target.value)}
-              error={errors.valuation_date}
+              value={formData.valued_at}
+              onChange={(e: any) => onFieldChange('valued_at', e.target.value)}
+              error={errors.valued_at}
             />
             
             <InputField
-              label="Report Release Date"
+              label="Submitted At"
               required
               type="date"
-              value={formData.report_issuing_date}
-              onChange={(e: any) => onFieldChange('report_issuing_date', e.target.value)}
-              error={errors.report_issuing_date}
+              value={formData.submitted_at}
+              onChange={(e: any) => onFieldChange('submitted_at', e.target.value)}
+              error={errors.submitted_at}
             />
             
-            <TextAreaField
-              label="Assumptions"
-              rows={1}
-              value={formData.assumptions}
-              onChange={(e: any) => onFieldChange('assumptions', e.target.value)}
+            <InputField
+              label="Inspection Date"
+              required
+              type="date"
+              value={formData.inspection_date}
+              onChange={(e: any) => onFieldChange('inspection_date', e.target.value)}
+              error={errors.inspection_date}
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <TextAreaField
-              label="Special Assumptions"
-              rows={1}
-              value={formData.special_assumptions}
-              onChange={(e: any) => onFieldChange('special_assumptions', e.target.value)}
+              label="Assumptions"
+              rows={4}
+              value={formData.assumptions}
+              onChange={(e: any) => onFieldChange('assumptions', e.target.value)}
+              placeholder="Enter general assumptions for the valuation"
             />
             
             <TextAreaField
-              label="Final Opinion on Value"
+              label="Special Assumptions"
+              rows={4}
+              value={formData.special_assumptions}
+              onChange={(e: any) => onFieldChange('special_assumptions', e.target.value)}
+              placeholder="Enter any special assumptions or conditions"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <InputField
+              label="Value"
               required
-              rows={1}
-              value={formData.final_value}
-              onChange={(e: any) => onFieldChange('final_value', e.target.value)}
-              error={errors.final_value}
+              type="text"
+              value={formData.value}
+              onChange={(e: any) => onFieldChange('value', e.target.value)}
+              error={errors.value}
+              placeholder="Enter final value"
             />
             
             <SelectField
-              label="Evaluation Currency"
+              label="Valuation Currency"
               required
               value={formData.valuation_currency}
               onChange={(e: any) => onFieldChange('valuation_currency', e.target.value)}
               options={[
-                { value: 'Saudi Riyal', label: 'Saudi Riyal' },
+                { value: 'Saudi riyal', label: 'Saudi Riyal' },
                 { value: 'USD', label: 'US Dollar' },
                 { value: 'EUR', label: 'Euro' }
               ]}
@@ -315,175 +348,141 @@ const ReportForm: React.FC<ReportFormProps> = ({
           </div>
         </Section>
 
-        <Section title="Customer Data">
-          {formData.clients.map((client, index) => (
-            <div key={index} className="grid grid-cols-4 gap-4 mb-6 items-start">
-              <InputField
-                label="Customer Name"
-                required
-                type="text"
-                value={client.client_name}
-                onChange={(e: any) => onClientUpdate(index, 'client_name', e.target.value)}
-                error={errors[`client_${index}_client_name`]}
-                placeholder="Enter full name (min. 9 characters)"
-              />
-              
-              <InputField
-                label="Phone Number"
-                required
-                type="tel"
-                value={client.telephone_number}
-                onChange={(e: any) => onClientUpdate(index, 'telephone_number', e.target.value)}
-                error={errors[`client_${index}_telephone_number`]}
-                placeholder="e.g. +966500000000"
-              />
-              
-              <InputField
-                label="Email"
-                required
-                type="email"
-                value={client.email_address}
-                onChange={(e: any) => onClientUpdate(index, 'email_address', e.target.value)}
-                error={errors[`client_${index}_email_address`]}
-                placeholder="e.g. example@domain.com"
-              />
-              
-              <div className="flex items-end h-[72px]">
-                <button
-                  onClick={() => onClientDelete(index)}
-                  disabled={formData.clients.length === 1}
-                  className={`px-3 py-2 text-sm rounded-lg border-2 transition-all ${
-                    formData.clients.length === 1
-                      ? 'border-gray-300 text-gray-400 cursor-not-allowed'
-                      : 'border-red-400 text-red-600 hover:bg-red-50'
-                  }`}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
-          
-          <button
-            onClick={onClientAdd}
-            className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all text-sm"
-          >
-            <Plus size={18} />
-            Add Client
-          </button>
-
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.has_other_users}
-                onChange={(e) => onFieldChange('has_other_users', e.target.checked)}
-                className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-400"
-              />
-              <span className="text-sm font-medium text-gray-700">Other Users Report</span>
-            </label>
+        <Section title="Owner Information">
+          <div className="max-w-2xl">
+            <InputField
+              label="Owner Name"
+              required
+              type="text"
+              value={formData.owner_name}
+              onChange={(e: any) => onFieldChange('owner_name', e.target.value)}
+              error={errors.owner_name}
+              placeholder="Enter owner name"
+            />
           </div>
-
-          {formData.has_other_users && (
-            <div className="mt-4 pl-8">
-              {formData.report_users.map((user, index) => (
-                <div key={index} className="grid grid-cols-2 gap-4 mb-4 items-start">
-                  <InputField
-                    label="Report Username"
-                    required
-                    type="text"
-                    value={user}
-                    onChange={(e: any) => onUserUpdate(index, e.target.value)}
-                    error={errors[`user_${index}_username`]}
-                    placeholder="Enter username"
-                  />
-                  
-                  <div className="flex items-end h-[72px]">
-                    <button
-                      onClick={() => onUserDelete(index)}
-                      disabled={formData.report_users.length === 1}
-                      className={`px-3 py-2 text-sm rounded-lg border-2 transition-all ${
-                        formData.report_users.length === 1
-                          ? 'border-gray-300 text-gray-400 cursor-not-allowed'
-                          : 'border-red-400 text-red-600 hover:bg-red-50'
-                      }`}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-              
-              <button
-                onClick={onUserAdd}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-all text-sm"
-              >
-                Add User
-              </button>
-            </div>
-          )}
         </Section>
 
-        {/* Valuer Data */}
+<Section title="Client Information">
+  <div className="max-w-2xl mb-6">
+    <InputField
+      label="Client Name"
+      required
+      type="text"
+      value={formData.clients[0]?.client_name || ''} // ✅ Use first client
+      onChange={(e: any) => onClientUpdate(0, 'client_name', e.target.value)} // ✅ Use client update function
+      error={errors['client_0_client_name']} // ✅ Use correct error key
+      placeholder="Enter client name"
+    />
+  </div>
+
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-2xl">
+    <InputField
+      label="Telephone"
+      required
+      type="tel"
+      value={formData.clients[0]?.telephone_number || ''} // ✅ Use first client
+      onChange={(e: any) => onClientUpdate(0, 'telephone_number', e.target.value)} // ✅ Use client update function
+      error={errors['client_0_telephone_number']} // ✅ Use correct error key
+      placeholder="e.g. +966500000000"
+    />
+    
+    <InputField
+      label="Email"
+      required
+      type="email"
+      value={formData.clients[0]?.email_address || ''} // ✅ Use first client
+      onChange={(e: any) => onClientUpdate(0, 'email_address', e.target.value)} // ✅ Use client update function
+      error={errors['client_0_email_address']} // ✅ Use correct error key
+      placeholder="e.g. example@domain.com"
+    />
+  </div>
+</Section>
+
         <Section title="Valuer Data">
-          {formData.valuers.map((valuer, index) => (
-            <div key={index} className="grid grid-cols-3 gap-4 mb-6 items-start">
-              <SelectField
-                label="Valuer Name"
-                required
-                value={valuer.valuer_name}
-                onChange={(e: any) => onValuerUpdate(index, 'valuer_name', e.target.value)}
-                options={[
-                  { value: '', label: 'Select Valuer' },
-                  { value: '4210000271', label: '4210000271 - عبدالعزيز سليمان عبدالله الزيد' },
-                  { value: '4210000272', label: '4210000272 - محمد أحمد علي' },
-                  { value: '4210000273', label: '4210000273 - سارة خالد الحربي' }
-                ]}
-                error={errors[`valuer_${index}_valuer_name`]}
-              />
-              
-              <SelectField
-                label="Contribution Percentage"
-                required
-                value={valuer.contribution_percentage.toString()}
-                onChange={(e: any) => onValuerUpdate(index, 'contribution_percentage', Number(e.target.value))}
-                options={[
-                  { value: '100', label: '100%' },
-                  { value: '75', label: '75%' },
-                  { value: '50', label: '50%' },
-                  { value: '25', label: '25%' }
-                ]}
-              />
-              
-              <div className="flex items-end h-[72px]">
-                <button
-                  onClick={() => onValuerDelete(index)}
-                  disabled={formData.valuers.length === 1}
-                  className={`px-3 py-2 text-sm rounded-lg border-2 transition-all ${
-                    formData.valuers.length === 1
-                      ? 'border-gray-300 text-gray-400 cursor-not-allowed'
-                      : 'border-red-400 text-red-600 hover:bg-red-50'
-                  }`}
-                >
-                  Delete
-                </button>
+          <div className="space-y-6">
+            {formData.valuers.map((valuer, index) => (
+              <div key={index} className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-sm font-medium text-gray-700">Valuer {index + 1}</h4>
+                  {formData.valuers.length > 1 && (
+                    <button
+                      onClick={() => onValuerDelete(index)}
+                      className="px-4 py-2 text-sm rounded-lg border-2 border-red-400 text-red-600 hover:bg-red-50 transition-all"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <SelectField
+                    label="Valuer Name"
+                    required
+                    value={valuer.valuer_name}
+                    onChange={(e: any) => onValuerUpdate(index, 'valuer_name', e.target.value)}
+                    options={[
+                      { value: '', label: 'Select Valuer' },
+                      { value: '4210000271', label: '4210000271 - عبدالعزيز سليمان عبدالله الزيد' },
+                      { value: '4210000272', label: '4210000272 - محمد أحمد علي' },
+                      { value: '4210000273', label: '4210000273 - سارة خالد الحربي' }
+                    ]}
+                    error={errors[`valuer_${index}_valuer_name`]}
+                  />
+                  
+                  <SelectField
+                    label="Contribution Percentage"
+                    required
+                    value={valuer.contribution_percentage.toString()}
+                    onChange={(e: any) => onValuerUpdate(index, 'contribution_percentage', Number(e.target.value))}
+                    options={[
+                      { value: '100', label: '100%' },
+                      { value: '75', label: '75%' },
+                      { value: '50', label: '50%' },
+                      { value: '25', label: '25%' }
+                    ]}
+                  />
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
           
           <button
             onClick={onValuerAdd}
-            className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-all text-sm"
+            className="mt-6 inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-all font-medium"
           >
-            Add Valuer
+            <Plus size={20} />
+            Add Another Valuer
           </button>
         </Section>
 
-        {/* Actions */}
-        <div className="flex justify-end gap-4">
+        <Section title="Location Information">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-2xl">
+            <InputField
+              label="Region"
+              required
+              type="text"
+              value={formData.region}
+              onChange={(e: any) => onFieldChange('region', e.target.value)}
+              error={errors.region}
+              placeholder="Enter region"
+            />
+            
+            <InputField
+              label="City"
+              required
+              type="text"
+              value={formData.city}
+              onChange={(e: any) => onFieldChange('city', e.target.value)}
+              error={errors.city}
+              placeholder="Enter city"
+            />
+          </div>
+        </Section>
+
+        <div className="flex justify-end gap-4 mt-8">
           <button
             onClick={onSaveAndContinue}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all text-lg"
           >
             Save and Continue
           </button>

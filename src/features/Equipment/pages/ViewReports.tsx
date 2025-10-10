@@ -1,9 +1,11 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { getReportsData } from "../api";
 import { RefreshCcw, CheckCircle, Pause, Play } from "lucide-react";
 import LoginModal from "../components/EquipmentTaqeemLogin";
 import { useTaqeemAuth } from "../../../shared/context/TaqeemAuthContext";
-import io, { Socket } from 'socket.io-client';
+import { useSocket } from "../../../shared/context/SocketContext";
+import { useSocketManager } from "../../../shared/hooks/useSocketManager";
+import { useProgress } from "../../../shared/context/ProgressContext";
 
 interface Asset {
     _id: string;
@@ -18,7 +20,6 @@ function formatRelativeTime(dateString: string) {
     const date = new Date(dateString);
     const now = new Date();
 
-    // Strip time (set to midnight for comparison)
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
@@ -26,22 +27,16 @@ function formatRelativeTime(dateString: string) {
         (startOfToday.getTime() - startOfDate.getTime()) / (1000 * 60 * 60 * 24)
     );
 
-    // Format static time
-const timeString = date.toLocaleTimeString(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-});
-
+    const timeString = date.toLocaleTimeString(undefined, {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+    });
 
     if (diffDays === 0) return `Today, ${timeString}`;
     if (diffDays === 1) return `Yesterday, ${timeString}`;
     return `${diffDays} days ago, ${timeString}`;
 }
-
-
-
-
 
 interface Report {
     _id: string;
@@ -78,89 +73,69 @@ interface ProgressState {
 
 const ViewEquipmentReports: React.FC = () => {
     const { isLoggedIn: loggedIn } = useTaqeemAuth();
+    const { socket, isConnected } = useSocket(); // Use socket from context
     const [reports, setReports] = useState<Report[]>([]);
     const [openReports, setOpenReports] = useState<Record<string, boolean>>({});
     const [showLoginModal, setShowLoginModal] = useState(false);
-    const [progressStates, setProgressStates] = useState<Record<string, ProgressState>>({});
+    // const [progressStates, setProgressStates] = useState<Record<string, ProgressState>>({});
     const [newestReportId, setNewestReportId] = useState<string | null>(null);
     const [tabsNum, setTabsNum] = useState(3);
+    const { progressStates, dispatch } = useProgress();
     const [dropdownOpen, setDropdownOpen] = useState<Record<string, boolean>>({});
 
-    const socketRef = useRef<Socket | null>(null);
-    const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    useSocketManager();
 
-    // Initialize Socket.IO connection
     useEffect(() => {
-        socketRef.current = io(SOCKET_URL, {
-            transports: ['websocket', 'polling'],
-            reconnection: true,
-            reconnectionDelay: 1000,
-            reconnectionAttempts: 5
-        });
+        if (!socket) return;
 
-        const socket = socketRef.current;
-
-        socket.on('connect', () => {
-            console.log('[SOCKET] Connected:', socket.id);
-        });
-
-        socket.on('disconnect', () => {
-            console.log('[SOCKET] Disconnected');
-        });
-
-        socket.on('connect_error', (error) => {
-            console.error('[SOCKET] Connection error:', error);
-        });
-
-        // Listen for form fill events
-        socket.on('form_fill_started', (data) => {
-            console.log('[SOCKET] Form fill started:', data);
-        });
-
-        socket.on('form_fill_progress', (data) => {
+        const handleFormFillProgress = (data: any) => {
             console.log('[SOCKET] Progress update:', data);
             updateProgressFromSocket(data);
-        });
+        };
 
-        socket.on('form_fill_complete', (data) => {
+        const handleFormFillComplete = (data: any) => {
             console.log('[SOCKET] Form fill complete:', data);
             handleCompletion(data.reportId);
-        });
+        };
 
-        socket.on('form_fill_error', (data) => {
+        const handleFormFillError = (data: any) => {
             console.error('[SOCKET] Form fill error:', data);
             handleError(data.reportId, data.error);
-        });
+        };
 
-        socket.on('form_fill_paused', (data) => {
+        const handleFormFillPaused = (data: any) => {
             console.log('[SOCKET] Form fill paused:', data);
             updateProgress(data.reportId, { paused: true });
-        });
+        };
 
-        socket.on('form_fill_resumed', (data) => {
+        const handleFormFillResumed = (data: any) => {
             console.log('[SOCKET] Form fill resumed:', data);
             updateProgress(data.reportId, { paused: false });
-        });
+        };
 
-        socket.on('form_fill_stopped', (data) => {
+        const handleFormFillStopped = (data: any) => {
             console.log('[SOCKET] Form fill stopped:', data);
             clearProgress(data.reportId);
-        });
-
-        return () => {
-            socket.off('connect');
-            socket.off('disconnect');
-            socket.off('connect_error');
-            socket.off('form_fill_started');
-            socket.off('form_fill_progress');
-            socket.off('form_fill_complete');
-            socket.off('form_fill_error');
-            socket.off('form_fill_paused');
-            socket.off('form_fill_resumed');
-            socket.off('form_fill_stopped');
-            socket.disconnect();
         };
-    }, []);
+
+        // Register event listeners
+        socket.on('form_fill_progress', handleFormFillProgress);
+        socket.on('form_fill_complete', handleFormFillComplete);
+        socket.on('form_fill_error', handleFormFillError);
+        socket.on('form_fill_paused', handleFormFillPaused);
+        socket.on('form_fill_resumed', handleFormFillResumed);
+        socket.on('form_fill_stopped', handleFormFillStopped);
+
+        // Cleanup: remove listeners when component unmounts
+        return () => {
+            socket.off('form_fill_progress', handleFormFillProgress);
+            socket.off('form_fill_complete', handleFormFillComplete);
+            socket.off('form_fill_error', handleFormFillError);
+            socket.off('form_fill_paused', handleFormFillPaused);
+            socket.off('form_fill_resumed', handleFormFillResumed);
+            socket.off('form_fill_stopped', handleFormFillStopped);
+        };
+    }, [socket]);
 
     function getReportStatus(report: Report): "green" | "yellow" | "orange" {
         const incompleteCount = report.asset_data.filter(a => a.submitState === 0).length;
@@ -187,17 +162,16 @@ const ViewEquipmentReports: React.FC = () => {
     const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
     const updateProgress = (reportId: string, updates: Partial<ProgressState>) => {
-        setProgressStates(prev => ({
-            ...prev,
-            [reportId]: { ...prev[reportId], ...updates } as ProgressState
-        }));
+        dispatch({
+            type: 'UPDATE_PROGRESS',
+            payload: { reportId, updates }
+        });
     };
 
     const clearProgress = (reportId: string) => {
-        setProgressStates(prev => {
-            const copy = { ...prev };
-            delete copy[reportId];
-            return copy;
+        dispatch({
+            type: 'CLEAR_PROGRESS',
+            payload: { reportId }
         });
     };
 
@@ -291,114 +265,99 @@ const ViewEquipmentReports: React.FC = () => {
     };
 
     const handleSubmit = (reportId: string) => {
-        if (!socketRef.current || !socketRef.current.connected) {
+        if (!socket || !isConnected) {
             console.error('[SOCKET] Socket not connected');
             alert('Connection lost. Please refresh the page.');
             return;
         }
 
-        // Join the report-specific room and start form fill
-        socketRef.current.emit('join_ticket', `report_${reportId}`);
-        socketRef.current.emit('start_form_fill', {
+        socket.emit('join_ticket', `report_${reportId}`);
+        socket.emit('start_form_fill', {
             reportId,
             tabsNum,
-            userId: 'current_user', // Replace with actual user ID
+            userId: 'current_user',
             actionType: 'submit'
         });
 
-        // Initialize progress state
-        setProgressStates(prev => ({
-            ...prev,
-            [reportId]: {
-                status: 'INITIALIZING',
-                progress: 0,
-                message: 'Starting form submission...',
-                paused: false,
-                stopped: false,
-                actionType: 'submit'
-            }
-        }));
+        // Initialize progress state in global context
+        updateProgress(reportId, {
+            status: 'INITIALIZING',
+            progress: 0,
+            message: 'Starting form submission...',
+            paused: false,
+            stopped: false,
+            actionType: 'submit'
+        });
     };
 
     const handleRetry = (reportId: string) => {
-        if (!socketRef.current || !socketRef.current.connected) {
+        if (!socket || !isConnected) {
             console.error('[SOCKET] Socket not connected');
             alert('Connection lost. Please refresh the page.');
             return;
         }
 
-        // Join the report-specific room and start retry
-        socketRef.current.emit('join_ticket', `report_${reportId}`);
-        socketRef.current.emit('start_form_fill', {
+        socket.emit('join_ticket', `report_${reportId}`);
+        socket.emit('start_form_fill', {
             reportId,
             tabsNum,
-            userId: 'current_user', // Replace with actual user ID
+            userId: 'current_user',
             actionType: 'retry'
         });
 
-        // Initialize progress state
-        setProgressStates(prev => ({
-            ...prev,
-            [reportId]: {
-                status: 'INITIALIZING',
-                progress: 0,
-                message: 'Starting retry for incomplete macros...',
-                paused: false,
-                stopped: false,
-                actionType: 'retry'
-            }
-        }));
+        updateProgress(reportId, {
+            status: 'INITIALIZING',
+            progress: 0,
+            message: 'Starting retry for incomplete macros...',
+            paused: false,
+            stopped: false,
+            actionType: 'retry'
+        });
     };
 
     const handleCheck = (reportId: string) => {
-        if (!socketRef.current || !socketRef.current.connected) {
+        if (!socket || !isConnected) {
             console.error('[SOCKET] Socket not connected');
             alert('Connection lost. Please refresh the page.');
             return;
         }
 
-        // Join the report-specific room and start check
-        socketRef.current.emit('join_ticket', `report_${reportId}`);
-        socketRef.current.emit('start_form_fill', {
+        socket.emit('join_ticket', `report_${reportId}`);
+        socket.emit('start_form_fill', {
             reportId,
             tabsNum,
-            userId: 'current_user', // Replace with actual user ID
+            userId: 'current_user',
             actionType: 'check'
         });
 
-        // Initialize progress state
-        setProgressStates(prev => ({
-            ...prev,
-            [reportId]: {
-                status: 'INITIALIZING',
-                progress: 0,
-                message: 'Checking asset statuses...',
-                paused: false,
-                stopped: false,
-                actionType: 'check'
-            }
-        }));
+        updateProgress(reportId, {
+            status: 'INITIALIZING',
+            progress: 0,
+            message: 'Checking asset statuses...',
+            paused: false,
+            stopped: false,
+            actionType: 'check'
+        });
     };
 
     const handlePause = async (reportId: string) => {
-        if (!socketRef.current || !socketRef.current.connected) return;
-
-        socketRef.current.emit('pause_form_fill', { reportId });
+        if (!socket || !isConnected) return;
+        socket.emit('pause_form_fill', { reportId });
         updateProgress(reportId, { paused: true, message: 'Paused' });
     };
 
     const handleResume = async (reportId: string) => {
-        if (!socketRef.current || !socketRef.current.connected) return;
-
-        socketRef.current.emit('resume_form_fill', { reportId });
+        if (!socket || !isConnected) return;
+        socket.emit('resume_form_fill', { reportId });
         updateProgress(reportId, { paused: false, message: 'Resumed' });
     };
 
     const handleStop = async (reportId: string) => {
-        if (!socketRef.current || !socketRef.current.connected) return;
-
-        socketRef.current.emit('stop_form_fill', { reportId });
+        if (!socket || !isConnected) return;
+        socket.emit('stop_form_fill', { reportId });
         updateProgress(reportId, { stopped: true, message: 'Stopping...' });
+
+        const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
         await delay(500);
         clearProgress(reportId);
     };
@@ -456,9 +415,12 @@ const ViewEquipmentReports: React.FC = () => {
                                         <span className="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
                                             Complete: {completeCount}
                                         </span>
-                                        <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
-                                            Final Value: {Number(report.value).toLocaleString()}
-                                        </span>
+                                        {report.value && (
+                                            <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                                                Final Value: {Number(report.value).toLocaleString()}
+                                            </span>
+                                        )}
+
 
                                         {/* 👇 Add start/end submit time capsules here */}
 
@@ -470,22 +432,22 @@ const ViewEquipmentReports: React.FC = () => {
 
                                         {!(report._id === newestReportId && incompleteCount === report.asset_data.length) && (
                                             <span
-                                            className={`px-3 py-1 text-xs font-semibold rounded-full shadow-sm ${statusColor === "green"
-                                                ? "bg-green-100 text-green-700"
-                                                : statusColor === "yellow"
-                                                ? "bg-yellow-100 text-yellow-800"
-                                                : "bg-orange-100 text-orange-700"
-                                                }`}
-                                                >
+                                                className={`px-3 py-1 text-xs font-semibold rounded-full shadow-sm ${statusColor === "green"
+                                                    ? "bg-green-100 text-green-700"
+                                                    : statusColor === "yellow"
+                                                        ? "bg-yellow-100 text-yellow-800"
+                                                        : "bg-orange-100 text-orange-700"
+                                                    }`}
+                                            >
                                                 {statusColor === "green"
                                                     ? "Complete"
                                                     : statusColor === "yellow"
-                                                    ? "Partial"
-                                                    : "Pending"}
+                                                        ? "Partial"
+                                                        : "Pending"}
                                             </span>
                                         )}
                                     </div>
-                                    <div  className="mt-3 gap-2 flex flex-wrap">
+                                    <div className="mt-3 gap-2 flex flex-wrap">
                                         {report.startSubmitTime && (
                                             <span className="px-3 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700">
                                                 Started: {formatRelativeTime(report.startSubmitTime)}
@@ -514,10 +476,10 @@ const ViewEquipmentReports: React.FC = () => {
 
                                     <button
                                         onClick={e => { e.stopPropagation(); handleSubmit(report._id); }}
-                                        disabled={!loggedIn || !!report.report_id || !!progressState}
-                                        className={`px-4 py-2 font-semibold rounded-lg transition ${(!loggedIn || !!report.report_id || !!progressState)
-                                                ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                                                : 'bg-blue-400 text-white hover:bg-blue-500'
+                                        disabled={!loggedIn || !!report.endSubmitTime || !!progressState}
+                                        className={`px-4 py-2 font-semibold rounded-lg transition ${(!loggedIn || !!report.endSubmitTime || !!progressState)
+                                            ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                                            : 'bg-blue-400 text-white hover:bg-blue-500'
                                             }`}
                                     >
                                         Submit
@@ -525,10 +487,10 @@ const ViewEquipmentReports: React.FC = () => {
 
                                     <button
                                         onClick={e => { e.stopPropagation(); handleRetry(report._id); }}
-                                        disabled={!loggedIn || !report.report_id || incompleteCount === 0 || !!progressState}
-                                        className={`p-2 rounded-lg transition ${(!loggedIn || !report.report_id || incompleteCount === 0 || !!progressState)
-                                                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                                : "bg-blue-400 text-white hover:bg-blue-500"
+                                        disabled={!loggedIn || !report.endSubmitTime || incompleteCount === 0 || !!progressState}
+                                        className={`p-2 rounded-lg transition ${(!loggedIn || !report.endSubmitTime || incompleteCount === 0 || !!progressState)
+                                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                            : "bg-blue-400 text-white hover:bg-blue-500"
                                             }`}
                                         title="Retry"
                                     >
@@ -537,10 +499,10 @@ const ViewEquipmentReports: React.FC = () => {
 
                                     <button
                                         onClick={e => { e.stopPropagation(); handleCheck(report._id); }}
-                                        disabled={!loggedIn || !report.report_id || !!progressState}
-                                        className={`p-2 rounded-lg transition ${(!loggedIn || !report.report_id || !!progressState)
-                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                : 'bg-green-300 hover:bg-green-400'
+                                        disabled={!loggedIn || !report.endSubmitTime || !!progressState}
+                                        className={`p-2 rounded-lg transition ${(!loggedIn || !report.endSubmitTime || !!progressState)
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                            : 'bg-green-300 hover:bg-green-400'
                                             }`}
                                         title="Check Assets"
                                     >
@@ -566,13 +528,6 @@ const ViewEquipmentReports: React.FC = () => {
                                                     <Play className="w-4 h-4 text-white" />
                                                 </button>
                                             )}
-                                            {/* <button
-                                                onClick={e => { e.stopPropagation(); handleStop(report._id); }}
-                                                className="p-2 rounded-lg bg-red-400 hover:bg-red-500 transition"
-                                                title="Stop"
-                                            >
-                                                <StopCircle className="w-4 h-4 text-white" />
-                                            </button> */}
                                         </div>
                                     )}
                                 </div>
@@ -584,10 +539,10 @@ const ViewEquipmentReports: React.FC = () => {
                                         <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                                             <div
                                                 className={`h-2 transition-all duration-300 ${progressState.status === 'COMPLETE'
-                                                        ? 'bg-green-500'
-                                                        : progressState.status === 'FAILED'
-                                                            ? 'bg-red-500'
-                                                            : 'bg-blue-500'
+                                                    ? 'bg-green-500'
+                                                    : progressState.status === 'FAILED'
+                                                        ? 'bg-red-500'
+                                                        : 'bg-blue-500'
                                                     }`}
                                                 style={{ width: `${progressState.progress}%` }}
                                             />
@@ -625,8 +580,8 @@ const ViewEquipmentReports: React.FC = () => {
                                             </p>
                                         </div>
                                         <span className={`px-2 py-1 text-xs rounded-full ${asset.submitState === 1
-                                                ? "bg-green-100 text-green-700"
-                                                : "bg-red-100 text-red-700"
+                                            ? "bg-green-100 text-green-700"
+                                            : "bg-red-100 text-red-700"
                                             }`}>
                                             {asset.submitState === 1 ? "Complete" : "Incomplete"}
                                         </span>
