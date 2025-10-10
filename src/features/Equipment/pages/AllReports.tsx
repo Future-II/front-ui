@@ -136,11 +136,7 @@ async function runWithProgress(
 
   if (!loggedIn) {
     return (
-<<<<<<< HEAD
       <LoginModal isOpen={true} onClose={() => { /* do nothing */ }} setIsLoggedIn={setLoggedIn} />
-=======
-      <LoginModal isOpen={true} onClose={() => { }} />
->>>>>>> b819deb (Added Global Sockets, Upload Based on Report ID, Handled Refreshes in CreateReport.tsx, ViewReports.tsx and in shared/context)
     );
   }
 

@@ -374,12 +374,9 @@ const ReportsManagementSystem = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
-<<<<<<< HEAD
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [submitMessage, setSubmitMessage] = useState('');
   const [loggedIn, setLoggedIn] = useState(true);
-=======
->>>>>>> b819deb (Added Global Sockets, Upload Based on Report ID, Handled Refreshes in CreateReport.tsx, ViewReports.tsx and in shared/context)
 
   const [showSuccess, setShowSuccess] = useState(false);
 
