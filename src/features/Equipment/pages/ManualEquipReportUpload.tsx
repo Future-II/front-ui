@@ -1,19 +1,15 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import UploadBlock from '../components/UploadBlock';
 import ReportForm from '../components/ReportForm';
 import * as XLSX from "xlsx-js-style";
 import LoginModal from '../components/EquipmentTaqeemLogin';
-import { User } from "lucide-react";
+import { withFormUploadHalfReportToDB } from '../api';
+import { useNavigate } from 'react-router-dom';
 
 interface Client {
   client_name: string;
   telephone_number: string;
   email_address: string;
-}
-
-interface Valuer {
-  valuer_name: string;
-  contribution_percentage: number;
 }
 
 interface FormData {
@@ -23,7 +19,6 @@ interface FormData {
   report_type: string;
   valued_at: string;
   submitted_at: string;
-  inspection_date: string;
   assumptions: string;
   special_assumptions: string;
   value: string;
@@ -31,30 +26,45 @@ interface FormData {
   owner_name: string;
   telephone: string;
   email: string;
-  region: string;
-  city: string;
   valuation_currency: string;
   clients: Client[];
   has_other_users: boolean;
   report_users: string[];
-  valuers: Valuer[];
 }
 
-const SuccessToast: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+const SuccessToast: React.FC<{ onClose: () => void; onContinue: () => void }> = ({ onClose, onContinue }) => {
   return (
-    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50 animate-fade-in-out">
-      Report saved successfully
-      <button
-        onClick={onClose}
-        className="ml-3 text-sm underline hover:text-gray-200"
-      >
-        Close
-      </button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 p-8">
+        <div className="flex flex-col items-center text-center">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">Success!</h3>
+          <p className="text-gray-600 mb-6">Report has been saved successfully</p>
+          <div className="flex gap-3 w-full">
+            <button
+              onClick={onClose}
+              className="flex-1 px-4 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Close
+            </button>
+            <button
+              onClick={onContinue}
+              className="flex-1 px-4 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors font-semibold"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-// Validation functions for form
 const validateEmail = (email: string): string | null => {
   if (!email.trim()) return 'Email is required';
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -64,23 +74,37 @@ const validateEmail = (email: string): string | null => {
 
 const validatePhone = (phone: string): string | null => {
   if (!phone.trim()) return 'Phone number is required';
-  const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/;
+  const phoneRegex = /^[\+]?[0-9\s\-\(\)]{8,}$/;
   if (!phoneRegex.test(phone)) return 'Please enter a valid phone number';
-  return null;
-};
-
-const validateClientName = (name: string): string | null => {
-  if (!name.trim()) return 'Client name is required';
-  if (name.trim().length < 9) return 'Client name must be at least 9 characters';
   return null;
 };
 
 const validateDate = (date: string, fieldName: string): string | null => {
   if (!date) return `${fieldName} is required`;
+
   const selectedDate = new Date(date);
   const today = new Date();
+  
+  selectedDate.setHours(0, 0, 0, 0);
   today.setHours(0, 0, 0, 0);
+
   if (selectedDate > today) return `${fieldName} must be today or before`;
+  return null;
+};
+
+const validateDateRelationship = (valuedAt: string, submittedAt: string): string | null => {
+  if (!valuedAt || !submittedAt) return null;
+  
+  const valuedDate = new Date(valuedAt);
+  const submittedDate = new Date(submittedAt);
+  
+  valuedDate.setHours(0, 0, 0, 0);
+  submittedDate.setHours(0, 0, 0, 0);
+  
+  if (submittedDate < valuedDate) {
+    return 'Submission date must be the same date or after valuation date';
+  }
+  
   return null;
 };
 
@@ -143,12 +167,10 @@ interface EmptyFieldInfo {
 const hasEmptyFields = (sheets: any[][][]): { hasEmpty: boolean; emptyFields: EmptyFieldInfo[] } => {
   const emptyFields: EmptyFieldInfo[] = [];
 
-  // Only check the first two sheets (asset sheets)
   for (let sheetIdx = 0; sheetIdx < 2; sheetIdx++) {
     const sheet = sheets[sheetIdx];
     if (!sheet || sheet.length < 2) continue;
 
-    // For both asset sheets, check all data rows up to maxCols
     const maxCols = Math.max(...sheet.map(row => rowLength(row)));
 
     for (let i = 1; i < sheet.length; i++) {
@@ -177,7 +199,6 @@ const hasEmptyFields = (sheets: any[][][]): { hasEmpty: boolean; emptyFields: Em
 };
 
 const hasFractionInFinalValue = (sheets: any[][][]) => {
-  // Check both asset sheets (sheet 0 and 1)
   for (let sheetIdx = 0; sheetIdx <= 1; sheetIdx++) {
     const sheet = sheets[sheetIdx];
     if (!sheet || sheet.length < 2) continue;
@@ -194,7 +215,6 @@ const hasFractionInFinalValue = (sheets: any[][][]) => {
 };
 
 const hasInvalidPurposeId = (sheets: any[][][]) => {
-  // Check both asset sheets (sheet 0 and 1)
   for (let sheetIdx = 0; sheetIdx < 2; sheetIdx++) {
     const sheet = sheets[sheetIdx];
     if (!sheet || sheet.length < 2) continue;
@@ -211,7 +231,6 @@ const hasInvalidPurposeId = (sheets: any[][][]) => {
 };
 
 const hasInvalidValuePremiseId = (sheets: any[][][]) => {
-  // Check both asset sheets (sheet 0 and 1)
   for (let sheetIdx = 0; sheetIdx < 2; sheetIdx++) {
     const sheet = sheets[sheetIdx];
     if (!sheet || sheet.length < 2) continue;
@@ -230,12 +249,10 @@ const hasInvalidValuePremiseId = (sheets: any[][][]) => {
 const getExcelErrors = (sheets: any[][][], formFinalValue: string = '') => {
   const errors: { sheetIdx: number; row: number; col: number; message: string }[] = [];
 
-  // Only validate the first two sheets (asset sheets)
   for (let sheetIdx = 0; sheetIdx < 2; sheetIdx++) {
     const sheet = sheets[sheetIdx];
     if (!sheet || sheet.length < 2) continue;
 
-    // For both asset sheets, check all data rows
     const maxCols = Math.max(...sheet.map(row => rowLength(row)));
 
     for (let i = 1; i < sheet.length; i++) {
@@ -246,7 +263,6 @@ const getExcelErrors = (sheets: any[][][], formFinalValue: string = '') => {
         const cell = j < rowLen ? row[j] : undefined;
         const headerName = (sheet[0][j] ?? "").toString().trim().toLowerCase();
 
-        // empty
         if (cell === undefined || cell === "") {
           errors.push({
             sheetIdx,
@@ -257,7 +273,6 @@ const getExcelErrors = (sheets: any[][][], formFinalValue: string = '') => {
           continue;
         }
 
-        // final_value integer
         if (headerName === "final_value") {
           if (!Number.isInteger(Number(cell))) {
             errors.push({
@@ -269,7 +284,6 @@ const getExcelErrors = (sheets: any[][][], formFinalValue: string = '') => {
           }
         }
 
-        // purpose_id
         if (headerName === "purpose_id") {
           if (!allowedPurposeIds.includes(Number(cell))) {
             errors.push({
@@ -281,7 +295,6 @@ const getExcelErrors = (sheets: any[][][], formFinalValue: string = '') => {
           }
         }
 
-        // value_premise_id
         if (headerName === "value_premise_id") {
           if (!allowedValuePremiseIds.includes(Number(cell))) {
             errors.push({
@@ -293,7 +306,6 @@ const getExcelErrors = (sheets: any[][][], formFinalValue: string = '') => {
           }
         }
 
-        // date validations
         if (headerName === "valued_at" || headerName === "submitted_at" || headerName === "inspection_date") {
           if (!validateExcelDate(cell)) {
             errors.push({
@@ -308,7 +320,6 @@ const getExcelErrors = (sheets: any[][][], formFinalValue: string = '') => {
     }
   }
 
-  // Add final value mismatch error if applicable
   if (formFinalValue.trim()) {
     const mismatchError = getFinalValueMismatchError(sheets, formFinalValue);
     if (mismatchError) {
@@ -321,7 +332,6 @@ const getExcelErrors = (sheets: any[][][], formFinalValue: string = '') => {
 
 function getFinalValueSum(sheets: any[][][]) {
   let sum = 0;
-  // Sum from both asset sheets (sheet 0 and 1)
   for (let sheetIdx = 0; sheetIdx <= 1; sheetIdx++) {
     const sheet = sheets[sheetIdx];
     if (!sheet || sheet.length < 2) continue;
@@ -337,12 +347,10 @@ function getFinalValueSum(sheets: any[][][]) {
   return sum;
 }
 
-// Add this function to check if total asset value matches form final value
 const hasMismatchedFinalValue = (sheets: any[][][], formFinalValue: string): boolean => {
   const totalAssetValue = getFinalValueSum(sheets);
   const formValue = parseFloat(formFinalValue);
 
-  // Only validate if both values are valid numbers
   if (isNaN(totalAssetValue) || isNaN(formValue)) {
     return false;
   }
@@ -360,7 +368,7 @@ const getFinalValueMismatchError = (sheets: any[][][], formFinalValue: string): 
 
   if (totalAssetValue !== formValue) {
     return {
-      sheetIdx: 0, // This is a general error, not tied to a specific sheet
+      sheetIdx: 0,
       row: 0,
       col: 0,
       message: `إجمالي قيمة الأصول (${totalAssetValue.toLocaleString()}) لا يساوي القيمة النهائية في النموذج (${formValue.toLocaleString()})`
@@ -371,14 +379,14 @@ const getFinalValueMismatchError = (sheets: any[][][], formFinalValue: string): 
 };
 
 const ReportsManagementSystem = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [submitMessage, setSubmitMessage] = useState('');
   const [loggedIn, setLoggedIn] = useState(true);
-
   const [showSuccess, setShowSuccess] = useState(false);
+  const [step1Validated, setStep1Validated] = useState(false);
+  const [step2Validated, setStep2Validated] = useState(false);
 
   const [excelFile, setExcelFile] = useState<File | null>(null);
   const [pdfs, setPdfFiles] = useState<File[] | []>([]);
@@ -389,7 +397,6 @@ const ReportsManagementSystem = () => {
   const [showTables, setShowTables] = useState(false);
   const [errorsModalOpen, setErrorsModalOpen] = useState(false);
 
-
   const [formData, setFormData] = useState<FormData>({
     title: '',
     purpose_id: 'to set',
@@ -397,7 +404,6 @@ const ReportsManagementSystem = () => {
     report_type: 'detailed',
     valued_at: '',
     submitted_at: '',
-    inspection_date: '',
     assumptions: '',
     special_assumptions: '',
     value: '',
@@ -405,20 +411,17 @@ const ReportsManagementSystem = () => {
     owner_name: '',
     telephone: '',
     email: '',
-    region: '',
-    city: '',
     valuation_currency: 'Saudi riyal',
     clients: [{ client_name: '', telephone_number: '', email_address: '' }],
     has_other_users: false,
     report_users: [],
-    valuers: [{ valuer_name: '', contribution_percentage: 100 }]
   });
 
-  // Excel file handling
   const handleExcelUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files[0]) {
       setExcelFile(files[0]);
+      setStep2Validated(false); // Reset validation when new file is uploaded
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
@@ -439,15 +442,14 @@ const ReportsManagementSystem = () => {
     }
   };
 
-  // PDF file handling
   const handlePdfUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
       setPdfFiles(Array.from(files));
+      setStep2Validated(false); // Reset validation when new files are uploaded
     }
   };
 
-  // Excel validation
   const finalValueSum = useMemo(() => getFinalValueSum(excelDataSheets), [excelDataSheets]);
 
   const isExcelValid =
@@ -458,44 +460,31 @@ const ReportsManagementSystem = () => {
     !hasInvalidValuePremiseId(excelDataSheets) &&
     !hasMismatchedFinalValue(excelDataSheets, formData.value);
 
-  // Update excel errors when data changes
+  // Remove automatic validation - only validate when user clicks button
   useEffect(() => {
     if (!excelDataSheets || excelDataSheets.length === 0) {
       setExcelErrors([]);
-      return;
+      setShowValidationSuccess(false);
     }
-    const exErrors = getExcelErrors(excelDataSheets, formData.value);
-    setExcelErrors(exErrors);
-    setShowValidationSuccess(exErrors.length === 0 && excelDataSheets.length > 0);
+  }, [excelDataSheets]);
 
-    if (exErrors.length > 0) {
-      setErrorsModalOpen(true);
-    }
-  }, [excelDataSheets, formData.value]);
-
-  // Download corrected Excel
   const hasOnlyFinalValueMismatch = useMemo(() => {
     if (excelErrors.length === 0) return false;
-
-    // Check if all errors are final value mismatch errors
     return excelErrors.every(error =>
       error.sheetIdx === 0 && error.row === 0 && error.col === 0
     );
   }, [excelErrors]);
 
-  // Download corrected Excel - exclude final value mismatch errors
   const downloadCorrectedExcel = () => {
     if (isExcelValid) return;
     if (!excelDataSheets.length) return;
 
     const workbook = XLSX.utils.book_new();
 
-    // Filter out final value mismatch errors (sheetIdx: 0, row: 0, col: 0)
     const correctableErrors = excelErrors.filter(error =>
       !(error.sheetIdx === 0 && error.row === 0 && error.col === 0)
     );
 
-    // If there are no correctable errors (only final value mismatch), don't download
     if (correctableErrors.length === 0) {
       setExcelError("Cannot download corrected file - please fix the final value in step 1");
       return;
@@ -545,11 +534,9 @@ const ReportsManagementSystem = () => {
     }
   };
 
-  // Form validation
   const validateStep1 = (formData: FormData): { [key: string]: string } => {
     const errors: { [key: string]: string } = {};
 
-    // Report Information validations
     if (!formData.title.trim()) {
       errors.title = 'Report title is required';
     }
@@ -562,30 +549,27 @@ const ReportsManagementSystem = () => {
       errors.value_premise_id = 'Value hypothesis is required';
     }
 
+    if(!formData.valuation_currency.trim() || formData.valuation_currency === 'to set') {
+      errors.valuation_currency = 'Valuation currency is required';
+    }
+
     if (!formData.value.trim()) {
       errors.value = 'Final opinion on value is required';
     }
 
-    // Date validations
     const valuedAtErrors = validateDate(formData.valued_at, 'Valuation date');
     if (valuedAtErrors) errors.valued_at = valuedAtErrors;
 
     const submittedAtErrors = validateDate(formData.submitted_at, 'Submission date');
     if (submittedAtErrors) errors.submitted_at = submittedAtErrors;
 
-    const inspectionDateErrors = validateDate(formData.inspection_date, 'Inspection date');
-    if (inspectionDateErrors) errors.inspection_date = inspectionDateErrors;
-
-    // Location validations
-    if (!formData.region.trim()) {
-      errors.region = 'Region is required';
+    if (!errors.valued_at && !errors.submitted_at) {
+      const dateRelationshipError = validateDateRelationship(formData.valued_at, formData.submitted_at);
+      if (dateRelationshipError) {
+        errors.submitted_at = dateRelationshipError;
+      }
     }
 
-    if (!formData.city.trim()) {
-      errors.city = 'City is required';
-    }
-
-    // Contact validations
     if (!formData.client_name.trim()) {
       errors.client_name = 'Client name is required';
     }
@@ -604,32 +588,6 @@ const ReportsManagementSystem = () => {
       errors.email = emailError;
     }
 
-    // Additional clients validations
-    formData.clients.forEach((client, index) => {
-      const nameError = validateClientName(client.client_name);
-      if (nameError) {
-        errors[`client_${index}_client_name`] = nameError;
-      }
-
-      const phoneError = validatePhone(client.telephone_number);
-      if (phoneError) {
-        errors[`client_${index}_telephone_number`] = phoneError;
-      }
-
-      const emailError = validateEmail(client.email_address);
-      if (emailError) {
-        errors[`client_${index}_email_address`] = emailError;
-      }
-    });
-
-    // Valuer validations
-    formData.valuers.forEach((valuer, index) => {
-      if (!valuer.valuer_name.trim()) {
-        errors[`valuer_${index}_valuer_name`] = 'Valuer name is required';
-      }
-    });
-
-    // Other users validations
     if (formData.has_other_users) {
       formData.report_users.forEach((user, index) => {
         if (!user.trim()) {
@@ -643,6 +601,7 @@ const ReportsManagementSystem = () => {
 
   const updateFormData = (updates: Partial<FormData>) => {
     setFormData(prev => ({ ...prev, ...updates }));
+    setStep1Validated(false); // Reset validation when data changes
   };
 
   const addClient = () => {
@@ -711,39 +670,6 @@ const ReportsManagementSystem = () => {
     }
   };
 
-  const addValuer = () => {
-    updateFormData({
-      valuers: [...formData.valuers, { valuer_name: '', contribution_percentage: 100 }]
-    });
-  };
-
-  const deleteValuer = (index: number) => {
-    if (formData.valuers.length > 1) {
-      const newValuers = formData.valuers.filter((_, i) => i !== index);
-      updateFormData({ valuers: newValuers });
-
-      const newErrors = { ...errors };
-      delete newErrors[`valuer_${index}_valuer_name`];
-      setErrors(newErrors);
-    }
-  };
-
-  const updateValuer = (index: number, field: keyof Valuer, value: string | number) => {
-    const newValuers = formData.valuers.map((v, i) =>
-      i === index ? { ...v, [field]: value } : v
-    );
-    updateFormData({ valuers: newValuers });
-
-    const errorKey = `valuer_${index}_${field}`;
-    if (errors[errorKey]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[errorKey];
-        return newErrors;
-      });
-    }
-  };
-
   const updateField = (field: keyof FormData, value: any) => {
     updateFormData({ [field]: value });
     if (errors[field]) {
@@ -755,13 +681,16 @@ const ReportsManagementSystem = () => {
     }
   };
 
-  const handleSaveAndContinue = () => {
+  const handleValidateStep1 = () => {
     const validationErrors = validateStep1(formData);
+    console.log("Validation Errors: ", validationErrors);
     if (Object.keys(validationErrors).length === 0) {
-      setCurrentStep(2);
-      console.log('Consolidated Form Data:', formData);
+      setStep1Validated(true);
+      setErrors({});
+      console.log('Step 1 validated successfully:', formData);
     } else {
       setErrors(validationErrors);
+      setStep1Validated(false);
       const firstErrorElement = document.querySelector('.border-red-400');
       if (firstErrorElement) {
         firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -769,41 +698,62 @@ const ReportsManagementSystem = () => {
     }
   };
 
-  const StepIndicator = useMemo(() => (
-    <div className="flex justify-center mb-8">
-      <div className="flex items-center space-x-4">
-        <div className={`flex items-center justify-center w-10 h-10 rounded-full ${currentStep >= 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
-          1
-        </div>
-        <div className="text-sm text-center">
-          <div className={currentStep >= 1 ? 'text-blue-500 font-medium' : 'text-gray-500'}>Report data</div>
-        </div>
+  const handleContinueToStep2 = () => {
+    setCurrentStep(2);
+  };
 
-        <div className={`w-16 h-0.5 ${currentStep >= 2 ? 'bg-blue-500' : 'bg-gray-200'}`}></div>
+  const handleValidateStep2 = () => {
+    if (!excelFile || !pdfs.length) {
+      alert('Please upload both Excel and PDF files');
+      return;
+    }
 
-        <div className={`flex items-center justify-center w-10 h-10 rounded-full ${currentStep >= 2 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
-          2
-        </div>
-        <div className="text-sm text-center">
-          <div className={currentStep >= 2 ? 'text-blue-500 font-medium' : 'text-gray-500'}>Upload Excel report</div>
-        </div>
+    // Run validation when button is clicked
+    const exErrors = getExcelErrors(excelDataSheets, formData.value);
+    setExcelErrors(exErrors);
 
-        <div className={`w-16 h-0.5 ${currentStep >= 3 ? 'bg-blue-500' : 'bg-gray-200'}`}></div>
+    if (exErrors.length > 0) {
+      setErrorsModalOpen(true);
+      setStep2Validated(false);
+      setShowValidationSuccess(false);
+      return;
+    }
 
-        <div className={`flex items-center justify-center w-10 h-10 rounded-full ${currentStep >= 3 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
-          3
-        </div>
-        <div className="text-sm text-center">
-          <div className={currentStep >= 3 ? 'text-blue-500 font-medium' : 'text-gray-500'}>Report sending result</div>
-        </div>
-      </div>
-    </div>
-  ), [currentStep]);
+    // If no errors, mark as validated
+    setStep2Validated(true);
+    setShowValidationSuccess(true);
+  };
 
-  const renderStep1 = useMemo(() => (
+  const handleSubmitReport = async () => {
+    if (!excelFile || !pdfs.length || excelErrors.length > 0) {
+      alert('Please ensure all files are uploaded and validated');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await withFormUploadHalfReportToDB(formData, excelFile, pdfs);
+      
+      console.log('Report submitted successfully:', result);
+      setShowSuccess(true);
+      
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      alert('Failed to submit report. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSuccessContinue = () => {
+    navigate('/equipment/viewReports');
+  };
+
+  const renderStep1 = (
     <ReportForm
       formData={formData}
       errors={errors}
+      step1Validated={step1Validated}
       onFormDataChange={updateFormData}
       onFieldChange={updateField}
       onClientAdd={addClient}
@@ -812,12 +762,10 @@ const ReportsManagementSystem = () => {
       onUserAdd={addUser}
       onUserDelete={deleteUser}
       onUserUpdate={updateUser}
-      onValuerAdd={addValuer}
-      onValuerDelete={deleteValuer}
-      onValuerUpdate={updateValuer}
-      onSaveAndContinue={handleSaveAndContinue}
+      onValidateData={handleValidateStep1}
+      onContinue={handleContinueToStep2}
     />
-  ), [formData, errors, handleSaveAndContinue]);
+  );
 
   const renderStep2 = () => (
     <div className="max-w-6xl mx-auto p-6">
@@ -851,8 +799,8 @@ const ReportsManagementSystem = () => {
             <p className="text-sm text-gray-600">Selected PDF Files: {pdfs.map(pdf => pdf.name).join(', ')}</p>
           )}
 
-          {/* Excel Validation Summary */}
-          {excelDataSheets.length > 0 && (
+          {/* Excel Validation Summary - Only show after validation */}
+          {excelDataSheets.length > 0 && excelErrors.length > 0 && (
             <div className="mt-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium text-gray-800">Excel Validation</h3>
@@ -883,18 +831,6 @@ const ReportsManagementSystem = () => {
                         <p className="text-lg font-bold text-blue-900">{finalValueSum.toLocaleString()}</p>
                       </div>
                       <div className="text-sm text-gray-500">Sum from asset sheets</div>
-                    </div>
-                  </div>
-                )}
-
-                {showValidationSuccess && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">✅</span>
-                      <div>
-                        <p className="font-semibold text-green-700">File is Valid</p>
-                        <p className="text-sm text-gray-600">No errors found, ready to submit</p>
-                      </div>
                     </div>
                   </div>
                 )}
@@ -967,14 +903,27 @@ const ReportsManagementSystem = () => {
             </div>
           )}
 
-          {/* Error Message */}
+          {/* Success badge - only show after validation passes */}
+          {step2Validated && showValidationSuccess && (
+            <div className="mt-6">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">✅</span>
+                  <div>
+                    <p className="font-semibold text-green-700">Files Validated</p>
+                    <p className="text-sm text-gray-600">No errors found, ready to submit</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {excelError && (
             <div className="mt-3 text-center text-red-600 font-semibold">
               {excelError}
             </div>
           )}
 
-          {/* Action Buttons */}
           <div className="flex justify-between items-center mt-8">
             <button
               type="button"
@@ -998,14 +947,25 @@ const ReportsManagementSystem = () => {
               </button>
 
               <button
-                type="button"
-                disabled={!excelFile || !pdfs.length || excelErrors.length > 0 || isLoading}
-                className={`px-6 py-3 rounded-lg font-semibold transition-colors ${excelFile && pdfs.length && excelErrors.length === 0
+                onClick={handleValidateStep2}
+                disabled={!excelFile || !pdfs.length || isLoading || step2Validated}
+                className={`px-6 py-3 rounded-lg font-semibold transition-colors ${excelFile && pdfs.length && !step2Validated
+                  ? "bg-purple-500 hover:bg-purple-600 text-white"
+                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  }`}
+              >
+                Validate Data
+              </button>
+
+              <button
+                onClick={handleSubmitReport}
+                disabled={!step2Validated || isLoading}
+                className={`px-6 py-3 rounded-lg font-semibold transition-colors ${step2Validated && !isLoading
                   ? "bg-blue-500 hover:bg-blue-600 text-white"
                   : "bg-gray-100 text-gray-400 cursor-not-allowed"
                   }`}
               >
-                {isLoading ? 'Submitting...' : 'Submit Report'}
+                {isLoading ? 'Submitting...' : 'Validate and Store'}
               </button>
             </div>
           </div>
@@ -1074,34 +1034,23 @@ const ReportsManagementSystem = () => {
     </div>
   );
 
-  const Header = useMemo(() => (
-    <div className="bg-white border-b px-6 py-3 flex justify-between items-center">
-      <div className="flex items-center gap-4">
-        <h1 className="text-xl font-semibold text-blue-600">Reports Management System</h1>
-      </div>
-      <div className="flex items-center gap-4">
-        <button type="button" className="text-gray-600">AR</button>
-        <button type="button" className="bg-blue-500 text-white px-2 py-1 rounded text-sm">EN</button>
-        <div className="flex items-center gap-2">
-          <User size={20} className="text-gray-600" />
-          <span className="text-sm text-gray-600">Reports Company</span>
-        </div>
-      </div>
-    </div>
-  ), []);
-
   if (!loggedIn) {
-      return <LoginModal isOpen={true} onClose={() => { /* do nothing */ }} setIsLoggedIn={setLoggedIn} />;
-    }
+    return <LoginModal isOpen={true} onClose={() => { /* do nothing */ }} setIsLoggedIn={setLoggedIn} />;
+  }
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="p-6">
-        {StepIndicator}
         {currentStep === 1 && renderStep1}
         {currentStep === 2 && renderStep2()}
       </div>
 
-      {showSuccess && <SuccessToast onClose={() => setShowSuccess(false)} />}
+      {showSuccess && (
+        <SuccessToast 
+          onClose={() => setShowSuccess(false)} 
+          onContinue={handleSuccessContinue}
+        />
+      )}
 
       <div className="fixed bottom-4 right-4 z-50">
         <button

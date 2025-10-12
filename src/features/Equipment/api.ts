@@ -53,6 +53,25 @@ export const uploadAssetsToDB = async (reportId: string, excelFile: File) => {
   }
 };
 
+export const withFormUploadHalfReportToDB = async (formData: any, excelFile: File, pdfFiles: File[]) => {
+  const formData2 = new FormData();
+  formData2.append("formData", JSON.stringify(formData));
+  formData2.append("excel", excelFile);
+  pdfFiles.forEach(file => formData2.append('pdfs', file));
+
+  try {
+    const response = await api.post("/scripts/equip/withFormExtract", formData2, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error adding report:", error);
+    throw new Error("Error adding report");
+  }
+};
+
 export const addAssetsToReport = async (reportId: string) => {
   try {
     const response = await api.post("/scripts/equip/addAssets", {reportId});

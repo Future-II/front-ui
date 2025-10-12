@@ -1,15 +1,9 @@
 import React from 'react';
-import { Plus } from 'lucide-react';
 
 interface Client {
   client_name: string;
   telephone_number: string;
   email_address: string;
-}
-
-interface Valuer {
-  valuer_name: string;
-  contribution_percentage: number;
 }
 
 interface FormData {
@@ -19,23 +13,23 @@ interface FormData {
   report_type: string;
   valued_at: string;
   submitted_at: string;
-  inspection_date: string;
   assumptions: string;
   special_assumptions: string;
   value: string;
+  client_name: string;
   owner_name: string;
-  region: string;
-  city: string;
+  telephone: string;
+  email: string;
   valuation_currency: string;
   clients: Client[];
   has_other_users: boolean;
   report_users: string[];
-  valuers: Valuer[];
 }
 
 interface ReportFormProps {
   formData: FormData;
   errors: { [key: string]: string };
+  step1Validated: boolean;
   onFormDataChange: (updates: Partial<FormData>) => void;
   onFieldChange: (field: keyof FormData, value: any) => void;
   onClientAdd: () => void;
@@ -44,24 +38,22 @@ interface ReportFormProps {
   onUserAdd: () => void;
   onUserDelete: (index: number) => void;
   onUserUpdate: (index: number, value: string) => void;
-  onValuerAdd: () => void;
-  onValuerDelete: (index: number) => void;
-  onValuerUpdate: (index: number, field: keyof Valuer, value: string | number) => void;
-  onSaveAndContinue: () => void;
+  onValidateData: () => void;
+  onContinue: () => void;
 }
 
-const InputField = ({ 
-  label, 
-  required = false, 
-  error, 
+const InputField = ({
+  label,
+  required = false,
+  error,
   className = '',
-  ...props 
-}: { 
-  label: string; 
-  required?: boolean; 
-  error?: string; 
+  ...props
+}: {
+  label: string;
+  required?: boolean;
+  error?: string;
   className?: string;
-  [key: string]: any 
+  [key: string]: any
 }) => (
   <div className={`mb-5 ${className}`}>
     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -69,28 +61,27 @@ const InputField = ({
     </label>
     <input
       {...props}
-      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
-        error ? 'border-red-400 bg-red-50' : 'border-gray-300'
-      }`}
+      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${error ? 'border-red-400 bg-red-50' : 'border-gray-300'
+        }`}
     />
     {error && <p className="text-red-500 text-sm mt-1.5">{error}</p>}
   </div>
 );
 
-const SelectField = ({ 
-  label, 
-  required = false, 
-  options, 
+const SelectField = ({
+  label,
+  required = false,
+  options,
   error,
   className = '',
-  ...props 
-}: { 
-  label: string; 
-  required?: boolean; 
+  ...props
+}: {
+  label: string;
+  required?: boolean;
   options: { value: string; label: string }[];
   error?: string;
   className?: string;
-  [key: string]: any 
+  [key: string]: any
 }) => (
   <div className={`mb-5 ${className}`}>
     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -98,9 +89,8 @@ const SelectField = ({
     </label>
     <select
       {...props}
-      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
-        error ? 'border-red-400 bg-red-50' : 'border-gray-300'
-      }`}
+      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${error ? 'border-red-400 bg-red-50' : 'border-gray-300'
+        }`}
     >
       {options.map(opt => (
         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -110,18 +100,18 @@ const SelectField = ({
   </div>
 );
 
-const TextAreaField = ({ 
-  label, 
-  required = false, 
+const TextAreaField = ({
+  label,
+  required = false,
   error,
   className = '',
-  ...props 
-}: { 
-  label: string; 
-  required?: boolean; 
+  ...props
+}: {
+  label: string;
+  required?: boolean;
   error?: string;
   className?: string;
-  [key: string]: any 
+  [key: string]: any
 }) => (
   <div className={`mb-5 ${className}`}>
     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -129,21 +119,20 @@ const TextAreaField = ({
     </label>
     <textarea
       {...props}
-      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none ${
-        error ? 'border-red-400 bg-red-50' : 'border-gray-300'
-      }`}
+      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none ${error ? 'border-red-400 bg-red-50' : 'border-gray-300'
+        }`}
     />
     {error && <p className="text-red-500 text-sm mt-1.5">{error}</p>}
   </div>
 );
 
-const RadioGroup = ({ 
-  label, 
-  options, 
-  value, 
-  onChange 
-}: { 
-  label: string; 
+const RadioGroup = ({
+  label,
+  options,
+  value,
+  onChange
+}: {
+  label: string;
   options: { value: string; label: string }[];
   value: string;
   onChange: (value: string) => void;
@@ -162,14 +151,12 @@ const RadioGroup = ({
             onChange={(e) => onChange(e.target.value)}
             className="sr-only"
           />
-          <div className={`flex items-center gap-2 px-5 py-3 rounded-lg border-2 transition-all ${
-            value === option.value 
-              ? 'border-blue-500 bg-blue-50' 
+          <div className={`flex items-center gap-2 px-5 py-3 rounded-lg border-2 transition-all ${value === option.value
+              ? 'border-blue-500 bg-blue-50'
               : 'border-gray-300 hover:border-gray-400'
-          }`}>
-            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-              value === option.value ? 'border-blue-500' : 'border-gray-400'
             }`}>
+            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${value === option.value ? 'border-blue-500' : 'border-gray-400'
+              }`}>
               {value === option.value && (
                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
               )}
@@ -196,12 +183,11 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 const ReportForm: React.FC<ReportFormProps> = ({
   formData,
   errors,
+  step1Validated,
   onFieldChange,
-  onValuerAdd,
-  onValuerDelete,
   onClientUpdate,
-  onValuerUpdate,
-  onSaveAndContinue
+  onValidateData,
+  onContinue
 }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
@@ -210,6 +196,18 @@ const ReportForm: React.FC<ReportFormProps> = ({
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Property Valuation Report</h1>
           <p className="text-gray-600">Complete all required fields to generate your report</p>
         </div>
+
+        {step1Validated && (
+          <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">✅</span>
+              <div>
+                <p className="font-semibold text-green-700">Data Validated Successfully</p>
+                <p className="text-sm text-gray-600">All required fields are filled correctly. Click Continue to proceed.</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <Section title="Report Information">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -224,39 +222,39 @@ const ReportForm: React.FC<ReportFormProps> = ({
                 placeholder="Enter a descriptive title for this report"
               />
             </div>
-            
+
             <SelectField
-              label="Purpose ID"
+              label="Valuation Purpose"
               required
               value={formData.purpose_id}
               onChange={(e: any) => onFieldChange('purpose_id', e.target.value)}
               options={[
-                { value: 'to set', label: 'Select Purpose' },
-                { value: '1', label: '1 - Selling' },
-                { value: '2', label: '2 - Purchase' },
-                { value: '5', label: '5 - Investment' },
-                { value: '6', label: '6 - Mortgage' },
-                { value: '8', label: '8 - Financial Reporting' },
-                { value: '9', label: '9 - Tax' },
-                { value: '10', label: '10 - Insurance' },
-                { value: '12', label: '12 - Legal' },
-                { value: '14', label: '14 - Other' }
+                { value: 'to set', label: 'Select' },
+                { value: '1', label: 'Selling' },
+                { value: '2', label: 'Buying' },
+                { value: '5', label: 'Rent Value' },
+                { value: '6', label: 'Insurance' },
+                { value: '8', label: 'Accounting Purposes' },
+                { value: '9', label: 'Financing' },
+                { value: '10', label: 'Disputes and Litigation' },
+                { value: '12', label: 'Tax Related Valuations' },
+                { value: '14', label: 'Other' }
               ]}
               error={errors.purpose_id}
             />
-            
+
             <SelectField
-              label="Value Premise ID"
+              label="Value Premise"
               required
               value={formData.value_premise_id}
               onChange={(e: any) => onFieldChange('value_premise_id', e.target.value)}
               options={[
-                { value: 'to set', label: 'Select Value Premise' },
-                { value: '1', label: '1 - Market Value' },
-                { value: '2', label: '2 - Investment Value' },
-                { value: '3', label: '3 - Value in Use' },
-                { value: '4', label: '4 - Liquidation Value' },
-                { value: '5', label: '5 - Fair Value' }
+                { value: 'to set', label: 'Select' },
+                { value: '1', label: 'Highest and Best Use' },
+                { value: '2', label: 'Current Use' },
+                { value: '3', label: 'Orderly Liquidation' },
+                { value: '4', label: 'Forced Sale' },
+                { value: '5', label: 'Other' }
               ]}
               error={errors.value_premise_id}
             />
@@ -268,10 +266,10 @@ const ReportForm: React.FC<ReportFormProps> = ({
               value={formData.report_type}
               onChange={(value) => onFieldChange('report_type', value)}
               options={[
-                { value: 'detailed', label: 'Detailed Report' },
-                { value: 'summary', label: 'Report Summary' },
-                { value: 'reviewNew', label: 'Review with New Value' },
-                { value: 'reviewWithout', label: 'Review without New Value' }
+                { value: 'تقرير مفصل', label: 'Detailed Report' },
+                { value: 'ملخص التقرير', label: 'Report Summary' },
+                { value: 'مراجعة مع قيمة جديدة', label: 'Review with New Value' },
+                { value: 'مراجعة بدون قيمة جديدة', label: 'Review without New Value' }
               ]}
             />
           </div>
@@ -285,7 +283,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
               onChange={(e: any) => onFieldChange('valued_at', e.target.value)}
               error={errors.valued_at}
             />
-            
+
             <InputField
               label="Submitted At"
               required
@@ -294,29 +292,18 @@ const ReportForm: React.FC<ReportFormProps> = ({
               onChange={(e: any) => onFieldChange('submitted_at', e.target.value)}
               error={errors.submitted_at}
             />
-            
-            <InputField
-              label="Inspection Date"
-              required
-              type="date"
-              value={formData.inspection_date}
-              onChange={(e: any) => onFieldChange('inspection_date', e.target.value)}
-              error={errors.inspection_date}
-            />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <TextAreaField
+            <InputField
               label="Assumptions"
-              rows={4}
               value={formData.assumptions}
               onChange={(e: any) => onFieldChange('assumptions', e.target.value)}
               placeholder="Enter general assumptions for the valuation"
             />
-            
-            <TextAreaField
+
+            <InputField
               label="Special Assumptions"
-              rows={4}
               value={formData.special_assumptions}
               onChange={(e: any) => onFieldChange('special_assumptions', e.target.value)}
               placeholder="Enter any special assumptions or conditions"
@@ -333,17 +320,22 @@ const ReportForm: React.FC<ReportFormProps> = ({
               error={errors.value}
               placeholder="Enter final value"
             />
-            
+
             <SelectField
               label="Valuation Currency"
               required
               value={formData.valuation_currency}
               onChange={(e: any) => onFieldChange('valuation_currency', e.target.value)}
               options={[
-                { value: 'Saudi riyal', label: 'Saudi Riyal' },
-                { value: 'USD', label: 'US Dollar' },
-                { value: 'EUR', label: 'Euro' }
+                { value: 'to set', label: 'Select' },
+                { value: '1', label: 'Saudi Riyal'},
+                { value: '2', label: 'US Dollars' },
+                { value: '3', label: 'UA Dirhams' },
+                { value: '4', label: 'Euro' },
+                { value: '5', label: 'Pound Sterling' },
+                { value: '6', label: 'Sudanese Pound' },
               ]}
+              error={errors.valuation_currency}
             />
           </div>
         </Section>
@@ -351,7 +343,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
         <Section title="Owner Information">
           <div className="max-w-2xl">
             <InputField
-              label="Owner Name"
+              label="Owner Name (in assets)"
               required
               type="text"
               value={formData.owner_name}
@@ -362,129 +354,60 @@ const ReportForm: React.FC<ReportFormProps> = ({
           </div>
         </Section>
 
-<Section title="Client Information">
-  <div className="max-w-2xl mb-6">
-    <InputField
-      label="Client Name"
-      required
-      type="text"
-      value={formData.clients[0]?.client_name || ''} // ✅ Use first client
-      onChange={(e: any) => onClientUpdate(0, 'client_name', e.target.value)} // ✅ Use client update function
-      error={errors['client_0_client_name']} // ✅ Use correct error key
-      placeholder="Enter client name"
-    />
-  </div>
-
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-2xl">
-    <InputField
-      label="Telephone"
-      required
-      type="tel"
-      value={formData.clients[0]?.telephone_number || ''} // ✅ Use first client
-      onChange={(e: any) => onClientUpdate(0, 'telephone_number', e.target.value)} // ✅ Use client update function
-      error={errors['client_0_telephone_number']} // ✅ Use correct error key
-      placeholder="e.g. +966500000000"
-    />
-    
-    <InputField
-      label="Email"
-      required
-      type="email"
-      value={formData.clients[0]?.email_address || ''} // ✅ Use first client
-      onChange={(e: any) => onClientUpdate(0, 'email_address', e.target.value)} // ✅ Use client update function
-      error={errors['client_0_email_address']} // ✅ Use correct error key
-      placeholder="e.g. example@domain.com"
-    />
-  </div>
-</Section>
-
-        <Section title="Valuer Data">
-          <div className="space-y-6">
-            {formData.valuers.map((valuer, index) => (
-              <div key={index} className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-sm font-medium text-gray-700">Valuer {index + 1}</h4>
-                  {formData.valuers.length > 1 && (
-                    <button
-                      onClick={() => onValuerDelete(index)}
-                      className="px-4 py-2 text-sm rounded-lg border-2 border-red-400 text-red-600 hover:bg-red-50 transition-all"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <SelectField
-                    label="Valuer Name"
-                    required
-                    value={valuer.valuer_name}
-                    onChange={(e: any) => onValuerUpdate(index, 'valuer_name', e.target.value)}
-                    options={[
-                      { value: '', label: 'Select Valuer' },
-                      { value: '4210000271', label: '4210000271 - عبدالعزيز سليمان عبدالله الزيد' },
-                      { value: '4210000272', label: '4210000272 - محمد أحمد علي' },
-                      { value: '4210000273', label: '4210000273 - سارة خالد الحربي' }
-                    ]}
-                    error={errors[`valuer_${index}_valuer_name`]}
-                  />
-                  
-                  <SelectField
-                    label="Contribution Percentage"
-                    required
-                    value={valuer.contribution_percentage.toString()}
-                    onChange={(e: any) => onValuerUpdate(index, 'contribution_percentage', Number(e.target.value))}
-                    options={[
-                      { value: '100', label: '100%' },
-                      { value: '75', label: '75%' },
-                      { value: '50', label: '50%' },
-                      { value: '25', label: '25%' }
-                    ]}
-                  />
-                </div>
-              </div>
-            ))}
+        <Section title="Client Information">
+          <div className="max-w-2xl mb-6">
+            <InputField
+              label="Client Name"
+              required
+              type="text"
+              value={formData.client_name || ''}
+              onChange={(e: any) => onFieldChange('client_name', e.target.value)}
+              error={errors['client_name']}
+              placeholder="Enter client name"
+            />
           </div>
-          
-          <button
-            onClick={onValuerAdd}
-            className="mt-6 inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-all font-medium"
-          >
-            <Plus size={20} />
-            Add Another Valuer
-          </button>
-        </Section>
 
-        <Section title="Location Information">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-2xl">
             <InputField
-              label="Region"
+              label="Telephone"
               required
-              type="text"
-              value={formData.region}
-              onChange={(e: any) => onFieldChange('region', e.target.value)}
-              error={errors.region}
-              placeholder="Enter region"
+              type="tel"
+              value={formData.telephone || ''}
+              onChange={(e: any) => onFieldChange('telephone', e.target.value)}
+              error={errors['telephone']}
+              placeholder="e.g. +966500000000"
             />
-            
+
             <InputField
-              label="City"
+              label="Email"
               required
-              type="text"
-              value={formData.city}
-              onChange={(e: any) => onFieldChange('city', e.target.value)}
-              error={errors.city}
-              placeholder="Enter city"
+              type="email"
+              value={formData.email || ''}
+              onChange={(e: any) => onFieldChange('email', e.target.value)}
+              error={errors['email']}
+              placeholder="e.g. example@domain.com"
             />
           </div>
         </Section>
 
         <div className="flex justify-end gap-4 mt-8">
           <button
-            onClick={onSaveAndContinue}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all text-lg"
+            onClick={onValidateData}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-10 py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all text-lg"
           >
-            Save and Continue
+            Validate Data
+          </button>
+          
+          <button
+            onClick={onContinue}
+            disabled={!step1Validated}
+            className={`px-10 py-4 rounded-lg font-semibold shadow-lg transition-all text-lg ${
+              step1Validated
+                ? "bg-blue-600 hover:bg-blue-700 text-white hover:shadow-xl"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
+          >
+            Continue
           </button>
         </div>
       </div>
