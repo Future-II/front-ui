@@ -56,6 +56,7 @@ export function App() {
                     <Route path="/settings" element={<UserSettings />} />
                     <Route path="/support" element={<SupportPage />} />
                     <Route path="/support/tickets" element={<AllTicketsPage />} />
+                    
 
                     <Route path="/equipment/reportID" element={<EquipmentReport />} />
                     <Route path='/equipment/createReport' element={<CreateReport />} />

@@ -3,8 +3,11 @@ import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx-js-style";
 
 import UploadBlock from "../components/UploadBlock";
+import DownloadFirstRowExcel from "../components/DownloadFirstRowExcel";
+
+
 import { extractReportData } from "../api";
-import { Search, RefreshCw, Plus, AlertCircle, Bell, Star } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 const CreateReport: React.FC = () => {
   const navigate = useNavigate();
@@ -565,6 +568,7 @@ const hasEmptyFields = (sheets: any[][][]): { hasEmpty: boolean; emptyFields: Em
             </div>
 
             <div className="flex items-center gap-3">
+              <DownloadFirstRowExcel filename="/Create.xlsx" />
               <button
                 onClick={() => {
                   setShowTables((s) => !s);

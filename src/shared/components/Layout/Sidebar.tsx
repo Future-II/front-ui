@@ -69,6 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     //     },
     //   ]
     // },
+
     
     {
       name: t('equipment.title') || 'تقارير المعدات',

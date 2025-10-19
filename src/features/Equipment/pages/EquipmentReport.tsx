@@ -5,6 +5,7 @@ import * as XLSX from "xlsx-js-style";
 
 import StepList from "../components/StepList";
 import UploadBlock from "../components/UploadBlock";
+import DownloadFirstRowExcel from "../components/DownloadFirstRowExcel";
 
 import { uploadAssetsToDB } from "../api";
 
@@ -398,6 +399,8 @@ const EquipmentReport: React.FC = () => {
   return (
     <div>
       <StepList steps={steps} activeStep={currentStep} />
+      <div className="mt-5" ></div>
+      <DownloadFirstRowExcel filename="/ID.xlsx" />
 
       <div className="mt-6 max-w-md mx-auto">
         {/* Step 1: File Selection */}
