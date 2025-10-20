@@ -5,7 +5,6 @@ import * as XLSX from "xlsx-js-style";
 import UploadBlock from "../components/UploadBlock";
 import DownloadFirstRowExcel from "../components/DownloadFirstRowExcel";
 
-
 import { extractReportData } from "../api";
 import { AlertCircle } from "lucide-react";
 
@@ -25,6 +24,21 @@ const CreateReport: React.FC = () => {
   const [errorsModalOpen, setErrorsModalOpen] = useState(false);
   const [excelErrors, setExcelErrors] = useState<{ sheetIdx: number; row: number; col: number; message: string }[]>([]);
   const [showValidationSuccess, setShowValidationSuccess] = useState(false);
+
+  // Required headers for each sheet
+  const requiredHeaders = {
+    0: [ // Sheet 1 - Report data
+      'title', 'purpose_id', 'value_premise_id', 'report_type', 'valued_at', 
+      'submitted_at', 'inspection_date', 'assumptions', 'special_assumptions', 
+      'value', 'client_name', 'owner_name', 'telephone', 'email', 'region', 'city'
+    ],
+    1: [ // Sheet 2 - Market assets
+      'asset_name', 'asset_usage_id', 'final_value'
+    ],
+    2: [ // Sheet 3 - Cost assets
+      'asset_name', 'asset_usage_id', 'final_value'
+    ]
+  };
 
   // --------------------------
   // Excel reading
@@ -69,113 +83,132 @@ const CreateReport: React.FC = () => {
   const allowedPurposeIds = [1, 2, 5, 6, 8, 9, 10, 12, 14];
   const allowedValuePremiseIds = [1, 2, 3, 4, 5];
 
-function rowLength(row: any[]) {
-  if (!row) return 0;
-  return row.length;
-}
-
-function validateDate(dateVal: any): boolean {
-  let day, month, year;
-  if (dateVal instanceof Date) {
-    day = dateVal.getDate();
-    month = dateVal.getMonth() + 1;
-    year = dateVal.getFullYear();
-  } else if (typeof dateVal === 'string') {
-    const parts = dateVal.split('/');
-    day = parseInt(parts[0], 10);
-    month = parseInt(parts[1], 10);
-    year = parseInt(parts[2], 10);
-  } else if (typeof dateVal === 'number') {
-    const date = new Date((dateVal - 25569) * 86400 * 1000);
-    day = date.getDate();
-    month = date.getMonth() + 1;
-    year = date.getFullYear();
-  } else {
-    return false;
+  function rowLength(row: any[]) {
+    if (!row) return 0;
+    return row.length;
   }
-  if (isNaN(day) || isNaN(month) || isNaN(year)) return false;
-  if (month < 1 || month > 12) return false;
-  if (day < 1 || day > 31) return false;
-  if (year < 1900 || year > 2100) return false;
-  return true;
-}
 
-function formatCellValue(val: any, headerName: string): string {
-  if (headerName === "valued_at" || headerName === "submitted_at" || headerName === "inspection_date") {
-    if (val instanceof Date) {
-      return val.toLocaleDateString('en-GB');
-    } else if (typeof val === 'number') {
-      const date = new Date((val - 25569) * 86400 * 1000);
-      return date.toLocaleDateString('en-GB');
-    } else if (typeof val === 'string') {
-      return val;
-    }
-  }
-  return String(val);
-}
-
-interface EmptyFieldInfo {
-  sheetIndex: number;
-  rowIndex: number;
-  colIndex: number;
-  columnName?: string;
-}
-
-const hasEmptyFields = (sheets: any[][][]): { hasEmpty: boolean; emptyFields: EmptyFieldInfo[] } => {
-  const emptyFields: EmptyFieldInfo[] = [];
-
-  for (let sheetIdx = 0; sheetIdx < 3; sheetIdx++) {
-    const sheet = sheets[sheetIdx];
-    if (!sheet || sheet.length < 2) continue;
-
-    if (sheetIdx === 0) {
-      // For sheet 1, only check the second row (data row)
-      const headerLength = rowLength(sheet[0]);
-      const row = sheet[1];
-      if (!row) continue;
-      const rowLen = rowLength(row);
-
-      for (let j = 0; j < headerLength; j++) {
-        const value = j < rowLen ? row[j] : undefined;
-
-        if (value === undefined || value === "") {
-          emptyFields.push({
-            sheetIndex: sheetIdx + 1,
-            rowIndex: 2,
-            colIndex: j + 1,
-            columnName: sheet[0][j] || `Column ${j + 1}`,
-          });
-        }
-      }
+  function validateDate(dateVal: any): boolean {
+    let day, month, year;
+    if (dateVal instanceof Date) {
+      day = dateVal.getDate();
+      month = dateVal.getMonth() + 1;
+      year = dateVal.getFullYear();
+    } else if (typeof dateVal === 'string') {
+      const parts = dateVal.split('/');
+      day = parseInt(parts[0], 10);
+      month = parseInt(parts[1], 10);
+      year = parseInt(parts[2], 10);
+    } else if (typeof dateVal === 'number') {
+      const date = new Date((dateVal - 25569) * 86400 * 1000);
+      day = date.getDate();
+      month = date.getMonth() + 1;
+      year = date.getFullYear();
     } else {
-      // For sheets 2 and 3, check all data rows up to maxCols
-      const maxCols = Math.max(...sheet.map(row => rowLength(row)));
+      return false;
+    }
+    if (isNaN(day) || isNaN(month) || isNaN(year)) return false;
+    if (month < 1 || month > 12) return false;
+    if (day < 1 || day > 31) return false;
+    if (year < 1900 || year > 2100) return false;
+    return true;
+  }
 
-      for (let i = 1; i < sheet.length; i++) {
-        const row = sheet[i];
+  function formatCellValue(val: any, headerName: string): string {
+    if (headerName === "valued_at" || headerName === "submitted_at" || headerName === "inspection_date") {
+      if (val instanceof Date) {
+        return val.toLocaleDateString('en-GB');
+      } else if (typeof val === 'number') {
+        const date = new Date((val - 25569) * 86400 * 1000);
+        return date.toLocaleDateString('en-GB');
+      } else if (typeof val === 'string') {
+        return val;
+      }
+    }
+    return String(val);
+  }
+
+  interface EmptyFieldInfo {
+    sheetIndex: number;
+    rowIndex: number;
+    colIndex: number;
+    columnName?: string;
+  }
+
+  // Check if all required headers are present in a sheet
+  const hasMissingRequiredHeaders = (sheet: any[][], sheetIdx: number): string[] => {
+    if (!sheet || sheet.length === 0) return requiredHeaders[sheetIdx as keyof typeof requiredHeaders] || [];
+    
+    const headers = sheet[0] || [];
+    const headerNames = headers.map((h: any) => h?.toString().trim().toLowerCase());
+    
+    const missingHeaders: string[] = [];
+    const requiredForSheet = requiredHeaders[sheetIdx as keyof typeof requiredHeaders] || [];
+    
+    requiredForSheet.forEach(requiredHeader => {
+      if (!headerNames.includes(requiredHeader.toLowerCase())) {
+        missingHeaders.push(requiredHeader);
+      }
+    });
+    
+    return missingHeaders;
+  };
+
+  const hasEmptyFields = (sheets: any[][][]): { hasEmpty: boolean; emptyFields: EmptyFieldInfo[] } => {
+    const emptyFields: EmptyFieldInfo[] = [];
+
+    for (let sheetIdx = 0; sheetIdx < 3; sheetIdx++) {
+      const sheet = sheets[sheetIdx];
+      if (!sheet || sheet.length < 2) continue;
+
+      if (sheetIdx === 0) {
+        // For sheet 1, only check the second row (data row)
+        const headerLength = rowLength(sheet[0]);
+        const row = sheet[1];
+        if (!row) continue;
         const rowLen = rowLength(row);
 
-        for (let j = 0; j < maxCols; j++) {
+        for (let j = 0; j < headerLength; j++) {
           const value = j < rowLen ? row[j] : undefined;
 
           if (value === undefined || value === "") {
             emptyFields.push({
               sheetIndex: sheetIdx + 1,
-              rowIndex: i + 1,
+              rowIndex: 2,
               colIndex: j + 1,
               columnName: sheet[0][j] || `Column ${j + 1}`,
             });
           }
         }
+      } else {
+        // For sheets 2 and 3, check all data rows up to maxCols
+        const maxCols = Math.max(...sheet.map(row => rowLength(row)));
+
+        for (let i = 1; i < sheet.length; i++) {
+          const row = sheet[i];
+          const rowLen = rowLength(row);
+
+          for (let j = 0; j < maxCols; j++) {
+            const value = j < rowLen ? row[j] : undefined;
+
+            if (value === undefined || value === "") {
+              emptyFields.push({
+                sheetIndex: sheetIdx + 1,
+                rowIndex: i + 1,
+                colIndex: j + 1,
+                columnName: sheet[0][j] || `Column ${j + 1}`,
+              });
+            }
+          }
+        }
       }
     }
-  }
 
-  return {
-    hasEmpty: emptyFields.length > 0,
-    emptyFields,
+    return {
+      hasEmpty: emptyFields.length > 0,
+      emptyFields,
+    };
   };
-};
 
   const hasFractionInFinalValue = (sheets: any[][][]) => {
     for (let sheetIdx = 1; sheetIdx <= 2; sheetIdx++) {
@@ -227,6 +260,22 @@ const hasEmptyFields = (sheets: any[][][]): { hasEmpty: boolean; emptyFields: Em
 
   const getExcelErrors = (sheets: any[][][]) => {
     const errors: { sheetIdx: number; row: number; col: number; message: string }[] = [];
+
+    // First, check for missing required headers in all sheets
+    for (let sheetIdx = 0; sheetIdx < 3; sheetIdx++) {
+      const sheet = sheets[sheetIdx];
+      if (!sheet || sheet.length === 0) continue;
+      
+      const missingHeaders = hasMissingRequiredHeaders(sheet, sheetIdx);
+      if (missingHeaders.length > 0) {
+        errors.push({
+          sheetIdx,
+          row: 0, // Header row
+          col: 0,
+          message: `العناوين المطلوبة مفقودة: ${missingHeaders.join(', ')}`
+        });
+      }
+    }
 
     for (let sheetIdx = 0; sheetIdx < 3; sheetIdx++) {
       const sheet = sheets[sheetIdx];
@@ -407,12 +456,26 @@ const hasEmptyFields = (sheets: any[][][]): { hasEmpty: boolean; emptyFields: Em
     return Number(reportValue) === assetsSum;
   }
 
+  // Check if all required headers are present in all sheets
+  const hasAllRequiredHeaders = (sheets: any[][][]) => {
+    if (sheets.length < 3) return false;
+    
+    for (let sheetIdx = 0; sheetIdx < 3; sheetIdx++) {
+      const missingHeaders = hasMissingRequiredHeaders(sheets[sheetIdx], sheetIdx);
+      if (missingHeaders.length > 0) {
+        return false;
+      }
+    }
+    return true;
+  };
+
   // derived / memoized values
   const finalValueSum = useMemo(() => getFinalValueSum(excelDataSheets), [excelDataSheets]);
   const isReportValueValid = useMemo(() => isReportValueEqualToAssetsSum(excelDataSheets, finalValueSum), [excelDataSheets, finalValueSum]);
 
   const isExcelValid =
     excelDataSheets.length > 0 &&
+    hasAllRequiredHeaders(excelDataSheets) &&
     !hasEmptyFields(excelDataSheets) &&
     !hasFractionInFinalValue(excelDataSheets) &&
     !hasInvalidPurposeId(excelDataSheets) &&
@@ -562,9 +625,6 @@ const hasEmptyFields = (sheets: any[][][]): { hasEmpty: boolean; emptyFields: Em
               <h1 className="text-3xl font-extrabold text-blue-700 tracking-tight flex items-center gap-3">
                 🎯 إنشاء تقرير جديد للأصول
               </h1>
-              {/* <p className="text-gray-600 mt-2 text-sm max-w-xl">
-                ارفع ملف الإكسل وملف الـ PDF ثم تحقق من الأخطاء قبل الحفظ. الجداول مخفية افتراضياً — اضغط على "إظهار الجداول" لعرضها.
-              </p> */}
             </div>
 
             <div className="flex items-center gap-3">
@@ -586,16 +646,6 @@ const hasEmptyFields = (sheets: any[][][]): { hasEmpty: boolean; emptyFields: Em
                 <AlertCircle className="h-4 w-4" />
                 <span className="text-sm font-medium">عرض الأخطاء ({excelErrors.length})</span>
               </button>
-{/* 
-              <button
-                onClick={() => setShowSuccess(false)}
-                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white px-4 py-2 rounded-xl shadow-md transition transform hover:-translate-y-0.5"
-                title="رفع ملف جديد / جديد"
-                onMouseDown={(e) => e.preventDefault()}
-              >
-                <Plus className="h-4 w-4" />
-                جديد
-              </button> */}
             </div>
           </div>
 
@@ -656,18 +706,6 @@ const hasEmptyFields = (sheets: any[][][]): { hasEmpty: boolean; emptyFields: Em
 
             {/* Error / Success summary (compact) */}
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* {!isExcelValid && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 shadow-inner">
-                  <div className="flex items-center gap-3">
-                    <AlertCircle className="h-5 w-5 text-red-600" />
-                    <div>
-                      <p className="font-semibold text-red-700">يوجد أخطاء في الملف</p>
-                      <p className="text-sm text-red-600">افتح قائمة الأخطاء لتفاصيل الموقع ونوع الخطأ</p>
-                    </div>
-                  </div>
-                </div>
-              )} */}
-
               {finalValueSum > 0 && (
                 <div className="bg-gradient-to-r from-green-50 to-white border border-green-200 rounded-lg p-3 shadow-inner">
                   <div className="flex items-center justify-between gap-3">
@@ -690,6 +728,22 @@ const hasEmptyFields = (sheets: any[][][]): { hasEmpty: boolean; emptyFields: Em
                     <div>
                       <p className="font-semibold text-green-700">الملف صالح</p>
                       <p className="text-sm text-gray-600">لا توجد أخطاء في الملف، جاهز للحفظ</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Show required headers info when there are header errors */}
+              {excelErrors.some(error => error.message.includes('العناوين المطلوبة')) && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 shadow-inner col-span-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">📋</span>
+                    <div>
+                      <p className="font-semibold text-yellow-700">العناوين المطلوبة</p>
+                      <div className="text-sm text-gray-600 mt-1">
+                        <p><strong>الشيت 1:</strong> {requiredHeaders[0].join(', ')}</p>
+                        <p><strong>الشيت 2 و 3:</strong> {requiredHeaders[1].join(', ')}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -785,8 +839,6 @@ const hasEmptyFields = (sheets: any[][][]): { hasEmpty: boolean; emptyFields: Em
           <button onClick={() => setShowSuccess(false)} className="mr-3 text-sm underline">إغلاق</button>
         </div>
       )}
-
-
 
       {/* Errors Modal */}
       {errorsModalOpen && (

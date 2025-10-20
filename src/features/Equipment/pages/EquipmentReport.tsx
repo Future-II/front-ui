@@ -39,6 +39,17 @@ const SuccessToast: React.FC<{ onClose: () => void; reportId: string }> = ({ onC
 const allowedPurposeIds = [1, 2, 5, 6, 8, 9, 10, 12, 14];
 const allowedValuePremiseIds = [1, 2, 3, 4, 5];
 
+// Required headings that must be present in both sheets
+const requiredHeadings = [
+  'asset_name',
+  'asset_usage_id', 
+  'final_value',
+  'inspection_date',
+  'owner_name',
+  'region',
+  'city'
+];
+
 function rowLength(row: any[]) {
   if (!row) return 0;
   return row.length;
@@ -70,13 +81,30 @@ function validateExcelDate(dateVal: any): boolean {
   return true;
 }
 
-
 interface EmptyFieldInfo {
   sheetIndex: number;
   rowIndex: number;
   colIndex: number;
   columnName?: string;
 }
+
+// Check if all required headings are present in a sheet
+const hasMissingRequiredHeadings = (sheet: any[][]): string[] => {
+  if (!sheet || sheet.length === 0) return requiredHeadings; // All are missing if no sheet
+  
+  const headers = sheet[0] || [];
+  const headerNames = headers.map((h: any) => h?.toString().trim().toLowerCase());
+  
+  const missingHeadings: string[] = [];
+  
+  requiredHeadings.forEach(requiredHeading => {
+    if (!headerNames.includes(requiredHeading.toLowerCase())) {
+      missingHeadings.push(requiredHeading);
+    }
+  });
+  
+  return missingHeadings;
+};
 
 const hasEmptyFields = (sheets: any[][][]): { hasEmpty: boolean; emptyFields: EmptyFieldInfo[] } => {
   const emptyFields: EmptyFieldInfo[] = [];
@@ -167,6 +195,22 @@ const hasInvalidValuePremiseId = (sheets: any[][][]) => {
 
 const getExcelErrors = (sheets: any[][][]) => {
   const errors: { sheetIdx: number; row: number; col: number; message: string }[] = [];
+
+  // First, check for missing required headings in both sheets
+  for (let sheetIdx = 0; sheetIdx < 2; sheetIdx++) {
+    const sheet = sheets[sheetIdx];
+    if (!sheet || sheet.length === 0) continue;
+    
+    const missingHeadings = hasMissingRequiredHeadings(sheet);
+    if (missingHeadings.length > 0) {
+      errors.push({
+        sheetIdx,
+        row: 0, // Header row
+        col: 0,
+        message: `العنوانات المطلوبة مفقودة: ${missingHeadings.join(', ')}`
+      });
+    }
+  }
 
   // Only validate the first two sheets (asset sheets)
   for (let sheetIdx = 0; sheetIdx < 2; sheetIdx++) {
@@ -267,6 +311,7 @@ const EquipmentReport: React.FC = () => {
   const [errorsModalOpen, setErrorsModalOpen] = useState(false);
   const [reportId, setReportId] = useState("");
   const [isFileValidated, setIsFileValidated] = useState(false);
+  const [hasValidated, setHasValidated] = useState(false); // Track if validation was attempted
 
   const steps = [
     { number: 1, label: `${t("equipment.steps.1.label")}` },
@@ -283,6 +328,7 @@ const EquipmentReport: React.FC = () => {
       setIsFileValidated(false);
       setShowValidationSuccess(false);
       setExcelErrors([]);
+      setHasValidated(false); // Reset validation state when new file is selected
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
@@ -307,6 +353,8 @@ const EquipmentReport: React.FC = () => {
     if (!excelFile) return;
     
     setIsValidating(true);
+    setHasValidated(true); // Mark that validation has been attempted
+    
     setTimeout(() => {
       const exErrors = getExcelErrors(excelDataSheets);
       setExcelErrors(exErrors);
@@ -321,7 +369,21 @@ const EquipmentReport: React.FC = () => {
     }, 1000);
   };
 
+  // Check if all required headings are present in both sheets
+  const hasAllRequiredHeadings = (sheets: any[][][]) => {
+    if (sheets.length < 2) return false;
+    
+    for (let sheetIdx = 0; sheetIdx < 2; sheetIdx++) {
+      const missingHeadings = hasMissingRequiredHeadings(sheets[sheetIdx]);
+      if (missingHeadings.length > 0) {
+        return false;
+      }
+    }
+    return true;
+  };
+
   const isExcelValid = excelDataSheets.length > 0 &&
+    hasAllRequiredHeadings(excelDataSheets) &&
     !hasEmptyFields(excelDataSheets).hasEmpty &&
     !hasFractionInFinalValue(excelDataSheets) &&
     !hasInvalidPurposeId(excelDataSheets) &&
@@ -419,6 +481,21 @@ const EquipmentReport: React.FC = () => {
                   Selected file: <span className="font-medium">{excelFile.name}</span>
                 </p>
                 
+                {/* Required Headings Info - Only show after validation attempt */}
+                {hasValidated && !showValidationSuccess && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">📋</span>
+                      <div>
+                        <p className="font-semibold text-blue-700">Required Headings</p>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {requiredHeadings.join(', ')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="flex justify-between items-center">
                   <button
                     onClick={handleValidateFile}
@@ -463,6 +540,21 @@ const EquipmentReport: React.FC = () => {
                     {excelError && (
                       <div className="text-center text-red-600 font-semibold">
                         {excelError}
+                      </div>
+                    )}
+
+                    {/* Show required headings info when there are heading errors */}
+                    {hasValidated && excelErrors.some(error => error.message.includes('العنوانات المطلوبة')) && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">⚠️</span>
+                          <div>
+                            <p className="font-semibold text-yellow-700">Missing Required Headings</p>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Please ensure your Excel file contains all required columns: {requiredHeadings.join(', ')}
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
