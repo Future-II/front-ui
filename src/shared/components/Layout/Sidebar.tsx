@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BarChart, FileText, Settings, Home, ChevronRight, ChevronDown, HelpCircle,Building2  } from 'lucide-react';
+import { BarChart, FileText, Settings, Home, ChevronRight, ChevronDown, HelpCircle  } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../../hooks/useLanguage';
 
@@ -30,47 +30,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const isAdmin = user?.email === "admin.tickets@gmail.com";
   const isSuperAdmin = user?.email === "super.admin@gmail.com";
+  const excelUser = user?.email === "dexcel@gmail.com";
 
-  const menuItems: MenuItem[] = [
-    // {
-    //   name: t('home.title') || 'الرئيسية',
-    //   path: '/',
-    //   icon: <Home className="h-5 w-5" />
-    // },
-    // {
-    //   name: t('reports.title') || 'تقارير المعدات',
-    //   path: '/reports',
-    //   icon: <Building2 className="h-5 w-5" />,
-    //   subItems: [
-    //     {
-    //       name: t('reports.mekyas') || 'تقارير مقياس',
-    //       path: '/reports/mekyas'
-    //     },
-    //     {
-    //       name:  "jadeer reports",
-    //       path: '/reports/jadeer'
-    //     },
-    //     {
-    //       name: t('reports.manual') || 'تقارير مقياس',
-    //       path: '/reports/manual'
-    //     },
-        
-    //     {
-    //       name: t('reports.view') || 'عرض التقارير',
-    //       path: '/reports/view'
-    //     },
-    //     {
-    //       name: "Manual Report and Send Upload",
-    //       path: "/reports/newManual"
-    //     },
-    //     {
-    //       name: t('reports.noqra') || 'تقارير نقرة',
-    //       path: '/reports/noqra'
-    //     },
-    //   ]
-    // },
+  console.log("user", user);
 
-    
+  // For excelUser, only show Show Excel menu
+  const excelUserMenuItems: MenuItem[] = [
+    {
+      name: "Show Excel",
+      path: "/equipment/showExcel",
+      icon: <FileText className="h-5 w-5" />
+    }
+  ];
+
+  const regularMenuItems: MenuItem[] = [
     {
       name: t('equipment.title') || 'تقارير المعدات',
       path: '/equipment',
@@ -84,10 +57,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
           name: 'Manual Creation',
           path: '/equipment/manualEquipReport'
         },
-        // {
-        //   name: t('equipment.tab2') || 'جميع التقارير',
-        //   path: '/equipment/allReports'
-        // },
         {
           name: "Create Report Excel",
           path: "/equipment/createReport"
@@ -95,6 +64,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         {
           name: "View Reports",
           path: "/equipment/viewReports"
+        },
+        {
+          name: "Show Excel",
+          path: "/equipment/showExcel"
         }
       ]
     },
@@ -103,11 +76,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       path: '/dashboard',
       icon: <BarChart className="h-5 w-5" />
     }] : []),
-    // {
-    //   name: t('settings.title') || 'إعدادات المستخدم',
-    //   path: '/settings',
-    //   icon: <Settings className="h-5 w-5" />
-    // },
     {
       name: t('support.title') || 'المساعدة والدعم',
       path: '/support',
@@ -124,6 +92,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       icon: <FileText className="h-5 w-5" />
     }] : [])
   ];
+
+  // Use excelUser menu if user is excelUser, otherwise use regular menu
+  const menuItems = excelUser ? excelUserMenuItems : regularMenuItems;
 
   const isActive = (path: string) => location.pathname === path;
   const isSubActive = (path: string) => {

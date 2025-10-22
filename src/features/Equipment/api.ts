@@ -53,6 +53,16 @@ export const uploadAssetsToDB = async (reportId: string, excelFile: File) => {
   }
 };
 
+export const getReportById = async (id: string) => {
+  try {
+    const response = await api.get(`/reports/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error getting report by id:", error);
+    throw new Error("Error getting report by id");
+  }
+};
+
 export const withFormUploadHalfReportToDB = async (formData: any, excelFile: File, pdfFiles: File[]) => {
   const formData2 = new FormData();
   formData2.append("formData", JSON.stringify(formData));
@@ -99,6 +109,16 @@ export const getReportsData = async () => {
   } catch (error) {
     console.error("Error getting reports data:", error);
     throw new Error("Error getting reports data");
+  }
+};
+
+export const checkHalfReport = async (reportId: string) => {
+  try {
+    const response = await api.post("/scripts/equip/checkReport", { id: reportId });
+    return response.data;
+  } catch (error) {
+    console.error("Error checking half report:", error);
+    throw new Error("Error checking half report");
   }
 };
 

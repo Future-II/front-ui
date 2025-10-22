@@ -17,6 +17,7 @@ import ReportForm from './features/Reports/pages/ReportForm';
 import ManualEquipmentReportUpload from './features/Equipment/pages/ManualEquipReportUpload';
 import AllReports from './features/Equipment/pages/AllReports';
 import CreateReport from './features/Equipment/pages/CreateReport';
+import ShowExcel from './features/Equipment/pages/ShowExcel';
 import ViewEquipmentReports from './features/Equipment/pages/ViewReports';
 import AllTicketsPage from "./features/Support/pages/AllTicketsPage";
 import { UnreadMessagesProvider } from "./features/Support/context/UnreadMessagesContext";
@@ -63,6 +64,7 @@ export function App() {
                     <Route path='/equipment/manualEquipReport' element={<ManualEquipmentReportUpload />} />
                     <Route path='/equipment/allReports' element={<AllReports />} />
                     <Route path='/equipment/viewReports' element={<ViewEquipmentReports />} />
+                    <Route path='/equipment/showExcel' element={<ShowExcel />} />
 
                     <Route path="/auth/mekyas" element={<MekyasLogin />} />
                   </Routes>
