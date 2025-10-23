@@ -420,7 +420,6 @@ const ViewEquipmentReports: React.FC = () => {
                                             </span>
                                         )}
 
-
                                         {/* 👇 Add start/end submit time capsules here */}
 
                                         {report._id === newestReportId && incompleteCount === report.asset_data.length && (
@@ -475,8 +474,8 @@ const ViewEquipmentReports: React.FC = () => {
 
                                     <button
                                         onClick={e => { e.stopPropagation(); handleSubmit(report._id); }}
-                                        disabled={!loggedIn || !!report.endSubmitTime || !!progressState}
-                                        className={`px-4 py-2 font-semibold rounded-lg transition ${(!loggedIn || !!report.endSubmitTime || !!progressState)
+                                        disabled={!loggedIn || !!progressState}
+                                        className={`px-4 py-2 font-semibold rounded-lg transition ${(!loggedIn || !!progressState)
                                             ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
                                             : 'bg-blue-400 text-white hover:bg-blue-500'
                                             }`}
@@ -486,8 +485,8 @@ const ViewEquipmentReports: React.FC = () => {
 
                                     <button
                                         onClick={e => { e.stopPropagation(); handleRetry(report._id); }}
-                                        disabled={!loggedIn || !report.endSubmitTime || incompleteCount === 0 || !!progressState}
-                                        className={`p-2 rounded-lg transition ${(!loggedIn || !report.endSubmitTime || incompleteCount === 0 || !!progressState)
+                                        disabled={!loggedIn || !!progressState}
+                                        className={`p-2 rounded-lg transition ${(!loggedIn || !!progressState)
                                             ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                                             : "bg-blue-400 text-white hover:bg-blue-500"
                                             }`}
@@ -498,8 +497,8 @@ const ViewEquipmentReports: React.FC = () => {
 
                                     <button
                                         onClick={e => { e.stopPropagation(); handleCheck(report._id); }}
-                                        disabled={!loggedIn || !report.endSubmitTime || !!progressState}
-                                        className={`p-2 rounded-lg transition ${(!loggedIn || !report.endSubmitTime || !!progressState)
+                                        disabled={!loggedIn || !!progressState}
+                                        className={`p-2 rounded-lg transition ${(!loggedIn || !!progressState)
                                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                             : 'bg-green-300 hover:bg-green-400'
                                             }`}
