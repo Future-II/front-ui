@@ -77,7 +77,6 @@ const ViewEquipmentReports: React.FC = () => {
     const [reports, setReports] = useState<Report[]>([]);
     const [openReports, setOpenReports] = useState<Record<string, boolean>>({});
     const [showLoginModal, setShowLoginModal] = useState(false);
-    // const [progressStates, setProgressStates] = useState<Record<string, ProgressState>>({});
     const [newestReportId, setNewestReportId] = useState<string | null>(null);
     const [tabsNum, setTabsNum] = useState(3);
     const { progressStates, dispatch } = useProgress();

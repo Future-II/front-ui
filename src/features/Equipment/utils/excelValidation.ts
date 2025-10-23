@@ -13,30 +13,54 @@ export function rowLength(row: any[]): number {
 }
 
 export function validateDate(dateVal: any): boolean {
-  let day: number, month: number, year: number;
-  
+  let day, month, year;
+  console.log("show", dateVal);
+
   if (dateVal instanceof Date) {
     day = dateVal.getDate();
     month = dateVal.getMonth() + 1;
     year = dateVal.getFullYear();
   } else if (typeof dateVal === 'string') {
-    const parts = dateVal.split('/');
-    day = parseInt(parts[0], 10);
-    month = parseInt(parts[1], 10);
+    const s = dateVal.trim();
+
+    // ✅ Require strictly MM/DD/YYYY format (two digits for month/day, four for year)
+    const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+    if (!regex.test(s)) {
+      console.error(`❌ Date should be in MM/DD/YYYY format: "${s}"`);
+      return false;
+    }
+
+    const parts = s.split('/');
+    month = parseInt(parts[0], 10);
+    day = parseInt(parts[1], 10);
     year = parseInt(parts[2], 10);
+
+    // 🔍 Validate logical range for month/day
+    if (month < 1 || month > 12) {
+      console.error(`❌ Invalid month in date "${s}". Expected MM/DD/YYYY.`);
+      return false;
+    }
+
+    if (day < 1 || day > 31) {
+      console.error(`❌ Invalid day in date "${s}". Expected MM/DD/YYYY.`);
+      return false;
+    }
   } else if (typeof dateVal === 'number') {
+    // Excel date number conversion
     const date = new Date((dateVal - 25569) * 86400 * 1000);
     day = date.getDate();
     month = date.getMonth() + 1;
     year = date.getFullYear();
+    console.log("date", date);
   } else {
     return false;
   }
-  
+
   if (isNaN(day) || isNaN(month) || isNaN(year)) return false;
   if (month < 1 || month > 12) return false;
   if (day < 1 || day > 31) return false;
   if (year < 1900 || year > 2100) return false;
+
   return true;
 }
 

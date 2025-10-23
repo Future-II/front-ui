@@ -112,6 +112,90 @@ export const getReportsData = async () => {
   }
 };
 
+
+// ============ Excel Data Management APIs ============
+
+export const uploadExcelData = async (excelFile: File) => {
+  const formData = new FormData();
+  formData.append("excelFile", excelFile);
+
+  try {
+    const response = await api.post("/excel-data/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading Excel data:", error);
+    throw new Error("Error uploading Excel data");
+  }
+};
+
+export const getAllExcelData = async (page = 1, limit = 10, sort = '-createdAt') => {
+  try {
+    const response = await api.get("/excel-data/records", {
+      params: { page, limit, sort }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error getting Excel data:", error);
+    throw new Error("Error getting Excel data");
+  }
+};
+
+export const getExcelDataSummary = async () => {
+  try {
+    const response = await api.get("/excel-data/records/summary");
+    return response.data;
+  } catch (error) {
+    console.error("Error getting Excel data summary:", error);
+    throw new Error("Error getting Excel data summary");
+  }
+};
+
+export const getExcelDataById = async (id: string) => {
+  try {
+    const response = await api.get(`/excel-data/records/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error getting Excel data by ID:", error);
+    throw new Error("Error getting Excel data by ID");
+  }
+};
+
+export const downloadExcelFile = async (id: string) => {
+  try {
+    const response = await api.get(`/excel-data/download/${id}`, {
+      responseType: 'blob' // Important for file downloads
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error downloading Excel file:", error);
+    throw new Error("Error downloading Excel file");
+  }
+};
+
+export const deleteExcelData = async (id: string) => {
+  try {
+    const response = await api.delete(`/excel-data/records/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting Excel data:", error);
+    throw new Error("Error deleting Excel data");
+  }
+};
+
+export const toggleExcelChecked = async (id: string) => {
+  try {
+    const response = await api.patch(`/excel-data/toggle-checked/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error toggling check status:", error);
+    throw new Error("Error toggling check status");
+  }
+};
+
 export const checkHalfReport = async (reportId: string) => {
   try {
     const response = await api.post("/scripts/equip/checkReport", { id: reportId });

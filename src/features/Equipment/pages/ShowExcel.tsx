@@ -1,6 +1,10 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { extractReportData, getReportsData, checkHalfReport } from "../api";
-import * as XLSX from "xlsx-js-style";
+import { 
+  uploadExcelData, 
+  getAllExcelData, 
+  toggleExcelChecked,
+  downloadExcelFile 
+} from "../api"; // Update import path
 import { Download, Upload, AlertCircle, CheckCircle, CheckSquare, Square } from "lucide-react";
 
 interface AssetData {
@@ -37,6 +41,8 @@ interface ReportData {
   asset_data?: AssetData[];
   createdAt: string;
   checked?: boolean;
+  market_count: number;
+  cost_count: number;
 }
 
 const ShowExcel: React.FC = () => {
@@ -48,11 +54,12 @@ const ShowExcel: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [updatingCheck, setUpdatingCheck] = useState<string | null>(null);
 
-  // Fetch reports on component mount
+  // Fetch reports on component mount - UPDATED
   const fetchReports = async () => {
     try {
       setLoading(true);
-      const data: ReportData[] = await getReportsData();
+      const response = await getAllExcelData();
+      const data: ReportData[] = response.data || [];
       const sortedReports = data.sort((a, b) => {
         const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
         const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -71,44 +78,44 @@ const ShowExcel: React.FC = () => {
     fetchReports();
   }, []);
 
-  // Handle checkbox toggle - improved version
-// In your React component - improved version
-const handleCheckToggle = async (_id: string, currentChecked: boolean) => {
-  const previousReports = reports; // Store for rollback
-  
-  try {
-    setUpdatingCheck(_id);
+  // Handle checkbox toggle - UPDATED
+  const handleCheckToggle = async (_id: string, currentChecked: boolean) => {
+    const previousReports = reports;
     
-    // Optimistically update the UI
-    setReports(prev => prev.map(report => 
-      report._id === _id 
-        ? { ...report, checked: !currentChecked }
-        : report
-    ));
+    try {
+      setUpdatingCheck(_id);
+      
+      // Optimistically update the UI
+      setReports(prev => prev.map(report => 
+        report._id === _id 
+          ? { ...report, checked: !currentChecked }
+          : report
+      ));
 
-    // Make the API call
-    const response = await checkHalfReport(_id);
-    
-    if (!response.success) {
-      throw new Error(response.error || 'Failed to update check status');
+      // Make the API call to the new endpoint
+      const response = await toggleExcelChecked(_id);
+      
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to update check status');
+      }
+      
+      // Success - no need to refetch, optimistic update is correct
+      
+    } catch (err) {
+      console.error("Error updating check status:", err);
+      setError("Failed to update check status");
+      
+      // Revert to previous state on error
+      setReports(previousReports);
+      
+      // Clear error after 3 seconds
+      setTimeout(() => setError(""), 3000);
+    } finally {
+      setUpdatingCheck(null);
     }
-    
-    // Success - no need to refetch, optimistic update is correct
-    
-  } catch (err) {
-    console.error("Error updating check status:", err);
-    setError("Failed to update check status");
-    
-    // Revert to previous state on error
-    setReports(previousReports);
-    
-    // Clear error after 3 seconds
-    setTimeout(() => setError(""), 3000);
-  } finally {
-    setUpdatingCheck(null);
-  }
-};
-  // Handle Excel file upload
+  };
+
+  // Handle Excel file upload - UPDATED
   const handleExcelUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files[0]) {
@@ -118,7 +125,7 @@ const handleCheckToggle = async (_id: string, currentChecked: boolean) => {
     }
   };
 
-  // Process the Excel file using existing API
+  // Process the Excel file using NEW API - UPDATED
   const processExcelFile = async () => {
     if (!excelFile) {
       setError("Please select an Excel file first");
@@ -130,295 +137,62 @@ const handleCheckToggle = async (_id: string, currentChecked: boolean) => {
     setSuccess(false);
 
     try {
-      const response: any = await extractReportData(excelFile, []);
+      const response = await uploadExcelData(excelFile);
       console.log('API Response:', response);
       
-      if (response?.status === "FAILED" && response.error) {
-        setError(response.error);
-        return;
-      }
-
-      if (response?.data) {
-        // The main data is in response.data
-        const processedData = processResponseData(response.data);
+      if (response?.success) {
         const newReport: ReportData = {
-          ...processedData,
-          _id: Date.now().toString(),
-          createdAt: new Date().toISOString(),
-          checked: false // Default to unchecked for new reports
+          ...response.data,
+          _id: response.data.id,
+          createdAt: response.data.created_at || new Date().toISOString(),
+          checked: false
         };
         
         // Add to the beginning of the array for newest first
         setReports(prev => [newReport, ...prev]);
         setSuccess(true);
-        setExcelFile(null); // Reset file input
+        setExcelFile(null);
         
         // Refresh the reports list to get the latest from the server
         await fetchReports();
       } else {
-        setError("No data found in response");
+        setError(response?.message || "Failed to upload Excel file");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error processing Excel:", err);
-      setError("An error occurred while processing the file. Please try again.");
+      setError(err.message || "An error occurred while processing the file. Please try again.");
     } finally {
       setUploading(false);
     }
   };
 
-  // Process the response data structure
-  const processResponseData = (data: any): Omit<ReportData, '_id' | 'createdAt' | 'checked'> => {
-    console.log('Processing data:', data);
-    
-    // Extract report info and asset data
-    const reportInfo: Omit<ReportData, '_id' | 'createdAt' | 'checked'> = {
-      title: data.title,
-      purpose_id: data.purpose_id,
-      value_premise_id: data.value_premise_id,
-      report_type: data.report_type,
-      valued_at: data.valued_at,
-      submitted_at: data.submitted_at,
-      inspection_date: data.inspection_date,
-      assumptions: data.assumptions,
-      special_assumptions: data.special_assumptions,
-      value: data.value,
-      client_name: data.client_name,
-      owner_name: data.owner_name,
-      telephone: data.telephone,
-      email: data.email,
-      region: data.region,
-      city: data.city,
-      asset_count: data.asset_count,
-      asset_data: data.asset_data || []
-    };
-
-    // If region and city are not in the main data but are in asset_data, extract from first asset
-    if ((!reportInfo.region || !reportInfo.city) && data.asset_data && data.asset_data.length > 0) {
-      const firstAsset = data.asset_data[0];
-      if (!reportInfo.region && firstAsset.region) {
-        reportInfo.region = firstAsset.region;
-      }
-      if (!reportInfo.city && firstAsset.city) {
-        reportInfo.city = firstAsset.city;
-      }
-    }
-
-    return reportInfo;
-  };
-
-  // Convert individual report data back to Excel
-  const downloadReportAsExcel = useCallback((report: ReportData) => {
+  // Convert individual report data back to Excel - UPDATED DOWNLOAD
+  const downloadReportAsExcel = useCallback(async (report: ReportData) => {
     try {
-      const workbook = XLSX.utils.book_new();
-
-      // Sheet 1: Report Information
-      const reportInfoSheet = createReportInfoSheet(report);
-      XLSX.utils.book_append_sheet(workbook, reportInfoSheet, "report_info");
-
-      // Sheet 2: Market Approach Assets
-      const marketAssets = report.asset_data?.filter(asset => 
-        asset.market_approach === 1 || asset.market_approach === "1"
-      ) || [];
+      // Use the new download endpoint
+      const blob = await downloadExcelFile(report._id);
       
-      if (marketAssets.length > 0) {
-        const marketSheet = createAssetSheet(marketAssets);
-        XLSX.utils.book_append_sheet(workbook, marketSheet, "market_assets");
-      }
-
-      // Sheet 3: Cost Approach Assets
-      const costAssets = report.asset_data?.filter(asset => 
-        asset.cost_approach === 1 || asset.cost_approach === "1"
-      ) || [];
+      // Create a download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
       
-      if (costAssets.length > 0) {
-        const costSheet = createAssetSheet(costAssets);
-        XLSX.utils.book_append_sheet(workbook, costSheet, "cost_assets");
-      }
-
-      // Generate filename
-      const title = report.title || "asset_report";
-      const timestamp = new Date().toISOString().split('T')[0];
-      const filename = `${title}_${timestamp}.xlsx`;
-
-      // Download the file
-      XLSX.writeFile(workbook, filename);
+      // Set filename
+      const filename = `${report.title || 'download'}.xlsx`;
+      link.setAttribute('download', filename);
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
       
       setError("");
     } catch (err) {
-      console.error("Error generating Excel:", err);
-      setError("An error occurred while creating Excel file");
+      console.error("Error downloading Excel:", err);
+      setError("An error occurred while downloading the file");
     }
   }, []);
-
-  // Create Report Info sheet with proper header layout
-  const createReportInfoSheet = (data: ReportData) => {
-    const reportFields = [
-      { field: "title", value: data.title },
-      { field: "purpose_id", value: data.purpose_id },
-      { field: "value_premise_id", value: data.value_premise_id },
-      { field: "report_type", value: data.report_type },
-      { field: "valued_at", value: data.valued_at },
-      { field: "submitted_at", value: data.submitted_at },
-      { field: "inspection_date", value: data.inspection_date },
-      { field: "assumptions", value: data.assumptions },
-      { field: "special_assumptions", value: data.special_assumptions },
-      { field: "value", value: data.value },
-      { field: "client_name", value: data.client_name },
-      { field: "owner_name", value: data.owner_name },
-      { field: "telephone", value: data.telephone },
-      { field: "email", value: data.email },
-      { field: "region", value: data.asset_data?.[0]?.region},
-      { field: "city", value: data.asset_data?.[0]?.city },
-      { field: "asset_count", value: data.asset_count },
-    ];
-
-    // Filter out undefined/null values and create headers and single data row
-    const validFields = reportFields.filter(field => field.value !== undefined && field.value !== null);
-    
-    // Create headers (field names)
-    const headers = validFields.map(field => field.field);
-    
-    // Create single data row with values
-    const dataRow = validFields.map(field => field.value);
-
-    const sheetData = [headers, dataRow];
-    const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
-    applyReportInfoStyles(worksheet, headers.length, 2);
-
-    return worksheet;
-  };
-
-  // Create Asset sheet with original field names (no approach_type)
-  const createAssetSheet = (assets: AssetData[]) => {
-    if (!assets || assets.length === 0) {
-      return XLSX.utils.aoa_to_sheet([["No data available"]]);
-    }
-
-    // Use original field names as headers (without approach_type)
-    const headers = ["asset_name", "asset_usage_id", "final_value"];
-    const rows = assets.map(asset => [
-      asset.asset_name,
-      asset.asset_usage_id,
-      asset.final_value
-    ]);
-
-    const sheetData = [headers, ...rows];
-    const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
-    applyAssetSheetStyles(worksheet, headers.length, assets.length + 1);
-
-    return worksheet;
-  };
-
-  // Apply styles to report info sheet (same as asset sheets)
-  const applyReportInfoStyles = (worksheet: XLSX.WorkSheet, colCount: number, rowCount: number) => {
-    // Style header row
-    for (let col = 0; col < colCount; col++) {
-      const cellRef = XLSX.utils.encode_cell({ r: 0, c: col });
-      if (worksheet[cellRef]) {
-        worksheet[cellRef].s = {
-          fill: { fgColor: { rgb: "2E5BFF" } },
-          font: { bold: true, color: { rgb: "FFFFFF" } },
-          alignment: { horizontal: "center", vertical: "center" },
-          border: {
-            top: { style: "thin", color: { rgb: "1E40AF" } },
-            left: { style: "thin", color: { rgb: "1E40AF" } },
-            bottom: { style: "thin", color: { rgb: "1E40AF" } },
-            right: { style: "thin", color: { rgb: "1E40AF" } }
-          }
-        };
-      }
-    }
-
-    // Style data rows
-    for (let row = 1; row < rowCount; row++) {
-      for (let col = 0; col < colCount; col++) {
-        const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
-        if (worksheet[cellRef]) {
-          worksheet[cellRef].s = {
-            font: { name: "Arial", sz: 11 },
-            alignment: { horizontal: "left", vertical: "center" },
-            border: {
-              top: { style: "thin", color: { rgb: "E5E7EB" } },
-              left: { style: "thin", color: { rgb: "E5E7EB" } },
-              bottom: { style: "thin", color: { rgb: "E5E7EB" } },
-              right: { style: "thin", color: { rgb: "E5E7EB" } }
-            }
-          };
-
-          // Add background color to alternate rows
-          if (row % 2 === 0) {
-            worksheet[cellRef].s.fill = { fgColor: { rgb: "F8FAFC" } };
-          }
-        }
-      }
-    }
-
-    worksheet['!cols'] = Array(colCount).fill(null).map(() => ({ width: 20 }));
-  };
-
-  // Apply styles to asset sheets
-  const applyAssetSheetStyles = (worksheet: XLSX.WorkSheet, colCount: number, rowCount: number) => {
-    // Style header row
-    for (let col = 0; col < colCount; col++) {
-      const cellRef = XLSX.utils.encode_cell({ r: 0, c: col });
-      if (worksheet[cellRef]) {
-        worksheet[cellRef].s = {
-          fill: { fgColor: { rgb: "059669" } },
-          font: { bold: true, color: { rgb: "FFFFFF" } },
-          alignment: { horizontal: "center", vertical: "center" },
-          border: {
-            top: { style: "thin", color: { rgb: "047857" } },
-            left: { style: "thin", color: { rgb: "047857" } },
-            bottom: { style: "thin", color: { rgb: "047857" } },
-            right: { style: "thin", color: { rgb: "047857" } }
-          }
-        };
-      }
-    }
-
-    // Style data rows
-    for (let row = 1; row < rowCount; row++) {
-      for (let col = 0; col < colCount; col++) {
-        const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
-        if (worksheet[cellRef]) {
-          worksheet[cellRef].s = {
-            font: { name: "Arial", sz: 11 },
-            alignment: { horizontal: "left", vertical: "center" },
-            border: {
-              top: { style: "thin", color: { rgb: "E5E7EB" } },
-              left: { style: "thin", color: { rgb: "E5E7EB" } },
-              bottom: { style: "thin", color: { rgb: "E5E7EB" } },
-              right: { style: "thin", color: { rgb: "E5E7EB" } }
-            }
-          };
-
-          // Add background color to alternate rows
-          if (row % 2 === 0) {
-            worksheet[cellRef].s.fill = { fgColor: { rgb: "F8FAFC" } };
-          }
-        }
-      }
-    }
-
-    worksheet['!cols'] = Array(colCount).fill(null).map(() => ({ width: 20 }));
-  };
-
-  // Calculate asset counts for a report
-  const getAssetCounts = (report: ReportData) => {
-    const marketAssets = report.asset_data?.filter(asset => 
-      asset.market_approach === 1 || asset.market_approach === "1"
-    ) || [];
-
-    const costAssets = report.asset_data?.filter(asset => 
-      asset.cost_approach === 1 || asset.cost_approach === "1"
-    ) || [];
-
-    return {
-      total: marketAssets.length + costAssets.length,
-      market: marketAssets.length,
-      cost: costAssets.length
-    };
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
@@ -518,9 +292,6 @@ const handleCheckToggle = async (_id: string, currentChecked: boolean) => {
                       Report Title
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Client
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Assets
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -533,7 +304,6 @@ const handleCheckToggle = async (_id: string, currentChecked: boolean) => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {reports.map((report) => {
-                    const assetCounts = getAssetCounts(report);
                     const isUpdating = updatingCheck === report._id;
                     
                     return (
@@ -565,14 +335,9 @@ const handleCheckToggle = async (_id: string, currentChecked: boolean) => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            {report.client_name || "-"}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            <div>Total: {assetCounts.total}</div>
+                            <div>Total: {report.market_count + report.cost_count}</div>
                             <div className="text-xs text-gray-500">
-                              Market: {assetCounts.market} | Cost: {assetCounts.cost}
+                              Market: {report.market_count} | Cost: {report.cost_count}
                             </div>
                           </div>
                         </td>

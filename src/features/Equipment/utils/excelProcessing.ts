@@ -9,7 +9,7 @@ export function handleExcelFile(file: File, onSuccess: (sheetsData: any[][][]) =
       const workbook = XLSX.read(data, { type: "array" });
       const sheetsData: any[][][] = workbook.SheetNames.map((sheetName) => {
         const worksheet = workbook.Sheets[sheetName];
-        return XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: undefined });
+        return XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: undefined, blankrows: false });
       });
       onSuccess(sheetsData);
     } catch (err) {
