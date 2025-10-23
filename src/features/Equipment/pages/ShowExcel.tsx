@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { extractReportData, getReportsData, checkHalfReport } from "../api";
 import * as XLSX from "xlsx-js-style";
-import { Download, Upload, AlertCircle, CheckCircle, Trash2, CheckSquare, Square } from "lucide-react";
+import { Download, Upload, AlertCircle, CheckCircle, CheckSquare, Square } from "lucide-react";
 
 interface AssetData {
   asset_name: string;
@@ -9,6 +9,8 @@ interface AssetData {
   final_value: number;
   market_approach?: string | number;
   cost_approach?: string | number;
+  region?: string;
+  city?: string;
 }
 
 interface ReportData {
@@ -265,8 +267,8 @@ const handleCheckToggle = async (_id: string, currentChecked: boolean) => {
       { field: "owner_name", value: data.owner_name },
       { field: "telephone", value: data.telephone },
       { field: "email", value: data.email },
-      { field: "region", value: data.region },
-      { field: "city", value: data.city },
+      { field: "region", value: data.asset_data?.[0]?.region},
+      { field: "city", value: data.asset_data?.[0]?.city },
       { field: "asset_count", value: data.asset_count },
     ];
 
