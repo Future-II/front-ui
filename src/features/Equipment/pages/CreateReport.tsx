@@ -54,7 +54,7 @@ const CreateReport: React.FC = () => {
           const workbook = XLSX.read(data, { type: "array" });
           const sheetsData: any[][][] = workbook.SheetNames.map((sheetName) => {
             const worksheet = workbook.Sheets[sheetName];
-            return XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: undefined , blankrows: false});
+            return XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: undefined });
           });
           setExcelDataSheets(sheetsData);
           setExcelError("");
@@ -191,7 +191,7 @@ const CreateReport: React.FC = () => {
           for (let j = 0; j < maxCols; j++) {
             const value = j < rowLen ? row[j] : undefined;
 
-            if (value === undefined || value === " ") {
+            if (value === undefined || value === "") {
               emptyFields.push({
                 sheetIndex: sheetIdx + 1,
                 rowIndex: i + 1,
@@ -210,13 +210,6 @@ const CreateReport: React.FC = () => {
     };
   };
 
-
-
-
-
-
-
-  
   const hasFractionInFinalValue = (sheets: any[][][]) => {
     for (let sheetIdx = 1; sheetIdx <= 2; sheetIdx++) {
       const sheet = sheets[sheetIdx];
