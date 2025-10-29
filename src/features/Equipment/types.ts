@@ -25,6 +25,7 @@ export interface Asset {
     asset_type: string;
     owner_name: string;
     submitState: number;
+    id: number;
 }
 
 export interface Report {

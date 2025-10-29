@@ -59,12 +59,17 @@ const AssetList: React.FC<AssetListProps> = ({ assets }) => {
             </div>
 
             {filteredAssets.map(asset => (
-                <div key={asset._id} className="flex justify-between items-center rounded-lg p-3 border border-gray-100 bg-gray-50 transition">
-                    <div>
+                <div key={asset.id} className="flex justify-between items-center rounded-lg p-3 border border-gray-100 bg-gray-50 transition">
+                    <div className="flex-1">
                         <p className="font-medium text-gray-800">{asset.asset_name}</p>
                         <p className="text-sm text-gray-500">
                             {asset.final_value} • {asset.owner_name}
                         </p>
+                        {asset.id && (
+                            <p className="text-xs text-gray-400 mt-1">
+                                ID: {asset.id}
+                            </p>
+                        )}
                     </div>
                     <span className={`px-2 py-1 text-xs rounded-full ${asset.submitState === 1
                         ? "bg-green-100 text-green-700"
