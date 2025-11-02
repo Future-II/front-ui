@@ -35,6 +35,16 @@ export const getAllAssets = async () => {
   }
 };
 
+export const deleteReport = async (reportId: string) => {
+  try {
+    const response = await api.delete(`scripts/equip/report/${reportId}`)
+    return response;
+  }catch(e){
+    console.log("error handling delete report: ", e);
+    throw new Error("Error deleting report");
+  }
+}
+
 export const uploadAssetsToDB = async (reportId: string, excelFile: File) => {
   const formData = new FormData();
   formData.append("reportId", reportId);
@@ -102,9 +112,13 @@ export const checkAssets = async (reportId: string) => {
   }
 };
 
-export const getReportsData = async () => {
+export const getReportsData = async (page = 1, limit = 10) => {
   try {
-    const response = await api.get("/scripts/equip/reports");
+    console.log('API call - page:', page, 'limit:', limit); // Debug
+    const response = await api.get("/scripts/equip/reports", {
+      params: { page, limit }
+    });
+    console.log('API response:', response.data); // Debug - check structure
     return response.data;
   } catch (error) {
     console.error("Error getting reports data:", error);

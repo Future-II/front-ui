@@ -1,5 +1,5 @@
-import React from 'react';
-import { RefreshCcw, CheckCircle, Pause, Play } from 'lucide-react';
+import React, { useState } from 'react';
+import { RefreshCcw, CheckCircle, Pause, Play, Trash2 } from 'lucide-react';
 import { ProgressState } from '../../types';
 import { shouldShowControls } from '../../utils/viewEquipmentReports';
 
@@ -14,6 +14,7 @@ interface ControlButtonsProps {
     onCheck: (reportId: string) => void;
     onPause: (reportId: string) => void;
     onResume: (reportId: string) => void;
+    onDelete: (reportId: string) => void;
     hasReportId?: boolean;
 }
 
@@ -28,23 +29,78 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
     onCheck,
     onPause,
     onResume,
+    onDelete,
     hasReportId,
 }) => {
     const hasProgress = !!progressState;
     const showControls = progressState ? shouldShowControls(progressState) : false;
 
+    const MAX_TABS = 30;
+    const MIN_TABS = 1;
+    
+    // Local state for the input value to allow temporary invalid states during editing
+    const [localValue, setLocalValue] = useState<string>(tabsNum.toString());
+
+    // Update local value when tabsNum prop changes
+    React.useEffect(() => {
+        setLocalValue(tabsNum.toString());
+    }, [tabsNum]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setLocalValue(value); // Allow any input temporarily
+        
+        // Only update parent if it's a valid number within range
+        const numValue = Number(value);
+        if (!isNaN(numValue) && numValue >= MIN_TABS && numValue <= MAX_TABS) {
+            onTabsNumChange(numValue);
+        }
+    };
+
+    const handleBlur = () => {
+        const numValue = Number(localValue);
+        
+        // Reset to valid value on blur
+        if (isNaN(numValue) || numValue < MIN_TABS) {
+            onTabsNumChange(MIN_TABS);
+            setLocalValue(MIN_TABS.toString());
+        } else if (numValue > MAX_TABS) {
+            onTabsNumChange(MAX_TABS);
+            setLocalValue(MAX_TABS.toString());
+        } else {
+            // Ensure local value matches the validated tabsNum
+            setLocalValue(tabsNum.toString());
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        // Allow Enter key to trigger blur behavior
+        if (e.key === 'Enter') {
+            e.currentTarget.blur();
+        }
+    };
+
+    const handleDeleteClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (window.confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+            onDelete(reportId);
+        }
+    };
+
     return (
         <div className="flex items-center gap-2">
             <input
-                type="number"
-                min={1}
-                max={20}
-                value={tabsNum}
-                onChange={(e) => onTabsNumChange(Number(e.target.value))}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={localValue}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
                 onClick={(e) => e.stopPropagation()}
                 disabled={!loggedIn}
                 className="w-16 px-2 py-1 border rounded-md text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                title="Number of tabs"
+                title={`Number of tabs (${MIN_TABS}-${MAX_TABS})`}
             />
 
             <button
@@ -80,6 +136,19 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
                 title="Check Assets"
             >
                 <CheckCircle className="w-4 h-4" />
+            </button>
+
+            {/* Delete Button */}
+            <button
+                onClick={handleDeleteClick}
+                disabled={hasProgress}
+                className={`p-2 rounded-lg transition ${(hasProgress)
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-red-600 hover:bg-red-700 text-white'
+                }`}
+                title="Delete Report"
+            >
+                <Trash2 className="w-4 h-4" />
             </button>
 
             {progressState && showControls && (

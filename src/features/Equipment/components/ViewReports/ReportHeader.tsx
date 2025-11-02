@@ -9,7 +9,11 @@ interface ReportHeaderProps {
     onToggle: () => void;
 }
 
-const ReportHeader: React.FC<ReportHeaderProps> = ({ report, isNewest, onToggle }) => {
+const ReportHeader: React.FC<ReportHeaderProps> = ({ 
+    report, 
+    isNewest, 
+    onToggle, 
+}) => {
     const completeCount = report.asset_data.filter(a => a.submitState === 1).length;
     const incompleteCount = report.asset_data.length - completeCount;
     const statusColor = getReportStatus(report);
@@ -18,17 +22,23 @@ const ReportHeader: React.FC<ReportHeaderProps> = ({ report, isNewest, onToggle 
 
     return (
         <div className="flex justify-between items-center p-4 cursor-pointer" onClick={onToggle}>
-            <div>
-                <h3 className="text-lg font-medium text-gray-900">
-                    Report {hasReportId ? report.report_id : report.title}
-                </h3>
-                
-                {/* Show title as subtitle when report_id exists */}
-                {hasReportId && report.title && (
-                    <p className="text-sm text-gray-600 mb-5">
-                        {report.title}
-                    </p>
-                )}
+            <div className="flex-1">
+                <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                        <h3 className="text-lg font-medium text-gray-900">
+                            Report {hasReportId ? report.report_id : report.title}
+                        </h3>
+                        
+                        {/* Show title as subtitle when report_id exists */}
+                        {hasReportId && report.title && (
+                            <p className="text-sm text-gray-600 mb-5">
+                                {report.title}
+                            </p>
+                        )}
+                    </div>
+                    
+                    {/* Delete Button */}
+                </div>
 
                 <div className="flex flex-wrap gap-2 mt-1 items-center">
                     <span className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
