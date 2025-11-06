@@ -35,7 +35,7 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
     const hasProgress = !!progressState;
     const showControls = progressState ? shouldShowControls(progressState) : false;
 
-    const MAX_TABS = 30;
+    const MAX_TABS = 100;
     const MIN_TABS = 1;
     
     // Local state for the input value to allow temporary invalid states during editing
